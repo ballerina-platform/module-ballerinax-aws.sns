@@ -38,98 +38,54 @@ ConnectionConfig config = {
 Client amazonSNSClient = check new(config);
 
 @test:Config{}
-function testCreateTopic() {
+function testCreateTopic() return error? {
     TopicAttribute attributes = {
         displayName : "Test"
     };
-    CreateTopicResponse|error response = amazonSNSClient->createTopic(testTopic, attributes);
-    if (response is error) {
-        test:assertFail(response.toString());
-    } else {
-        topicArn = response.createTopicResult.topicArn;
-        test:assertTrue(response is CreateTopicResponse);
-    }
+    CreateTopicResponse response = check amazonSNSClient->createTopic(testTopic, attributes);
+    topicArn = response.createTopicResult.topicArn;
+    test:assertTrue(response is CreateTopicResponse);
 }
 
 @test:Config{dependsOn: [testCreateTopic]}
-function testSubscribe() {
-    SubscribeResponse|error response = amazonSNSClient->subscribe(topicArn, EMAIL, "kapilraaj1995@gmail.com", true);
-    if (response is error) {
-        test:assertFail(response.toString());
-    } else {
-        subscriptionArn = response.subscribeResult.subscriptionArn;
-        test:assertTrue(response is SubscribeResponse);
-    }
+function testSubscribe() return error? {
+    SubscribeResponse response = check amazonSNSClient->subscribe(topicArn, EMAIL, "kapilraaj1995@gmail.com", true);
+    subscriptionArn = response.subscribeResult.subscriptionArn;
+    test:assertTrue(response is SubscribeResponse);
 }
 
 @test:Config{dependsOn: [testSubscribe]}
-function testPublish() {
-    PublishResponse|error response = amazonSNSClient->publish("Notification Message", topicArn);
-    if (response is error) {
-        test:assertFail(response.toString());
-    } else {
-        test:assertTrue(response is PublishResponse);
-    }
+function testPublish() return error? {
+    PublishResponse response = check amazonSNSClient->publish("Notification Message", topicArn);
+    test:assertTrue(response is PublishResponse);
 }
 
-@test:Config{
-    dependsOn: [testPublish]
-    }
-function testUnsubscribe() {
-    UnsubscribeResponse|error response = amazonSNSClient->unsubscribe(subscriptionArn);
-    if (response is error) {
-        test:assertFail(response.toString());
-    } else {
-        test:assertTrue(response is UnsubscribeResponse);
-    }
-}
-
-@test:Config{dependsOn: [testUnsubscribe]}
-function testDeleteTopic() {
-    DeleteTopicResponse|error response = amazonSNSClient->deleteTopic(topicArn);
-    if (response is error) {
-        test:assertFail(response.toString());
-    } else {
-        test:assertTrue(response is DeleteTopicResponse);
-    }
+@test:Config{dependsOn: [testPublish]}
+function testUnsubscribe() return error? {
+    UnsubscribeResponse response = check amazonSNSClient->unsubscribe(subscriptionArn);
+    test:assertTrue(response is UnsubscribeResponse);
 }
 
 @test:Config{}
-function testGetSMSAttributes() {
-    GetSMSAttributesResponse|error response = amazonSNSClient->getSMSAttributes();
-    if (response is error) {
-        test:assertFail(response.toString());
-    } else {
-        test:assertTrue(response is GetSMSAttributesResponse);
-    }
+function testGetSMSAttributes() return error? {
+    GetSMSAttributesResponse response = check amazonSNSClient->getSMSAttributes();
+    test:assertTrue(response is GetSMSAttributesResponse);
 }
 
 @test:Config{}
-function testGetTopicAttributes() {
-    GetTopicAttributesResponse|error response = amazonSNSClient->getTopicAttributes(topicArn);
-    if (response is error) {
-        test:assertFail(response.toString());
-    } else {
-        test:assertTrue(response is GetTopicAttributesResponse);
-    }
+function testGetTopicAttributes() return error? {
+    GetTopicAttributesResponse response = check amazonSNSClient->getTopicAttributes(topicArn);
+    test:assertTrue(response is GetTopicAttributesResponse);
 }
 
 @test:Config{}
-function testCreateSMSSandboxPhoneNumber() {
-    json|error response = amazonSNSClient->createSMSSandboxPhoneNumber("+94776718102", "en-US");
-    if (response is error) {
-        test:assertFail(response.toString());
-    } else {
-        topicArn = response.toString();
-    }
+function testGetSubscriptionAttributes() return error? {
+    GetSubscriptionAttributesResponse response = check amazonSNSClient->getSubscriptionAttributes(subscriptionArn);
+    test:assertTrue(response is GetSubscriptionAttributesResponse);
 }
 
-@test:Config{}
-function testGetSubscriptionAttributes() {
-    GetSubscriptionAttributesResponse|error response = amazonSNSClient->getSubscriptionAttributes(subscriptionArn);
-    if (response is error) {
-        test:assertFail(response.toString());
-    } else {
-        test:assertTrue(response is GetSubscriptionAttributesResponse);
-    }
+@test:AfterSuite {}
+function testDeleteTopic() return error? {
+    DeleteTopicResponse response = check amazonSNSClient->deleteTopic(topicArn);
+    test:assertTrue(response is DeleteTopicResponse);
 }

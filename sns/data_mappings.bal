@@ -14,13 +14,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-
 xmlns "http://sns.amazonaws.com/doc/2010-03-31/" as namespace;
 
 isolated function xmlToCreatedTopicOld(xml response) returns string|error {
     string|error topicName = (response/<namespace:CreateTopicResult>/<namespace:TopicArn>/*).toString();
     if (topicName is string) {
-        return topicName != "" ? topicName.toString() : "";
+        return topicName != EMPTY_STRING ? topicName.toString() : EMPTY_STRING;
     } else {
         return topicName;
     }
@@ -29,7 +28,7 @@ isolated function xmlToCreatedTopicOld(xml response) returns string|error {
 isolated function xmlToCreatedTopic(xml response) returns CreateTopicResponse|error {
     xml createdTopicResponse = response/<namespace:CreateTopicResult>;
     xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (createdTopicResponse.toString() != "") {
+    if (createdTopicResponse.toString() != EMPTY_STRING) {
         CreateTopicResult createTopic = {
             topicArn : (createdTopicResponse/<namespace:TopicArn>/*).toString()
         };
@@ -49,7 +48,7 @@ isolated function xmlToCreatedTopic(xml response) returns CreateTopicResponse|er
 isolated function xmlToCreatedSubscription(xml response) returns SubscribeResponse|error {
     xml createdSubscriptionResponse = response/<namespace:SubscribeResult>;
     xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (createdSubscriptionResponse.toString() != "") {
+    if (createdSubscriptionResponse.toString() != EMPTY_STRING) {
         SubscribeResult subscribtionResult = {
             subscriptionArn : (createdSubscriptionResponse/<namespace:SubscriptionArn>/*).toString()
         };
@@ -69,7 +68,7 @@ isolated function xmlToCreatedSubscription(xml response) returns SubscribeRespon
 isolated function xmlToPublishResponse(xml response) returns PublishResponse|error {
     xml publishResponse = response/<namespace:PublishResult>;
     xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (publishResponse.toString() != "") {
+    if (publishResponse.toString() != EMPTY_STRING) {
         PublishResult publishResult = {
             messageId : (publishResponse/<namespace:SubscriptionArn>/*).toString()
         };
@@ -88,7 +87,7 @@ isolated function xmlToPublishResponse(xml response) returns PublishResponse|err
 
 isolated function xmlToUnsubscribeResponse(xml response) returns UnsubscribeResponse|error {
     xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (responseMeta.toString() != "") {
+    if (responseMeta.toString() != EMPTY_STRING) {
         ResponseMetadata responseMetadata = {
             requestId: (responseMeta/<namespace:RequestId>/*).toString()
         };
@@ -103,7 +102,7 @@ isolated function xmlToUnsubscribeResponse(xml response) returns UnsubscribeResp
 
 isolated function xmlToDeletedTopicResponse(xml response) returns DeleteTopicResponse|error {
     xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (responseMeta.toString() != "") {
+    if (responseMeta.toString() != EMPTY_STRING) {
         ResponseMetadata responseMetadata = {
             requestId: (responseMeta/<namespace:RequestId>/*).toString()
         };
@@ -119,7 +118,7 @@ isolated function xmlToDeletedTopicResponse(xml response) returns DeleteTopicRes
 isolated function xmlToGetTopicAttributes(xml response) returns GetTopicAttributesResponse|error {
     xml getTopicAttributesResponses = response/<namespace:GetTopicAttributesResult>;
     xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (getTopicAttributesResponses.toString() != "") {
+    if (getTopicAttributesResponses.toString() != EMPTY_STRING) {
         GetTopicAttributesResult getTopicAttributesResult = {
             attributes: (getTopicAttributesResponses/<namespace:Attributes>/*).toString()
         };
@@ -139,7 +138,7 @@ isolated function xmlToGetTopicAttributes(xml response) returns GetTopicAttribut
 isolated function xmlToGetSmsAttributes(xml response) returns GetSMSAttributesResponse|error {
     xml getSMSAttributesResponses = response/<namespace:GetSMSAttributesResult>;
     xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (getSMSAttributesResponses.toString() != "") {
+    if (getSMSAttributesResponses.toString() != EMPTY_STRING) {
         GetSMSAttributesResult getSMSAttributesResult = {
             attributes: (getSMSAttributesResponses/<namespace:attributes>/*).toString()
         };
@@ -159,7 +158,7 @@ isolated function xmlToGetSmsAttributes(xml response) returns GetSMSAttributesRe
 isolated function xmlToGetSubscriprionAttributes(xml response) returns GetSubscriptionAttributesResponse|error {
     xml getSubscriptionAttributesResponses = response/<namespace:GetSubscriptionAttributesResult>;
     xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (getSubscriptionAttributesResponses.toString() != "") {
+    if (getSubscriptionAttributesResponses.toString() != EMPTY_STRING) {
         GetSubscriptionAttributesResult getSubscriptionAttributesResult = {
             attributes: (getSubscriptionAttributesResponses/<namespace:Attributes>/*).toString()
         };
@@ -179,7 +178,7 @@ isolated function xmlToGetSubscriprionAttributes(xml response) returns GetSubscr
 isolated function xmlToConfirmedSubscriptionResponse(xml response) returns ConfirmedSubscriptionResponse|error {
     xml confirmSubscriptionResponse = response/<namespace:ConfirmSubscriptionResult>;
     xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (confirmSubscriptionResponse.toString() != "") {
+    if (confirmSubscriptionResponse.toString() != EMPTY_STRING) {
         ConfirmedSubscriptionResult confirmSubscriptionResult = {
             subscriptionArn : (confirmSubscriptionResponse/<namespace:SubscriptionArn>/*).toString()
         };
@@ -199,7 +198,7 @@ isolated function xmlToConfirmedSubscriptionResponse(xml response) returns Confi
 isolated function xmlTopicListToTopicArray(xml response) returns string|error {
     string|error topicName = (response/<namespace:TopicArn>/*).toString();
     if (topicName is string) {
-        return topicName != "" ? topicName.toString() : "";
+        return topicName != EMPTY_STRING ? topicName.toString() : EMPTY_STRING;
     } else {
         return topicName;
     }
@@ -219,7 +218,7 @@ isolated function xmlSubscriptionListToSubscriptionArray(xml response) returns S
 isolated function xmlToCreatedSubscriptionOld(xml response) returns string|error {
     string|error subscriptionName = (response/<namespace:SubscribeResult>/<namespace:SubscriptionArn>/*).toString();
     if (subscriptionName is string) {
-        return subscriptionName != "" ? subscriptionName.toString() : "";
+        return subscriptionName != EMPTY_STRING ? subscriptionName.toString() : EMPTY_STRING;
     } else {
         return subscriptionName;
     }
@@ -228,7 +227,7 @@ isolated function xmlToCreatedSubscriptionOld(xml response) returns string|error
 isolated function xmlToConfirmedSubscription(xml response) returns string|error {
     string|error subscriptionName = (response/<namespace:ConfirmSubscriptionResult>/<namespace:SubscriptionArn>/*).toString();
     if (subscriptionName is string) {
-        return subscriptionName != "" ? subscriptionName.toString() : "";
+        return subscriptionName != EMPTY_STRING ? subscriptionName.toString() : EMPTY_STRING;
     } else {
         return subscriptionName;
     }
@@ -237,7 +236,7 @@ isolated function xmlToConfirmedSubscription(xml response) returns string|error 
 isolated function xmlToPublished(xml response) returns string|error {
     string|error publishResult = (response/<namespace:PublishResult>/<namespace:MessageId>/*).toString();
     if (publishResult is string) {
-        return publishResult != "" ? publishResult.toString() : "";
+        return publishResult != EMPTY_STRING ? publishResult.toString() : EMPTY_STRING;
     } else {
         return publishResult;
     }

@@ -18,9 +18,9 @@ import ballerina/jballerina.java;
 import ballerina/http;
 import ballerina/time;
 
-isolated function buildQueryString(string actionName, map<string> parameterMap, string... parameterValues) returns @tainted map<string> {
+isolated function buildQueryString(string actionName, map<string> parameterMap, string... parameterValues) returns map<string> {
     int index = 0;
-    string parameterValueString = "";
+    string parameterValueString = EMPTY_STRING;
     parameterMap[ACTION] = actionName;
     parameterMap[VERSION] = VERSION_NUMBER;
     foreach string? parameterValue in parameterValues {
@@ -30,15 +30,13 @@ isolated function buildQueryString(string actionName, map<string> parameterMap, 
     return parameterMap;
 }
 
-isolated function createQueryString(string actionName, map<string> parameterMap) returns @tainted map<string> {
-    int index = 0;
-    string parameterValueString = "";
+isolated function createQueryString(string actionName, map<string> parameterMap) returns map<string> {
     parameterMap[ACTION] = actionName;
     parameterMap[VERSION] = VERSION_NUMBER;
     return parameterMap;
 }
 
-isolated function addTopicOptionalParameters(map<string> parameterMap, TopicAttributes? attributes = (), map<string>? tags = ()) returns @tainted map<string>|error {
+isolated function addTopicOptionalParameters(map<string> parameterMap, TopicAttributes? attributes = (), map<string>? tags = ()) returns map<string>|error {
     map<string> parameters = {};
     if (attributes is TopicAttributes) {
         parameters = setTopicAttributes(parameterMap, attributes);
@@ -49,7 +47,7 @@ isolated function addTopicOptionalParameters(map<string> parameterMap, TopicAttr
     return parameterMap;
 }
 
-isolated function addSubscriptionOptionalParameters(map<string> parameterMap, string? endpoint = (), boolean? returnSubscriptionArn = (), SubscriptionAttribute? attributes = ()) returns @tainted map<string>|error {
+isolated function addSubscriptionOptionalParameters(map<string> parameterMap, string? endpoint = (), boolean? returnSubscriptionArn = (), SubscriptionAttribute? attributes = ()) returns map<string>|error {
     map<string> parameters = {};
     if (endpoint is string) {
         parameterMap["Endpoint"] = endpoint.toString();
@@ -63,7 +61,7 @@ isolated function addSubscriptionOptionalParameters(map<string> parameterMap, st
     return parameterMap;
 }
 
-isolated function addPublishOptionalParameters(map<string> parameterMap, string? topicArn = (), string? targetArn = (), string? subject = (), string? phoneNumber = (), string? messageStructure = (), string? messageDeduplicationId = (), string? messageGroupId = (), MessageAttribute? messageAttributes = ()) returns @tainted map<string>|error {
+isolated function addPublishOptionalParameters(map<string> parameterMap, string? topicArn = (), string? targetArn = (), string? subject = (), string? phoneNumber = (), string? messageStructure = (), string? messageDeduplicationId = (), string? messageGroupId = (), MessageAttribute? messageAttributes = ()) returns map<string>|error {
     map<string> parameters = {};
     if (topicArn is string) {
         parameterMap["TopicArn"] = topicArn.toString();
@@ -92,16 +90,16 @@ isolated function addPublishOptionalParameters(map<string> parameterMap, string?
     return parameterMap;
 }
 
-isolated function addCreateSandboxOptionalParameters(map<string> parameterMap, string? languageCode = ()) returns @tainted map<string>|error {
+isolated function addCreateSandboxOptionalParameters(map<string> parameterMap, string? languageCode = ()) returns map<string>|error {
     if (languageCode is string) {
         parameterMap["LanguageCode"] = languageCode.toString();
     }
     return parameterMap;
 }
 
-isolated function addOptionalStringParameters(map<string> parameterMap, string?... optionalParameterValues) returns @tainted map<string>|error {
+isolated function addOptionalStringParameters(map<string> parameterMap, string?... optionalParameterValues) returns map<string>|error {
     int index = 0;
-    string parameterValueString = "";
+    string parameterValueString = EMPTY_STRING;
     foreach string? optionalParameterValue in optionalParameterValues {
         if(optionalParameterValue is string) {
             parameterMap[getAttributeName(optionalParameterValue)] = optionalParameterValue;            
@@ -111,23 +109,18 @@ isolated function addOptionalStringParameters(map<string> parameterMap, string?.
     return parameterMap;
 }
 
-isolated function sendRequest(http:Client amazonSNSClient, http:Request|error request) returns @tainted xml|error {
+isolated function sendRequest(http:Client amazonSNSClient, http:Request|error request) returns xml|error {
     if (request is http:Request) {
         http:Response|error httpResponse = amazonSNSClient->post("/", request);
-        xml|error response = handleResponse(httpResponse);
-        if (response is xml) {
-            return response;
-        } else {
-            return response;
-        }
+        return handleResponse(httpResponse);
     } else {
         return error(REQUEST_ERROR);
     }
 }
 
-isolated function checkCredentials(string accessKeyId, string secretAccessKey) returns error? {
-    if ((accessKeyId == "") || (secretAccessKey == "")) {
-        return error("Access Key Id or Secret Access Key credential are empty");
+isolated function validateCredentails(string accessKeyId, string secretAccessKey) returns error? {
+    if ((accessKeyId == EMPTY_STRING) || (secretAccessKey == EMPTY_STRING)) {
+        return error("Access Key Id or Secret Access Key credential is empty");
     }
 }
 
@@ -271,7 +264,7 @@ isolated function addSmsAttributes(map<string> parameters, string[] attributes) 
     return parameters;
 }
 
-# Get attribute name from field of record.
+# Returns attribute name from field of record. This capitalizes the first letter of the attribute.
 #
 # + attribute - Field name of record
 # + return - If successful returns attribute name string. Else returns error

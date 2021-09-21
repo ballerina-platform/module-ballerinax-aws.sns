@@ -49,7 +49,7 @@ public isolated client class Client {
         self.region = configuration.region;
         self.amazonHost = "sns." + self.region + ".amazonaws.com";
         string baseURL = "https://" + self.amazonHost;
-        check checkCredentials(self.accessKeyId, self.secretAccessKey);
+        check validateCredentails(self.accessKeyId, self.secretAccessKey);
         self.amazonSNSClient = check new (baseURL, httpClientConfig);
     }
 
@@ -57,18 +57,18 @@ public isolated client class Client {
     #
     # + name - Name of topic
     # + attributes - Topic attributes
-    # + tags - Tags
+    # + tags - Tags for the Topic
     # + return - Created topic ARN on success else an `error`
     @display {label: "Create Topic"}
     isolated remote function createTopic(@display {label: "Topic Name"} string name, 
                                          @display {label: "Topic Attributes"} TopicAttributes? attributes = (), 
-                                         @display {label: "Tags"} map<string>? tags = ()) 
-                                         returns @tainted @display {label: "Created Topic ARN"} CreateTopicResponse|error {
+                                         @display {label: "Tags for Topic"} map<string>? tags = ()) 
+                                         returns @display {label: "Created Topic ARN"} CreateTopicResponse|error {
         map<string> parameters = {};
         parameters = createQueryString("CreateTopic", parameters);
         parameters["Name"] = name;
         parameters = check addTopicOptionalParameters(parameters, attributes, tags);
-        http:Request|error request = self.generateRequest(self.createPayload(parameters));
+        http:Request request = check self.generateRequest(self.createPayload(parameters));
         xml response = check sendRequest(self.amazonSNSClient, request);
         CreateTopicResponse|error createdTopicResponse = xmlToCreatedTopic(response);
         if (createdTopicResponse is CreateTopicResponse) {
@@ -92,13 +92,13 @@ public isolated client class Client {
                                        @display {label: "Endpoint For Subscription"} string? endpoint = (), 
                                        @display {label: "Subscription ARN Status"} boolean? returnSubscriptionArn = (), 
                                        @display {label: "Subscription Attributes"} SubscriptionAttribute? attributes = ()) 
-                                       returns @tainted @display {label: "Subscription ARN"} SubscribeResponse|error {
+                                       returns @display {label: "Subscription ARN"} SubscribeResponse|error {
         map<string> parameters = {};
         parameters = createQueryString("Subscribe", parameters);
         parameters["TopicArn"] = topicArn;
         parameters["Protocol"] = protocol;
         parameters = check addSubscriptionOptionalParameters(parameters, endpoint, returnSubscriptionArn, attributes);
-        http:Request|error request = self.generateRequest(self.createPayload(parameters));
+        http:Request request = check self.generateRequest(self.createPayload(parameters));
         xml response = check sendRequest(self.amazonSNSClient, request);
         SubscribeResponse|error createdSubscriptionResponse = xmlToCreatedSubscription(response);
         if (createdSubscriptionResponse is SubscribeResponse) {
@@ -130,12 +130,12 @@ public isolated client class Client {
                                      @display {label: "Message Duplication Id"} string? messageDeduplicationId = (), 
                                      @display {label: "Message Group Id"} string? messageGroupId = (), 
                                      @display {label: "Message Attributes"} MessageAttribute? messageAttributes = ()) 
-                                     returns @tainted @display {label: "Published result"} PublishResponse|error {
+                                     returns @display {label: "Published result"} PublishResponse|error {
         map<string> parameters = {};
         parameters = createQueryString("Publish", parameters);
         parameters["Message"] = message;
         parameters = check addPublishOptionalParameters(parameters, topicArn, targetArn, subject, phoneNumber, messageStructure, messageGroupId, messageDeduplicationId, messageAttributes);
-        http:Request|error request = self.generateRequest(self.createPayload(parameters));
+        http:Request request = check self.generateRequest(self.createPayload(parameters));
         xml response = check sendRequest(self.amazonSNSClient, request);
         PublishResponse|error publishResponse = xmlToPublishResponse(response);
         if (publishResponse is PublishResponse) {
@@ -151,11 +151,11 @@ public isolated client class Client {
     # + return - Result of unsubscription on success else an `error`
     @display {label: "Unsubscribe Topic"}
     isolated remote function unsubscribe(@display {label: "Subscription ARN"} string subscriptionArn) 
-                                         returns @tainted @display {label: "Unsubscription Status"} UnsubscribeResponse|error {
+                                         returns @display {label: "Unsubscription Status"} UnsubscribeResponse|error {
         map<string> parameters = {};
         parameters = createQueryString("Unsubscribe", parameters);
         parameters["SubscriptionArn"] = subscriptionArn;
-        http:Request|error request = self.generateRequest(self.createPayload(parameters));
+        http:Request request = check self.generateRequest(self.createPayload(parameters));
         xml response = check sendRequest(self.amazonSNSClient, request);
         UnsubscribeResponse|error unsubscribeResponse = xmlToUnsubscribeResponse(response);
         if (unsubscribeResponse is UnsubscribeResponse) {
@@ -171,11 +171,11 @@ public isolated client class Client {
     # + return - Result of deleted topic on success else an `error`
     @display {label: "Delete Topic"}
     isolated remote function deleteTopic(@display {label: "Topic ARN"} string topicArn) 
-                                         returns @tainted @display {label: "Delete Status"} DeleteTopicResponse|error {
+                                         returns @display {label: "Delete Status"} DeleteTopicResponse|error {
         map<string> parameters = {};
         parameters = createQueryString("DeleteTopic", parameters);
         parameters["TopicArn"] = topicArn;
-        http:Request|error request = self.generateRequest(self.createPayload(parameters));
+        http:Request request = check self.generateRequest(self.createPayload(parameters));
         xml response = check sendRequest(self.amazonSNSClient, request);
         DeleteTopicResponse|error deletedResponse = xmlToDeletedTopicResponse(response);
         if (deletedResponse is DeleteTopicResponse) {
@@ -193,12 +193,12 @@ public isolated client class Client {
     @display {label: "Create SMS Sandbox Number"} 
     isolated remote function createSMSSandboxPhoneNumber(@display {label: "Phone Number"} string phoneNumber, 
                                                          @display {label: "Language Code"} string? languageCode = ()) 
-                                                         returns @tainted @display {label: "Created Status"} error? {
+                                                         returns @display {label: "Created Status"} error? {
         map<string> parameters = {};
         parameters = createQueryString("CreateSMSSandboxPhoneNumber", parameters);
         parameters["PhoneNumber"] = phoneNumber;
         parameters = check addCreateSandboxOptionalParameters(parameters, languageCode);
-        http:Request|error request = self.generateRequest(self.createPayload(parameters));
+        http:Request request = check self.generateRequest(self.createPayload(parameters));
         xml response = check sendRequest(self.amazonSNSClient, request);
         error? createSandboxResponse = xmlToHttpResponse(response);
         if (createSandboxResponse is error) {
@@ -208,7 +208,7 @@ public isolated client class Client {
         }
     }
 
-    # Confirm a subscription.
+    # Verifies an endpoint owner's intent to receive messages by validating the token sent to the endpoint by an earlier Subscribe action.
     #
     # + token - The token to confirm subscription
     # + topicArn - The ARN of the topic
@@ -218,11 +218,11 @@ public isolated client class Client {
     isolated remote function confirmSubscription(@display {label: "Confirmation Token"} string token, 
                                                  @display {label: "Topic ARN"} string topicArn, 
                                                  @display {label: "Unsubscription Need Authentication"} string? authenticateOnUnsubscribe = ()) 
-                                                 returns @tainted @display {label: "Confirm Subscription Status"} ConfirmedSubscriptionResponse|error {
+                                                 returns @display {label: "Confirm Subscription Status"} ConfirmedSubscriptionResponse|error {
         map<string> parameters = {};
         parameters = buildQueryString("ConfirmSubscription", parameters, token, topicArn);
         parameters = check addOptionalStringParameters(parameters, authenticateOnUnsubscribe);
-        http:Request|error request = self.generateRequest(self.createPayload(parameters));
+        http:Request request = check self.generateRequest(self.createPayload(parameters));
         xml response = check sendRequest(self.amazonSNSClient, request);
         ConfirmedSubscriptionResponse|error confirmedSubscriptionResponse = xmlToConfirmedSubscriptionResponse(response);
         if (confirmedSubscriptionResponse is ConfirmedSubscriptionResponse) {
@@ -242,11 +242,11 @@ public isolated client class Client {
     isolated remote function setTopicAttribute(@display {label: "Topic ARN"} string topicArn, 
                                                @display {label: "Attribute Name"} string attributeName, 
                                                @display {label: "Attribute Value"} string? attributeValue = ()) 
-                                               returns @tainted @display {label: "Topic Attribute Status"} error? {
+                                               returns @display {label: "Topic Attribute Status"} error? {
         map<string> parameters = {};
         parameters = buildQueryString("SetTopicAttributes", parameters, topicArn, attributeName);
         parameters = check addOptionalStringParameters(parameters, attributeValue);
-        http:Request|error request = self.generateRequest(self.createPayload(parameters));
+        http:Request request = check self.generateRequest(self.createPayload(parameters));
         if (request is http:Request) {
             http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
             xml|error response = handleResponse(httpResponse);
@@ -266,11 +266,11 @@ public isolated client class Client {
     # + return - Array of TopicAttribute on success else an `error`
     @display {label: "Get Topic Attributes"} 
     isolated remote function getTopicAttributes(@display {label: "Topic ARN"} string topicArn) 
-                                                returns @tainted @display {label: "Topic Attributes"} GetTopicAttributesResponse|error {
+                                                returns @display {label: "Topic Attributes"} GetTopicAttributesResponse|error {
         map<string> parameters = {};
         parameters = createQueryString("GetTopicAttributes", parameters);
         parameters["TopicArn"] = topicArn;
-        http:Request|error request = self.generateRequest(self.createPayload(parameters));
+        http:Request request = check self.generateRequest(self.createPayload(parameters));
         if (request is http:Request) {
             http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
             xml|error response = handleResponse(httpResponse);
@@ -290,11 +290,11 @@ public isolated client class Client {
     # + return - Null on success else an `error`
     @display {label: "Add SMS Attribute"} 
     isolated remote function setSMSAttributes(@display {label: "SMS Attribute To Add"} SmsAttributes attributes) 
-                                              returns @tainted @display {label: "SMS Attribute Status"} error? {
+                                              returns @display {label: "SMS Attribute Status"} error? {
         map<string> parameters = {};
         parameters = buildQueryString("SetSMSAttributes", parameters);
         parameters = setSmsAttributes(parameters, attributes);
-        http:Request|error request = self.generateRequest(self.createPayload(parameters));
+        http:Request request = check self.generateRequest(self.createPayload(parameters));
         if (request is http:Request) {
             http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
             xml|error response = handleResponse(httpResponse);
@@ -312,13 +312,13 @@ public isolated client class Client {
     #
     # + attributes - SMS attribute names
     # + return - Array of SmsAttribute on success else an `error`
-    isolated remote function getSMSAttributes(string[]? attributes = ()) returns @tainted GetSMSAttributesResponse|error {
+    isolated remote function getSMSAttributes(string[]? attributes = ()) returns GetSMSAttributesResponse|error {
         map<string> parameters = {};
         parameters = buildQueryString("GetSMSAttributes", parameters);
         if (attributes is string[]) {
             parameters = addSmsAttributes(parameters, attributes);
         }
-        http:Request|error request = self.generateRequest(self.createPayload(parameters));
+        http:Request request = check self.generateRequest(self.createPayload(parameters));
         if (request is http:Request) {
             http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
             xml|error response = handleResponse(httpResponse);
@@ -342,7 +342,7 @@ public isolated client class Client {
     isolated remote function setSubscriptionAttribute(@display {label: "Subscription ARN"} string subscriptionArn,
                                                       @display {label: "Attribute Name"} string attributeName, 
                                                       @display {label: "Attribute Value"} string? attributeValue = ()) 
-                                                      returns @tainted @display {label: "Subscription Attribute Status"} error? {
+                                                      returns @display {label: "Subscription Attribute Status"} error? {
         map<string> parameters = {};
         parameters[ACTION] = "SetSubscriptionAttributes";
         parameters[VERSION] = VERSION_NUMBER;
@@ -353,7 +353,7 @@ public isolated client class Client {
         }
         parameters = buildQueryString("SetSubscriptionAttributes", parameters, subscriptionArn, attributeName);
         parameters = check addOptionalStringParameters(parameters, attributeValue);        
-        http:Request|error request = self.generateRequest(self.createPayload(parameters));
+        http:Request request = check self.generateRequest(self.createPayload(parameters));
         if (request is http:Request) {
             http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
             xml|error response = handleResponse(httpResponse);
@@ -373,10 +373,10 @@ public isolated client class Client {
     # + return - Array of SubscriptionAttribute on success else an `error`
     @display {label: "Get Subscription Attributes"} 
     isolated remote function getSubscriptionAttributes(@display {label: "Subscription ARN"} string subscriptionArn) 
-                                                       returns @tainted @display {label: "Subscription Attributes"} GetSubscriptionAttributesResponse|error {
+                                                       returns @display {label: "Subscription Attributes"} GetSubscriptionAttributesResponse|error {
         map<string> parameters = {};
         parameters = buildQueryString("GetSubscriptionAttributes", parameters, subscriptionArn);
-        http:Request|error request = self.generateRequest(self.createPayload(parameters));
+        http:Request request = check self.generateRequest(self.createPayload(parameters));
         if (request is http:Request) {
             http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
             xml|error response = handleResponse(httpResponse);
