@@ -2,8 +2,7 @@ Connects to AWS SNS from Ballerina
 
 ## Package overview
 
-The `ballerinax/aws.sns` is a [Ballerina](https://ballerina.io/) connector for AWS SNS. It is comprised of the following capabilities.
-* Perform AWS SNS related operations programmatically. The `ballerinax/aws.sns` module provides this capability.
+The `ballerinax/aws.sns` is a [Ballerina](https://ballerina.io/) connector for [AWS SNS](https://aws.amazon.com/sns/). It enables Ballerina developers to perform AWS SNS related operations programmatically through the module `ballerinax/aws.sns`. Its main capabilities are to define SNS topics, publish messages, and subscribe to SNS topics. 
 
 ### Compatibility
 |                    | Version         |  
