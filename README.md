@@ -1,6 +1,6 @@
 # Ballerina Amazon SNS Connector
 
-[![Build Status](https://travis-ci.org/ballerina-platform/module-ballerinax-aws.sns.svg?branch=master)](https://travis-ci.org/ballerina-platform/module-ballerinax-aws.sns)
+[![Build](https://github.com/ballerina-platform/module-ballerinax-aws.sns/workflows/CI/badge.svg)](https://github.com/ballerina-platform/module-ballerinax-aws.sns/actions?query=workflow%3ACI)
 [![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerinax-aws.sns.svg)](https://github.com/ballerina-platform/module-ballerinax-aws.sns/commits/master)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
