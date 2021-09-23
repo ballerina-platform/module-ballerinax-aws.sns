@@ -6,7 +6,7 @@
 
 [Amazon SNS](https://aws.amazon.com/sns/) is a message notification service developed by Amazon.
 
-This connector provides operations for connecting and interacting with Amazon SNS endpoints over the network. 
+This connector provides operations for connecting and interacting with Amazon SNS endpoints over the network. Its main capabilities are to define SNS topics, publish messages, and to subscribe email, sms and sqs etc. to SNS topics. Following modules are available in the connector. 
 
 - [`aws.sns`](sns/Module.md)
 
