@@ -185,29 +185,6 @@ public isolated client class Client {
         }
     }
 
-    # Create a SMS sandbox phone number.
-    #
-    # + phoneNumber - The destination phone number to verify
-    # + languageCode - The language to use for sending the OTP
-    # + return - Result of SMS sandbox creation on success else an `error`
-    @display {label: "Create SMS Sandbox Number"} 
-    isolated remote function createSMSSandboxPhoneNumber(@display {label: "Phone Number"} string phoneNumber, 
-                                                         @display {label: "Language Code"} string? languageCode = ()) 
-                                                         returns @display {label: "Created Status"} error? {
-        map<string> parameters = {};
-        parameters = createQueryString("CreateSMSSandboxPhoneNumber", parameters);
-        parameters["PhoneNumber"] = phoneNumber;
-        parameters = check addCreateSandboxOptionalParameters(parameters, languageCode);
-        http:Request request = check self.generateRequest(self.createPayload(parameters));
-        xml response = check sendRequest(self.amazonSNSClient, request);
-        error? createSandboxResponse = xmlToHttpResponse(response);
-        if (createSandboxResponse is error) {
-            return error(createSandboxResponse.message());
-        } else {
-            return createSandboxResponse;
-        }
-    }
-
     # Verifies an endpoint owner's intent to receive messages by validating the token sent to the endpoint by an earlier Subscribe action.
     #
     # + token - The token to confirm subscription
@@ -247,16 +224,12 @@ public isolated client class Client {
         parameters = buildQueryString("SetTopicAttributes", parameters, topicArn, attributeName);
         parameters = check addOptionalStringParameters(parameters, attributeValue);
         http:Request request = check self.generateRequest(self.createPayload(parameters));
-        if (request is http:Request) {
-            http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
-            xml|error response = handleResponse(httpResponse);
-            if (response is xml) {
-                return xmlToHttpResponse(response);
-            } else {
-                return response;
-            }
+        http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
+        xml|error response = handleResponse(httpResponse);
+        if (response is xml) {
+            return xmlToHttpResponse(response);
         } else {
-            return error(REQUEST_ERROR);
+            return response;
         }
     }
 
@@ -271,16 +244,12 @@ public isolated client class Client {
         parameters = createQueryString("GetTopicAttributes", parameters);
         parameters["TopicArn"] = topicArn;
         http:Request request = check self.generateRequest(self.createPayload(parameters));
-        if (request is http:Request) {
-            http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
-            xml|error response = handleResponse(httpResponse);
-            if (response is xml) {
-                return xmlToGetTopicAttributes(response);
-            } else {
-                return response;
-            }
+        http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
+        xml|error response = handleResponse(httpResponse);
+        if (response is xml) {
+            return xmlToGetTopicAttributes(response);
         } else {
-            return error(REQUEST_ERROR);
+            return response;
         }
     }
 
@@ -295,16 +264,12 @@ public isolated client class Client {
         parameters = buildQueryString("SetSMSAttributes", parameters);
         parameters = setSmsAttributes(parameters, attributes);
         http:Request request = check self.generateRequest(self.createPayload(parameters));
-        if (request is http:Request) {
-            http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
-            xml|error response = handleResponse(httpResponse);
-            if (response is xml) {
-                return xmlToHttpResponse(response);
-            } else {
-                return response;
-            }
+        http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
+        xml|error response = handleResponse(httpResponse);
+        if (response is xml) {
+            return xmlToHttpResponse(response);
         } else {
-            return error(REQUEST_ERROR);
+            return response;
         }
     }
 
@@ -319,16 +284,12 @@ public isolated client class Client {
             parameters = addSmsAttributes(parameters, attributes);
         }
         http:Request request = check self.generateRequest(self.createPayload(parameters));
-        if (request is http:Request) {
-            http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
-            xml|error response = handleResponse(httpResponse);
-            if (response is xml) {
-                return xmlToGetSmsAttributes(response);
-            } else {
-                return response;
-            }
+        http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
+        xml|error response = handleResponse(httpResponse);
+        if (response is xml) {
+            return xmlToGetSmsAttributes(response);
         } else {
-            return error(REQUEST_ERROR);
+            return response;
         }
     }
 
@@ -354,16 +315,12 @@ public isolated client class Client {
         parameters = buildQueryString("SetSubscriptionAttributes", parameters, subscriptionArn, attributeName);
         parameters = check addOptionalStringParameters(parameters, attributeValue);        
         http:Request request = check self.generateRequest(self.createPayload(parameters));
-        if (request is http:Request) {
-            http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
-            xml|error response = handleResponse(httpResponse);
-            if (response is xml) {
-                return xmlToHttpResponse(response);
-            } else {
-                return response;
-            }
+        http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
+        xml|error response = handleResponse(httpResponse);
+        if (response is xml) {
+            return xmlToHttpResponse(response);
         } else {
-            return error(REQUEST_ERROR);
+            return response;
         }
     }
 
@@ -375,18 +332,15 @@ public isolated client class Client {
     isolated remote function getSubscriptionAttributes(@display {label: "Subscription ARN"} string subscriptionArn) 
                                                        returns @display {label: "Subscription Attributes"} GetSubscriptionAttributesResponse|error {
         map<string> parameters = {};
-        parameters = buildQueryString("GetSubscriptionAttributes", parameters, subscriptionArn);
+        parameters = buildQueryString("GetSubscriptionAttributes", parameters);
+        parameters["SubscriptionArn"] = subscriptionArn;
         http:Request request = check self.generateRequest(self.createPayload(parameters));
-        if (request is http:Request) {
-            http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
-            xml|error response = handleResponse(httpResponse);
-            if (response is xml) {
-                return xmlToGetSubscriprionAttributes(response);
-            } else {
-                return response;
-            }
+        http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
+        xml|error response = handleResponse(httpResponse);
+        if (response is xml) {
+            return xmlToGetSubscriprionAttributes(response);
         } else {
-            return error(REQUEST_ERROR);
+            return response;
         }
     }
 
