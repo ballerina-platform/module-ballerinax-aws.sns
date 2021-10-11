@@ -1,8 +1,8 @@
 [package]
 org = "ballerinax"
 name = "aws.sns"
-version = "1.0.0-SNAPSHOT"
+version = "1.0.0"
 license= ["Apache-2.0"]
 authors = ["Ballerina"]
-keywords = ["communication/notifications", "cost/freemium", "vendor/amazon"]
+keywords = ["Communication/Notifications", "Cost/Freemium", "Vendor/Amazon"]
 repository = "https://github.com/ballerina-platform/module-ballerinax-aws.sns"
