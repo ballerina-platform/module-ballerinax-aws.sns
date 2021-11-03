@@ -24,11 +24,11 @@ Execute the following commands to build from the source:
 
 * To build the package:
     ```    
-    bal build -c ./sns
+    bal pack ./sns
     ```
-* To build the package without tests:
+* To run tests after build:
     ```
-    bal build -c --skip-tests ./sns
+    bal test ./sns
     ```
 ## Contributing to Ballerina
 As an open source project, Ballerina welcomes contributions from the community. 
