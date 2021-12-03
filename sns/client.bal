@@ -28,7 +28,7 @@ import ballerina/time;
 # + securityToken - Security token
 # + region - Amazon API Region
 # + amazonHost - Amazon host name
-@display {label: "Amazon SNS Client", iconPath: "resources/aws.sns.svg"}
+@display {label: "Amazon SNS Client", iconPath: "icon.png"}
 public isolated client class Client {
     final string accessKeyId;
     final string secretAccessKey;
