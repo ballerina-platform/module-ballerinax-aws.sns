@@ -5,10 +5,10 @@ Connects to AWS SNS from Ballerina
 The `ballerinax/aws.sns` is a [Ballerina](https://ballerina.io/) connector for [AWS SNS](https://aws.amazon.com/sns/). It enables Ballerina developers to perform AWS SNS related operations programmatically through the module `ballerinax/aws.sns`. Its main capabilities are to define SNS topics, publish messages, and subscribe to SNS topics. 
 
 ### Compatibility
-|                    | Version         |  
-|--------------------|-----------------|
-| Ballerina Language | Swan Lake Beta6 |
-| Amazon SNS API     | 2010-03-31      |
+|                    | Version            |  
+|--------------------|--------------------|
+| Ballerina Language | Swan Lake 2201.0.0 |
+| Amazon SNS API     | 2010-03-31         |
 
 ## Report issues
 To report bugs, request new features, start new discussions, view project boards, etc., go to the [Ballerina Extended Library repository](https://github.com/ballerina-platform/ballerina-extended-library)
