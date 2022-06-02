@@ -23,11 +23,6 @@ public type TopicAttribute record {
     string policy?;
 };
 
-public type Topic record {
-    string topicArn;
-    string requestId;
-};
-
 public type CreateTopicResponse record {
     CreateTopicResult createTopicResult;
     ResponseMetadata responseMetadata;
@@ -120,14 +115,6 @@ public type SmsAttribute record {
     string usageReportS3Bucket?;
 };
 
-public type SubscriptionList record {
-    string owner?;
-    string endpoint?;
-    string protocol?;
-    string subscriptionArn?;
-    string topicArn?;
-};
-
 public type SmsAttributeArray record {
     string key?;
     string value?;
@@ -146,14 +133,6 @@ public type TopicAttributeArray record {
     string value?;
 };
 
-public type SubscriptionAttributeArray record {
-    string key?;
-    string value?;
-};
-
-public type SubscriptionAttributes record {
-    SubscriptionAttributeArray[] subscriptionAttribute?;
-};
 
 public type MessageAttribute record {
     string key?;

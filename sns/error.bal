@@ -13,10 +13,6 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-public type ErrorDetail record {
-    string message;
-    error cause?;
-};
 
 public type GenerateRequestFailed distinct error;
 

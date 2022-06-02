@@ -16,15 +16,6 @@
 
 xmlns "http://sns.amazonaws.com/doc/2010-03-31/" as namespace;
 
-isolated function xmlToCreatedTopicOld(xml response) returns string|error {
-    string|error topicName = (response/<namespace:CreateTopicResult>/<namespace:TopicArn>/*).toString();
-    if (topicName is string) {
-        return topicName != EMPTY_STRING ? topicName.toString() : EMPTY_STRING;
-    } else {
-        return topicName;
-    }
-}
-
 isolated function xmlToCreatedTopic(xml response) returns CreateTopicResponse|error {
     xml createdTopicResponse = response/<namespace:CreateTopicResult>;
     xml responseMeta = response/<namespace:ResponseMetadata>;
@@ -195,35 +186,6 @@ isolated function xmlToConfirmedSubscriptionResponse(xml response) returns Confi
     }
 }
 
-isolated function xmlTopicListToTopicArray(xml response) returns string|error {
-    string|error topicName = (response/<namespace:TopicArn>/*).toString();
-    if (topicName is string) {
-        return topicName != EMPTY_STRING ? topicName.toString() : EMPTY_STRING;
-    } else {
-        return topicName;
-    }
-}
-
-isolated function xmlSubscriptionListToSubscriptionArray(xml response) returns SubscriptionList|error {
-    SubscriptionList subscriptionList = {
-        owner: (response/<namespace:Owner>/*).toString(),
-        endpoint: (response/<namespace:Endpoint>/*).toString(),
-        protocol: (response/<namespace:Protocol>/*).toString(),
-        subscriptionArn: (response/<namespace:SubscriptionArn>/*).toString(),
-        topicArn: (response/<namespace:TopicArn>/*).toString()
-    };
-    return subscriptionList;
-}
-
-isolated function xmlToCreatedSubscriptionOld(xml response) returns string|error {
-    string|error subscriptionName = (response/<namespace:SubscribeResult>/<namespace:SubscriptionArn>/*).toString();
-    if (subscriptionName is string) {
-        return subscriptionName != EMPTY_STRING ? subscriptionName.toString() : EMPTY_STRING;
-    } else {
-        return subscriptionName;
-    }
-}
-
 isolated function xmlToConfirmedSubscription(xml response) returns string|error {
     string|error subscriptionName = (response/<namespace:ConfirmSubscriptionResult>/<namespace:SubscriptionArn>/*).toString();
     if (subscriptionName is string) {
@@ -231,97 +193,6 @@ isolated function xmlToConfirmedSubscription(xml response) returns string|error 
     } else {
         return subscriptionName;
     }
-}
-
-isolated function xmlToPublished(xml response) returns string|error {
-    string|error publishResult = (response/<namespace:PublishResult>/<namespace:MessageId>/*).toString();
-    if (publishResult is string) {
-        return publishResult != EMPTY_STRING ? publishResult.toString() : EMPTY_STRING;
-    } else {
-        return publishResult;
-    }
-}
-
-isolated function xmlToSubscriptionList(xml response) returns SubscriptionList|error {
-    xml messages = response/<namespace:ListSubscriptionsResult>/<namespace:Subscriptions>/<namespace:member>;
-    SubscriptionList subscriptions = {};
-    int i = 0;
-    foreach var message in messages.elements() {
-        SubscriptionList|error subscription = xmlSubscriptionListToSubscriptionArray(message.elements());
-        i = i + 1;
-    }
-    return subscriptions;
-}
-
-isolated function xmlToTopicList(xml response) returns string[]|error {
-    xml messages = response/<namespace:ListTopicsResult>/<namespace:Topics>/<namespace:member>;
-    string[] topics = [];
-    if (messages.elements().length() != 1) {
-        int i = 0;
-        foreach var message in messages.elements() {
-            string|error topic = xmlTopicListToTopicArray(message.elements());
-            if (topic is string) {
-                topics[i] = topic;
-            }
-            i = i + 1;
-        }
-        return topics;
-    } else {
-        string|error topic = xmlToCreatedTopicOld(messages);
-        if (topic is string) {
-            return [topic];
-        } else {
-            return topic;
-        }
-    }
-}
-
-isolated function xmlToSMSAttributes(xml response) returns SmsAttributeArray[]|error {
-    xml attributes = response/<namespace:GetSMSAttributesResult>/<namespace:attributes>/<namespace:entry>;
-    SmsAttributes smsAttributes = {};
-    SmsAttributeArray[] smsAttributeArray = [];
-    int i = 0;
-    foreach var message in attributes.elements() {
-        SmsAttributeArray smsAttribute = {
-            key: (message/<namespace:key>/*).toString(),
-            value: (message/<namespace:value>/*).toString()
-        };
-        smsAttributeArray[i] = smsAttribute;
-        i = i + 1;
-    }
-    return smsAttributeArray;
-}
-
-isolated function xmlToTopicAttributes(xml response) returns TopicAttributeArray[]|error {
-    xml attributes = response/<namespace:GetTopicAttributesResult>/<namespace:Attributes>/<namespace:entry>;
-    TopicAttributes topicAttributes = {};
-    TopicAttributeArray[] topicAttributeArray = [];
-    int i = 0;
-    foreach var message in attributes.elements() {
-        TopicAttributeArray topicAttribute = {
-            key: (message/<namespace:key>/*).toString(),
-            value: (message/<namespace:value>/*).toString()
-        };
-        topicAttributeArray[i] = topicAttribute;
-        i = i + 1;
-    }
-    return topicAttributeArray;
-}
-
-isolated function xmlToSubscriptionAttributes(xml response) returns SubscriptionAttributeArray[]|error {
-    xml attributes = response/<namespace:GetSubscriptionAttributesResult>/<namespace:Attributes>/<namespace:entry>;
-    SubscriptionAttributes subscriptionAttributes = {};
-    SubscriptionAttributeArray[] subscriptionAttributeArray = [];
-    int i = 0;
-    foreach var message in attributes.elements() {
-        SubscriptionAttributeArray subscriptionAttribute = {
-            key: (message/<namespace:key>/*).toString(),
-            value: (message/<namespace:value>/*).toString()
-        };
-        subscriptionAttributeArray[i] = subscriptionAttribute;
-        i = i + 1;
-    }
-    return subscriptionAttributeArray;
 }
 
 isolated function xmlToHttpResponse(xml response) returns error? {

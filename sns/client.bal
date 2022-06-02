@@ -70,12 +70,8 @@ public isolated client class Client {
         parameters = check addTopicOptionalParameters(parameters, attributes, tags);
         http:Request request = check self.generateRequest(self.createPayload(parameters));
         xml response = check sendRequest(self.amazonSNSClient, request);
-        CreateTopicResponse|error createdTopicResponse = xmlToCreatedTopic(response);
-        if (createdTopicResponse is CreateTopicResponse) {
-            return createdTopicResponse;
-        } else {
-            return error(createdTopicResponse.message());
-        }
+        CreateTopicResponse createdTopicResponse = check xmlToCreatedTopic(response);
+        return createdTopicResponse;
     }
 
     # Subscribe to a topic.
@@ -97,15 +93,11 @@ public isolated client class Client {
         parameters = createQueryString("Subscribe", parameters);
         parameters["TopicArn"] = topicArn;
         parameters["Protocol"] = protocol;
-        parameters = check addSubscriptionOptionalParameters(parameters, endpoint, returnSubscriptionArn, attributes);
+        parameters = addSubscriptionOptionalParameters(parameters, endpoint, returnSubscriptionArn, attributes);
         http:Request request = check self.generateRequest(self.createPayload(parameters));
         xml response = check sendRequest(self.amazonSNSClient, request);
-        SubscribeResponse|error createdSubscriptionResponse = xmlToCreatedSubscription(response);
-        if (createdSubscriptionResponse is SubscribeResponse) {
-            return createdSubscriptionResponse;
-        } else {
-            return error(createdSubscriptionResponse.message());
-        }
+        SubscribeResponse createdSubscriptionResponse = check xmlToCreatedSubscription(response);
+        return createdSubscriptionResponse;
     }
 
     # Publish a message in a topic.
@@ -134,15 +126,11 @@ public isolated client class Client {
         map<string> parameters = {};
         parameters = createQueryString("Publish", parameters);
         parameters["Message"] = message;
-        parameters = check addPublishOptionalParameters(parameters, topicArn, targetArn, subject, phoneNumber, messageStructure, messageGroupId, messageDeduplicationId, messageAttributes);
+        addPublishOptionalParameters(parameters, topicArn, targetArn, subject, phoneNumber, messageStructure, messageGroupId, messageDeduplicationId, messageAttributes);
         http:Request request = check self.generateRequest(self.createPayload(parameters));
         xml response = check sendRequest(self.amazonSNSClient, request);
-        PublishResponse|error publishResponse = xmlToPublishResponse(response);
-        if (publishResponse is PublishResponse) {
-            return publishResponse;
-        } else {
-            return error(publishResponse.message());
-        }
+        PublishResponse publishResponse = check xmlToPublishResponse(response);
+        return publishResponse;
     }
 
     # Unsubscribe to a topic.
@@ -157,12 +145,8 @@ public isolated client class Client {
         parameters["SubscriptionArn"] = subscriptionArn;
         http:Request request = check self.generateRequest(self.createPayload(parameters));
         xml response = check sendRequest(self.amazonSNSClient, request);
-        UnsubscribeResponse|error unsubscribeResponse = xmlToUnsubscribeResponse(response);
-        if (unsubscribeResponse is UnsubscribeResponse) {
-            return unsubscribeResponse;
-        } else {
-            return error(unsubscribeResponse.message());
-        }
+        UnsubscribeResponse unsubscribeResponse = check xmlToUnsubscribeResponse(response);
+        return unsubscribeResponse;
     }
 
     # Delete a topic.
@@ -177,12 +161,8 @@ public isolated client class Client {
         parameters["TopicArn"] = topicArn;
         http:Request request = check self.generateRequest(self.createPayload(parameters));
         xml response = check sendRequest(self.amazonSNSClient, request);
-        DeleteTopicResponse|error deletedResponse = xmlToDeletedTopicResponse(response);
-        if (deletedResponse is DeleteTopicResponse) {
-            return deletedResponse;
-        } else {
-            return error(deletedResponse.message());
-        }
+        DeleteTopicResponse deletedResponse = check xmlToDeletedTopicResponse(response);
+        return deletedResponse;
     }
 
     # Verifies an endpoint owner's intent to receive messages by validating the token sent to the endpoint by an earlier Subscribe action.
@@ -201,12 +181,8 @@ public isolated client class Client {
         parameters = check addOptionalStringParameters(parameters, authenticateOnUnsubscribe);
         http:Request request = check self.generateRequest(self.createPayload(parameters));
         xml response = check sendRequest(self.amazonSNSClient, request);
-        ConfirmedSubscriptionResponse|error confirmedSubscriptionResponse = xmlToConfirmedSubscriptionResponse(response);
-        if (confirmedSubscriptionResponse is ConfirmedSubscriptionResponse) {
-            return confirmedSubscriptionResponse;
-        } else {
-            return error(confirmedSubscriptionResponse.message());
-        }
+        ConfirmedSubscriptionResponse confirmedSubscriptionResponse = check xmlToConfirmedSubscriptionResponse(response);
+        return confirmedSubscriptionResponse;
     }
 
     # Add a topic attributes for a topic created.
@@ -225,12 +201,8 @@ public isolated client class Client {
         parameters = check addOptionalStringParameters(parameters, attributeValue);
         http:Request request = check self.generateRequest(self.createPayload(parameters));
         http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
-        xml|error response = handleResponse(httpResponse);
-        if (response is xml) {
-            return xmlToHttpResponse(response);
-        } else {
-            return response;
-        }
+        xml response = check handleResponse(httpResponse);
+        return xmlToHttpResponse(response);
     }
 
     # Get values of topic attributes for a topic.
@@ -245,12 +217,8 @@ public isolated client class Client {
         parameters["TopicArn"] = topicArn;
         http:Request request = check self.generateRequest(self.createPayload(parameters));
         http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
-        xml|error response = handleResponse(httpResponse);
-        if (response is xml) {
-            return xmlToGetTopicAttributes(response);
-        } else {
-            return response;
-        }
+        xml response = check handleResponse(httpResponse);
+        return xmlToGetTopicAttributes(response);
     }
 
     # Add a SMS attributes for a SMS send.
@@ -265,12 +233,8 @@ public isolated client class Client {
         parameters = setSmsAttributes(parameters, attributes);
         http:Request request = check self.generateRequest(self.createPayload(parameters));
         http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
-        xml|error response = handleResponse(httpResponse);
-        if (response is xml) {
-            return xmlToHttpResponse(response);
-        } else {
-            return response;
-        }
+        xml response = check handleResponse(httpResponse);
+        return xmlToHttpResponse(response);
     }
 
     # Get values of SMS attributes.
@@ -285,12 +249,8 @@ public isolated client class Client {
         }
         http:Request request = check self.generateRequest(self.createPayload(parameters));
         http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
-        xml|error response = handleResponse(httpResponse);
-        if (response is xml) {
-            return xmlToGetSmsAttributes(response);
-        } else {
-            return response;
-        }
+        xml response = check handleResponse(httpResponse);
+        return xmlToGetSmsAttributes(response);
     }
 
     # Add a subscription attributes for a subscription created.
@@ -316,12 +276,8 @@ public isolated client class Client {
         parameters = check addOptionalStringParameters(parameters, attributeValue);        
         http:Request request = check self.generateRequest(self.createPayload(parameters));
         http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
-        xml|error response = handleResponse(httpResponse);
-        if (response is xml) {
-            return xmlToHttpResponse(response);
-        } else {
-            return response;
-        }
+        xml response = check handleResponse(httpResponse);
+        return xmlToHttpResponse(response);
     }
 
     # Get values of subscription attributes for a subscription.
@@ -336,12 +292,8 @@ public isolated client class Client {
         parameters["SubscriptionArn"] = subscriptionArn;
         http:Request request = check self.generateRequest(self.createPayload(parameters));
         http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
-        xml|error response = handleResponse(httpResponse);
-        if (response is xml) {
-            return xmlToGetSubscriprionAttributes(response);
-        } else {
-            return response;
-        }
+        xml response = check handleResponse(httpResponse);
+        return xmlToGetSubscriprionAttributes(response);
     }
 
     //Create a payload.
