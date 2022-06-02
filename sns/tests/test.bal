@@ -16,6 +16,7 @@
 
 import ballerina/test;
 import ballerina/os;
+import ballerina/log;
 
 configurable string accessKeyId = os:getEnv("ACCESS_KEY_ID");
 configurable string secretAccessKey = os:getEnv("SECRET_ACCESS_KEY");
@@ -38,74 +39,53 @@ ConnectionConfig config = {
 Client amazonSNSClient = check new(config);
 
 @test:Config{}
-function testCreateTopic() {
+function testCreateTopic() returns error? {
     TopicAttribute attributes = {
         displayName : "Test"
     };
-    CreateTopicResponse|error response = amazonSNSClient->createTopic(testTopic, attributes);
-    if (response is CreateTopicResponse) {
-        topicArn = response.createTopicResult.topicArn.toString();
-    }
-    else {
-        test:assertFail(response.toString());
-    }
+    CreateTopicResponse response = check amazonSNSClient->createTopic(testTopic, attributes);
+    topicArn = response.createTopicResult.topicArn.toString();
 }
 
 @test:Config{dependsOn: [testCreateTopic]}
-function testSubscribe() {
-    SubscribeResponse|error response = amazonSNSClient->subscribe(topicArn, SMS, "+94776718102", true);
-    if (response is SubscribeResponse) {
-        subscriptionArn = response.subscribeResult.subscriptionArn.toString();
-    }
-    else {
-        test:assertFail(response.toString());
-    }
+function testSubscribe() returns error? {
+    SubscribeResponse response = check amazonSNSClient->subscribe(topicArn, SMS, "+94776718102", true);
+    subscriptionArn = response.subscribeResult.subscriptionArn.toString();
+    log:printInfo(response.toString());
 }
 
 @test:Config{dependsOn: [testSubscribe]}
-function testPublish() {
-    PublishResponse|error response = amazonSNSClient->publish("Notification Message", topicArn);
-    if (response is error) {
-        test:assertFail(response.toString());
-    }
+function testPublish() returns error? {
+    PublishResponse response = check amazonSNSClient->publish("Notification Message", topicArn);
+    log:printInfo(response.toString());
 }
 
 @test:Config{dependsOn: [testPublish]}
-function testGetSMSAttributes() {
-    GetSMSAttributesResponse|error response = amazonSNSClient->getSMSAttributes();
-    if (response is error) {
-        test:assertFail(response.toString());
-    }
+function testGetSMSAttributes() returns error? {
+    GetSMSAttributesResponse response = check amazonSNSClient->getSMSAttributes();
+    log:printInfo(response.toString());
 }
 
 @test:Config{dependsOn: [testGetSMSAttributes]}
-function testGetTopicAttributes() {
-    GetTopicAttributesResponse|error response = amazonSNSClient->getTopicAttributes(topicArn);
-    if (response is error) {
-        test:assertFail(response.toString());
-    }
+function testGetTopicAttributes() returns error? {
+    GetTopicAttributesResponse response = check amazonSNSClient->getTopicAttributes(topicArn);
+    log:printInfo(response.toString());
 }
 
 @test:Config{dependsOn: [testGetTopicAttributes]}
-function testGetSubscriptionAttributes() {
-    GetSubscriptionAttributesResponse|error response = amazonSNSClient->getSubscriptionAttributes(subscriptionArn);
-    if (response is error) {
-        test:assertFail(response.toString());
-    }
-}
+function testGetSubscriptionAttributes() returns error? {
+    GetSubscriptionAttributesResponse response = check amazonSNSClient->getSubscriptionAttributes(subscriptionArn);
+    log:printInfo(response.toString());
+}   
 
 @test:Config{dependsOn: [testGetSubscriptionAttributes]}
-function testUnsubscribe() {
-    UnsubscribeResponse|error response = amazonSNSClient->unsubscribe(subscriptionArn);
-    if (response is error) {
-        test:assertFail(response.toString());
-    }
+function testUnsubscribe() returns error? {
+    UnsubscribeResponse response = check amazonSNSClient->unsubscribe(subscriptionArn);
+    log:printInfo(response.toString());
 }
 
 @test:AfterSuite {}
-function testDeleteTopic() {
-    DeleteTopicResponse|error response = amazonSNSClient->deleteTopic(topicArn);
-    if (response is error) {
-        test:assertFail(response.toString());
-    }
+function testDeleteTopic() returns error? {
+    DeleteTopicResponse response = check amazonSNSClient->deleteTopic(topicArn);
+    log:printInfo(response.toString());
 }

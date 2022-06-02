@@ -21,17 +21,17 @@ import ballerinax/aws.sns;
 You can now enter the credentials in the SNS client configuration and create the SNS client by passing the configuration as follows.
 
 ```ballerina
-sns:LongTermCredentials longTermCredentials = {
-    accessKey: "<ACCESS_KEY_ID>",
-    secretKey: "<SECRET_ACCESS_KEY>"
+sns:AwsCredentials longTermCredentials = {
+    accessKeyId: "<ACCESS_KEY_ID>",
+    secretAccessKey: "<SECRET_ACCESS_KEY>"
 };
 
 sns:ConnectionConfig config = {
     credentials:longTermCredentials,
-    region: <REGION>
+    region: "<REGION>"
 };
 
-sns:Client snsClient = check new (configuration);
+sns:Client snsClient = check new (config);
 ```
 
 ### Step 3: Invoke connector operation
@@ -42,10 +42,8 @@ sns:Client snsClient = check new (configuration);
     sns:TopicAttribute attributes = {
         displayName : "Test"
     };
-    sns:CreateTopicResponse|error response = amazonSNSClient->createTopic(testTopic, attributes);
-    if (response is sns:CreateTopicResponse) {
-        log:printInfo("Created topic: " + response.toString());
-    }
+    sns:CreateTopicResponse response = check amazonSNSClient->createTopic("testTopic", attributes);
+    log:printInfo("Created topic: " + response.toString());
     ```
 2. Use `bal run` command to compile and run the Ballerina program. 
 

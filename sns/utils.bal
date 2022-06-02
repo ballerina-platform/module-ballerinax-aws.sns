@@ -20,7 +20,6 @@ import ballerina/time;
 
 isolated function buildQueryString(string actionName, map<string> parameterMap, string... parameterValues) returns map<string> {
     int index = 0;
-    string parameterValueString = EMPTY_STRING;
     parameterMap[ACTION] = actionName;
     parameterMap[VERSION] = VERSION_NUMBER;
     foreach string? parameterValue in parameterValues {
@@ -37,18 +36,16 @@ isolated function createQueryString(string actionName, map<string> parameterMap)
 }
 
 isolated function addTopicOptionalParameters(map<string> parameterMap, TopicAttributes? attributes = (), map<string>? tags = ()) returns map<string>|error {
-    map<string> parameters = {};
     if (attributes is TopicAttributes) {
-        parameters = setTopicAttributes(parameterMap, attributes);
+        setTopicAttributes(parameterMap, attributes);
     }
     if (tags is map<string>) {
-        parameters = setTags(parameterMap, tags);
+        setTags(parameterMap, tags);
     }
     return parameterMap;
 }
 
-isolated function addSubscriptionOptionalParameters(map<string> parameterMap, string? endpoint = (), boolean? returnSubscriptionArn = (), SubscriptionAttribute? attributes = ()) returns map<string>|error {
-    map<string> parameters = {};
+isolated function addSubscriptionOptionalParameters(map<string> parameterMap, string? endpoint = (), boolean? returnSubscriptionArn = (), SubscriptionAttribute? attributes = ()) returns map<string> {
     if (endpoint is string) {
         parameterMap["Endpoint"] = endpoint.toString();
     }
@@ -56,13 +53,12 @@ isolated function addSubscriptionOptionalParameters(map<string> parameterMap, st
         parameterMap["ReturnSubscriptionArn"] = returnSubscriptionArn.toString();
     }
     if (attributes is SubscriptionAttribute) {
-        parameters = setSubscriptionAttributes(parameterMap, attributes);
+        setSubscriptionAttributes(parameterMap, attributes);
     }
     return parameterMap;
 }
 
-isolated function addPublishOptionalParameters(map<string> parameterMap, string? topicArn = (), string? targetArn = (), string? subject = (), string? phoneNumber = (), string? messageStructure = (), string? messageDeduplicationId = (), string? messageGroupId = (), MessageAttribute? messageAttributes = ()) returns map<string>|error {
-    map<string> parameters = {};
+isolated function addPublishOptionalParameters(map<string> parameterMap, string? topicArn = (), string? targetArn = (), string? subject = (), string? phoneNumber = (), string? messageStructure = (), string? messageDeduplicationId = (), string? messageGroupId = (), MessageAttribute? messageAttributes = ()) {
     if (topicArn is string) {
         parameterMap["TopicArn"] = topicArn.toString();
     }
@@ -85,21 +81,12 @@ isolated function addPublishOptionalParameters(map<string> parameterMap, string?
         parameterMap["MessageGroupId"] = messageGroupId.toString();
     }
     if (messageAttributes is MessageAttribute) {
-        parameters = setMessageAttributes(parameterMap, messageAttributes);
+        setMessageAttributes(parameterMap, messageAttributes);
     }
-    return parameterMap;
-}
-
-isolated function addCreateSandboxOptionalParameters(map<string> parameterMap, string? languageCode = ()) returns map<string>|error {
-    if (languageCode is string) {
-        parameterMap["LanguageCode"] = languageCode.toString();
-    }
-    return parameterMap;
 }
 
 isolated function addOptionalStringParameters(map<string> parameterMap, string?... optionalParameterValues) returns map<string>|error {
     int index = 0;
-    string parameterValueString = EMPTY_STRING;
     foreach string? optionalParameterValue in optionalParameterValues {
         if(optionalParameterValue is string) {
             parameterMap[getAttributeName(optionalParameterValue)] = optionalParameterValue;            
@@ -171,8 +158,7 @@ isolated function handleResponse(http:Response|http:PayloadType|error httpRespon
 #
 # + parameters - Parameter map
 # + attributes - TopicAttributes to convert to a map of string
-# + return - If successful returns `map<string>` response. Else returns error
-isolated function setTopicAttributes(map<string> parameters, TopicAttributes attributes) returns map<string> {
+isolated function setTopicAttributes(map<string> parameters, TopicAttributes attributes) {
     int attributeNumber = 1;
     map<anydata> attributeMap = <map<anydata>>attributes;
     foreach var [key, value] in attributeMap.entries() {
@@ -181,30 +167,26 @@ isolated function setTopicAttributes(map<string> parameters, TopicAttributes att
         parameters["Attributes.entry." + attributeNumber.toString() + ".Value"] = value.toString();
         attributeNumber = attributeNumber + 1;
     }
-    return parameters;
 }
 
 # Set tags to a map of string to add as query parameters.
 #
 # + parameters - Parameter map
 # + tags - Tags to convert to a map of string
-# + return - If successful returns `map<string>` response. Else returns error
-isolated function setTags(map<string> parameters, map<string> tags) returns map<string> {
+isolated function setTags(map<string> parameters, map<string> tags) {
     int tagNumber = 1;
     foreach var [key, value] in tags.entries() {
         parameters["Tag." + tagNumber.toString() + ".Key"] = key;
         parameters["Tag." + tagNumber.toString() + ".Value"] = value;
         tagNumber = tagNumber + 1;
     }
-    return parameters;
 }
 
 # Set subscription attributes to a map of string to add as query parameters.
 #
 # + parameters - Parameter map
 # + attributes - SubscriptionAttribute to convert to a map of string
-# + return - If successful returns `map<string>` response. Else returns error
-isolated function setSubscriptionAttributes(map<string> parameters, SubscriptionAttribute attributes) returns map<string> {
+isolated function setSubscriptionAttributes(map<string> parameters, SubscriptionAttribute attributes) {
     int attributeNumber = 1;
     map<anydata> attributeMap = <map<anydata>>attributes;
     foreach var [key, value] in attributeMap.entries() {
@@ -213,15 +195,13 @@ isolated function setSubscriptionAttributes(map<string> parameters, Subscription
         parameters["Attributes.entry." + attributeNumber.toString() + ".Value"] = value.toString();
         attributeNumber = attributeNumber + 1;
     }
-    return parameters;
 }
 
 # Set message attributes to a map of string to add as query parameters.
 #
 # + parameters - Parameter map
 # + attributes - MessageAttribute to convert to a map of string
-# + return - If successful returns `map<string>` response. Else returns error
-isolated function setMessageAttributes(map<string> parameters, MessageAttribute attributes) returns map<string> {
+isolated function setMessageAttributes(map<string> parameters, MessageAttribute attributes) {
     int attributeNumber = 1;
     map<anydata> attributeMap = <map<anydata>>attributes;
     foreach var [key, value] in attributeMap.entries() {
@@ -230,7 +210,6 @@ isolated function setMessageAttributes(map<string> parameters, MessageAttribute 
         parameters["Attributes.entry." + attributeNumber.toString() + ".Value"] = value.toString();
         attributeNumber = attributeNumber + 1;
     }
-    return parameters;
 }
 
 # Set SMS attributes to a map of string to add as query parameters.

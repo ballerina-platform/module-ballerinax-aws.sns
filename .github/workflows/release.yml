@@ -5,10 +5,8 @@ on:
     types: [published]
 
 jobs:
-    build:
-
+    release:
         runs-on: ubuntu-latest
-
         steps:
             - uses: actions/checkout@v2
             - name: Ballerina Build
@@ -16,10 +14,7 @@ jobs:
               with:
                   args:
                       pack ./sns
-              env:
-                  ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
-                  SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
-                  REGION: ${{ secrets.REGION }}
+
             - name: Ballerina Push
               uses: ballerina-platform/ballerina-action/@master
               with:

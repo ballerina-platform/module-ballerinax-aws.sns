@@ -17,24 +17,22 @@
 import ballerinax/aws.sns;
 import ballerina/log;
 
-sns:LongTermCredentials longTermCredentials = {
-    accessKey: "<ACCESS_KEY_ID>",
-    secretKey: "<SECRET_ACCESS_KEY>"
+sns:AwsCredentials longTermCredentials = {
+    accessKeyId: "<ACCESS_KEY_ID>",
+    secretAccessKey: "<SECRET_ACCESS_KEY>"
 };
 
 sns:ConnectionConfig config = {
     credentials:longTermCredentials,
-    region: <REGION>
+    region: "<REGION>"
 };
 
-public function main(string... args) {
-    sns:Client snsClient = check new (configuration);
+public function main() returns error? {
+    sns:Client snsClient = check new (config);
 
     sns:TopicAttribute attributes = {
         displayName : "Test"
     };
-    sns:CreateTopicResponse|error response = amazonSNSClient->createTopic(testTopic, attributes);
-    if (response is sns:CreateTopicResponse) {
-        log:printInfo("Created topic arn: " + response.createTopicResult.topicArn.toString());
-    }
+    sns:CreateTopicResponse response = check snsClient->createTopic("testTopic", attributes);
+    log:printInfo("Created topic arn: " + response.createTopicResult.topicArn.toString());
 }

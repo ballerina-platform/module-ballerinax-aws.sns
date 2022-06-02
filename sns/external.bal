@@ -40,7 +40,3 @@ isolated function format(handle receiver, handle dateTimeFormatter) returns hand
     'class: "java.time.ZonedDateTime",
     name: "format"
 } external;
-
-isolated function split(handle receiver, handle delimeter) returns handle = @java:Method {
-    'class: "java.lang.String"
-} external;
