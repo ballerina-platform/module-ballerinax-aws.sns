@@ -17,21 +17,19 @@
 import ballerinax/aws.sns;
 import ballerina/log;
 
-sns:LongTermCredentials longTermCredentials = {
-    accessKey: "<ACCESS_KEY_ID>",
-    secretKey: "<SECRET_ACCESS_KEY>"
+sns:AwsCredentials longTermCredentials = {
+    accessKeyId: "<ACCESS_KEY_ID>",
+    secretAccessKey: "<SECRET_ACCESS_KEY>"
 };
 
 sns:ConnectionConfig config = {
     credentials:longTermCredentials,
-    region: <REGION>
+    region: "<REGION>"
 };
 
-public function main(string... args) {
-    sns:Client snsClient = check new (configuration);
+public function main() returns error? {
+    sns:Client snsClient = check new (config);
 
-    sns:SubscribeResponse|error response = amazonSNSClient->subscribe(topicArn, EMAIL, <EMAIL_ADDERSS>);
-    if (response is sns:SubscribeResponse) {
-        log:printInfo("Subscribed topic: " + response.subscribeResult.subscriptionArn.toString());
-    }
+    sns:SubscribeResponse response = check snsClient->subscribe("topicArn", sns:EMAIL, "<EMAIL_ADDERSS>");
+    log:printInfo("Subscribed topic: " + response.subscribeResult.subscriptionArn.toString());
 }

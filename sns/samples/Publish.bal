@@ -17,20 +17,18 @@
 import ballerinax/aws.sns;
 import ballerina/log;
 
-sns:LongTermCredentials longTermCredentials = {
-    accessKey: "<ACCESS_KEY_ID>",
-    secretKey: "<SECRET_ACCESS_KEY>"
+sns:AwsCredentials longTermCredentials = {
+    accessKeyId: "<ACCESS_KEY_ID>",
+    secretAccessKey: "<SECRET_ACCESS_KEY>"
 };
 
 sns:ConnectionConfig config = {
     credentials:longTermCredentials,
-    region: <REGION>
+    region: "<REGION>"
 };
 
-public function main(string... args) {
-    sns:Client snsClient = check new (configuration);
-    PublishResponse|error response = amazonSNSClient->publish("Notification Message", <TOPIC_ARN>);
-    if (response is sns:PublishResponse) {
-        log:printInfo("Published: " + response.toString());
-    }
+public function main() returns error? {
+    sns:Client snsClient = check new (config);
+    sns:PublishResponse response = check snsClient->publish("Notification Message", "<TOPIC_ARN>");
+    log:printInfo("Published: " + response.toString());
 }
