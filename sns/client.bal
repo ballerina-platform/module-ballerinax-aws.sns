@@ -42,14 +42,31 @@ public isolated client class Client {
     # + configuration - Configuration for the connector
     # + httpClientConfig - HTTP Configuration
     # + return - `http:Error` in case of failure to initialize or `null` if successfully initialized
-    public isolated function init(ConnectionConfig configuration, http:ClientConfiguration httpClientConfig = {}) returns error? {
-        self.accessKeyId = configuration.credentials.accessKeyId;
-        self.secretAccessKey = configuration.credentials.secretAccessKey;
-        self.securityToken = (configuration?.credentials?.securityToken is string) ? <string>(configuration?.credentials?.securityToken) : ();
-        self.region = configuration.region;
+    public isolated function init(ConnectionConfig config) returns error? {
+        self.accessKeyId = config.credentials.accessKeyId;
+        self.secretAccessKey = config.credentials.secretAccessKey;
+        self.securityToken = (config?.credentials?.securityToken is string) ? <string>(config?.credentials?.securityToken) : ();
+        self.region = config.region;
         self.amazonHost = "sns." + self.region + ".amazonaws.com";
         string baseURL = "https://" + self.amazonHost;
         check validateCredentails(self.accessKeyId, self.secretAccessKey);
+
+        http:ClientConfiguration httpClientConfig = {
+            httpVersion: config.httpVersion,
+            http1Settings: {...config.http1Settings},
+            http2Settings: config.http2Settings,
+            timeout: config.timeout,
+            forwarded: config.forwarded,
+            poolConfig: config.poolConfig,
+            cache: config.cache,
+            compression: config.compression,
+            circuitBreaker: config.circuitBreaker,
+            retryConfig: config.retryConfig,
+            responseLimits: config.responseLimits,
+            secureSocket: config.secureSocket,
+            proxy: config.proxy,
+            validation: config.validation
+        };
         self.amazonSNSClient = check new (baseURL, httpClientConfig);
     }
 
@@ -84,7 +101,7 @@ public isolated client class Client {
     # + return - Created subscription ARN on success else an `error`
     @display {label: "Create Subscription"}
     isolated remote function subscribe(@display {label: "Topic ARN"} string topicArn, 
-                                       @display {label: "Protocol"} Protocol protocol, 
+                                       @display {label: "Protocol"} AwsProtocol protocol, 
                                        @display {label: "Endpoint For Subscription"} string? endpoint = (), 
                                        @display {label: "Subscription ARN Status"} boolean? returnSubscriptionArn = (), 
                                        @display {label: "Subscription Attributes"} SubscriptionAttribute? attributes = ()) 
@@ -376,15 +393,6 @@ public isolated client class Client {
         return kSigning;
     }
 }
-
-# Configuration provided for the client.
-#
-# + credentials - Credentials to authenticate client 
-# + region - Region of SNS resource
-public type ConnectionConfig record {
-    AwsCredentials|AwsTemporaryCredentials credentials;
-    string region = "us-east-1";
-};
 
 # AWS temporary credentials.
 #
