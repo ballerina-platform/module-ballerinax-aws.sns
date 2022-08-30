@@ -7,7 +7,7 @@ The `ballerinax/aws.sns` is a [Ballerina](https://ballerina.io/) connector for [
 ### Compatibility
 |                    | Version            |  
 |--------------------|--------------------|
-| Ballerina Language | Swan Lake 2201.0.0 |
+| Ballerina Language | Swan Lake 2201.2.0 |
 | Amazon SNS API     | 2010-03-31         |
 
 ## Report issues
