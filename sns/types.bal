@@ -14,6 +14,51 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerinax/'client.config;
+
+# Represents the AWS SNS Connection Configuration.
+@display {label: "Connection Config"}
+public type ConnectionConfig record {|
+    *config:ConnectionConfig;
+    never auth?;
+    # Credentials to authenticate client 
+    AwsCredentials|AwsTemporaryCredentials credentials;
+    # Region of SNS resource
+    string region = "us-east-1";
+|};
+
+# AWS temporary credentials.
+#
+# + accessKeyId - Access key Id
+# + secretAccessKey - Security access key
+# + securityToken - Security token
+public type AwsTemporaryCredentials record {
+    string accessKeyId;
+    @display {
+        label: "",
+        kind: "password"
+    }
+    string secretAccessKey;
+    @display {
+        label: "",
+        kind: "password"
+    }
+    string securityToken;
+};
+
+# AWS credentials.
+#
+# + accessKeyId - Access key Id
+# + secretAccessKey - Security access key
+public type AwsCredentials record {
+    string accessKeyId;
+    @display {
+        label: "",
+        kind: "password"
+    }
+    string secretAccessKey;
+};
+
 public type TopicAttribute record {
     string deliveryPolicy?;
     string displayName?;
