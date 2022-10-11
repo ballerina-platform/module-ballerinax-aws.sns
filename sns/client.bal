@@ -18,6 +18,7 @@ import ballerina/crypto;
 import ballerina/http;
 import ballerina/lang.array;
 import ballerina/time;
+import ballerinax/'client.config;
 
 # Ballerina Amazon SNS API connector provides the capability to access Amazon Simple Notification Service.
 # This connector lets you to create and manage the sns topics and subscriptions.
@@ -51,22 +52,7 @@ public isolated client class Client {
         string baseURL = "https://" + self.amazonHost;
         check validateCredentails(self.accessKeyId, self.secretAccessKey);
 
-        http:ClientConfiguration httpClientConfig = {
-            httpVersion: config.httpVersion,
-            http1Settings: {...config.http1Settings},
-            http2Settings: config.http2Settings,
-            timeout: config.timeout,
-            forwarded: config.forwarded,
-            poolConfig: config.poolConfig,
-            cache: config.cache,
-            compression: config.compression,
-            circuitBreaker: config.circuitBreaker,
-            retryConfig: config.retryConfig,
-            responseLimits: config.responseLimits,
-            secureSocket: config.secureSocket,
-            proxy: config.proxy,
-            validation: config.validation
-        };
+        http:ClientConfiguration httpClientConfig = check config:constructHTTPClientConfig(config);
         self.amazonSNSClient = check new (baseURL, httpClientConfig);
     }
 
@@ -393,23 +379,3 @@ public isolated client class Client {
         return kSigning;
     }
 }
-
-# AWS temporary credentials.
-#
-# + accessKeyId - Access key Id
-# + secretAccessKey - Security access key
-# + securityToken - Security token
-public type AwsTemporaryCredentials record {
-    string accessKeyId;
-    string secretAccessKey;
-    string securityToken;
-};
-
-# AWS credentials.
-#
-# + accessKeyId - Access key Id
-# + secretAccessKey - Security access key
-public type AwsCredentials record {
-    string accessKeyId;
-    string secretAccessKey;
-};
