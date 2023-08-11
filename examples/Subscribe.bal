@@ -23,12 +23,13 @@ sns:AwsCredentials longTermCredentials = {
 };
 
 sns:ConnectionConfig config = {
-    credentials:longTermCredentials,
+    credentials: longTermCredentials,
     region: "<REGION>"
 };
 
 public function main() returns error? {
     sns:Client snsClient = check new (config);
-    sns:PublishResponse response = check snsClient->publish("Notification Message", "<TOPIC_ARN>");
-    log:printInfo("Published: " + response.toString());
+
+    sns:SubscribeResponse response = check snsClient->subscribe("topicArn", sns:EMAIL, "<EMAIL_ADDERSS>");
+    log:printInfo("Subscribed topic: " + response.subscribeResult.subscriptionArn.toString());
 }
