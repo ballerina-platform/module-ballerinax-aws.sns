@@ -26,11 +26,11 @@ Execute the following commands to build from the source:
 
 * To build the package:
     ```    
-    bal pack ./sns
+    bal build ./ballerina
     ```
 * To run tests after build:
     ```
-    bal test ./sns
+    bal test ./ballerina
     ```
 ## Contributing to Ballerina
 As an open source project, Ballerina welcomes contributions from the community. 

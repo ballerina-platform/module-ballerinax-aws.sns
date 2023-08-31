@@ -23,16 +23,12 @@ sns:AwsCredentials longTermCredentials = {
 };
 
 sns:ConnectionConfig config = {
-    credentials:longTermCredentials,
+    credentials: longTermCredentials,
     region: "<REGION>"
 };
 
 public function main() returns error? {
     sns:Client snsClient = check new (config);
-
-    sns:TopicAttribute attributes = {
-        displayName : "Test"
-    };
-    sns:CreateTopicResponse response = check snsClient->createTopic("testTopic", attributes);
-    log:printInfo("Created topic arn: " + response.createTopicResult.topicArn.toString());
+    sns:DeleteTopicResponse response = check snsClient->deleteTopic("<TOPIC_ARN>");
+    log:printInfo("Deleted topic: " + response.toString());
 }
