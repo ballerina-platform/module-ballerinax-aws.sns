@@ -40,8 +40,8 @@ Client amazonSNSClient = check new(config);
 
 @test:Config{}
 function testCreateTopic() returns error? {
-    TopicAttribute attributes = {
-        displayName : "Test"
+    TopicAttributes attributes = {
+        "displayName" : "Test"
     };
     CreateTopicResponse response = check amazonSNSClient->createTopic(testTopic, attributes);
     topicArn = response.createTopicResult.topicArn.toString();
