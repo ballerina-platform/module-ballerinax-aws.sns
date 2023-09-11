@@ -1,6 +1,6 @@
-// Copyright (c) 2021 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2023 WSO2 LLC. (http://www.wso2.org).
 //
-// WSO2 Inc. licenses this file to you under the Apache License,
+// WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License.
 // You may obtain a copy of the License at
@@ -35,52 +35,52 @@ isolated function createQueryString(string actionName, map<string> parameterMap)
     return parameterMap;
 }
 
-isolated function addTopicOptionalParameters(map<string> parameterMap, TopicAttributes? attributes = (), map<string>? tags = ()) returns map<string>|error {
-    if (attributes is TopicAttributes) {
+isolated function addTopicOptionalParameters(map<string> parameterMap, TopicAttribute? attributes = (), map<string>? tags = ()) returns map<string>|error {
+    if attributes is TopicAttribute{
         setTopicAttributes(parameterMap, attributes);
     }
-    if (tags is map<string>) {
+    if tags is map<string>{
         setTags(parameterMap, tags);
     }
     return parameterMap;
 }
 
 isolated function addSubscriptionOptionalParameters(map<string> parameterMap, string? endpoint = (), boolean? returnSubscriptionArn = (), SubscriptionAttribute? attributes = ()) returns map<string> {
-    if (endpoint is string) {
+    if endpoint is string{
         parameterMap["Endpoint"] = endpoint.toString();
     }
-    if (returnSubscriptionArn is boolean) {
+    if returnSubscriptionArn is boolean{
         parameterMap["ReturnSubscriptionArn"] = returnSubscriptionArn.toString();
     }
-    if (attributes is SubscriptionAttribute) {
+    if attributes is SubscriptionAttribute{
         setSubscriptionAttributes(parameterMap, attributes);
     }
     return parameterMap;
 }
 
 isolated function addPublishOptionalParameters(map<string> parameterMap, string? topicArn = (), string? targetArn = (), string? subject = (), string? phoneNumber = (), string? messageStructure = (), string? messageDeduplicationId = (), string? messageGroupId = (), MessageAttribute? messageAttributes = ()) {
-    if (topicArn is string) {
+    if topicArn is string{
         parameterMap["TopicArn"] = topicArn.toString();
     }
-    if (targetArn is string) {
+    if targetArn is string{
         parameterMap["TargetArn"] = targetArn.toString();
     }
-    if (subject is string) {
+    if subject is string{
         parameterMap["Subject"] = subject.toString();
     }
-    if (phoneNumber is string) {
+    if phoneNumber is string{
         parameterMap["PhoneNumber"] = phoneNumber.toString();
     }
-    if (messageStructure is string) {
+    if messageStructure is string{
         parameterMap["MessageStructure"] = messageStructure.toString();
     }
-    if (messageDeduplicationId is string) {
+    if messageDeduplicationId is string{
         parameterMap["MessageDeduplicationId"] = messageDeduplicationId.toString();
     }
-    if (messageGroupId is string) {
+    if messageGroupId is string{
         parameterMap["MessageGroupId"] = messageGroupId.toString();
     }
-    if (messageAttributes is MessageAttribute) {
+    if messageAttributes is MessageAttribute{
         setMessageAttributes(parameterMap, messageAttributes);
     }
 }
@@ -88,7 +88,7 @@ isolated function addPublishOptionalParameters(map<string> parameterMap, string?
 isolated function addOptionalStringParameters(map<string> parameterMap, string?... optionalParameterValues) returns map<string>|error {
     int index = 0;
     foreach string? optionalParameterValue in optionalParameterValues {
-        if(optionalParameterValue is string) {
+        if optionalParameterValue is string{
             parameterMap[getAttributeName(optionalParameterValue)] = optionalParameterValue;            
         }
         index += 1;
@@ -97,7 +97,7 @@ isolated function addOptionalStringParameters(map<string> parameterMap, string?.
 }
 
 isolated function sendRequest(http:Client amazonSNSClient, http:Request|error request) returns xml|error {
-    if (request is http:Request) {
+    if request is http:Request{
         http:Response|error httpResponse = amazonSNSClient->post("/", request);
         return handleResponse(httpResponse);
     } else {
@@ -106,7 +106,7 @@ isolated function sendRequest(http:Client amazonSNSClient, http:Request|error re
 }
 
 isolated function validateCredentails(string accessKeyId, string secretAccessKey) returns error? {
-    if ((accessKeyId == EMPTY_STRING) || (secretAccessKey == EMPTY_STRING)) {
+    if (accessKeyId == EMPTY_STRING|| (secretAccessKey == EMPTY_STRING)) {
         return error("Access Key Id or Secret Access Key credential is empty");
     }
 }
@@ -156,7 +156,7 @@ isolated function handleResponse(http:Response|error httpResponse) returns xml|e
 #
 # + parameters - Parameter map
 # + attributes - TopicAttributes to convert to a map of string
-isolated function setTopicAttributes(map<string> parameters, TopicAttributes attributes) {
+isolated function setTopicAttributes(map<string> parameters, TopicAttribute attributes) {
     int attributeNumber = 1;
     map<anydata> attributeMap = <map<anydata>>attributes;
     foreach var [key, value] in attributeMap.entries() {

@@ -1,6 +1,6 @@
-// Copyright (c) 2021 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2023 WSO2 LLC. (http://www.wso2.org).
 //
-// WSO2 Inc. licenses this file to you under the Apache License,
+// WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License.
 // You may obtain a copy of the License at
@@ -64,7 +64,7 @@ public isolated client class Client {
     # + return - Created topic ARN on success else an `error`
     @display {label: "Create Topic"}
     isolated remote function createTopic(@display {label: "Topic Name"} string name, 
-                                         @display {label: "Topic Attributes"} TopicAttributes? attributes = (), 
+                                         @display {label: "Topic Attributes"} TopicAttribute? attributes = (), 
                                          @display {label: "Tags for Topic"} map<string>? tags = ()) 
                                          returns @display {label: "Created Topic ARN"} CreateTopicResponse|error {
         map<string> parameters = {};
@@ -229,7 +229,7 @@ public isolated client class Client {
     # + attributes - SMSAttributes record contain attribute information
     # + return - Null on success else an `error`
     @display {label: "Add SMS Attribute"} 
-    isolated remote function setSMSAttributes(@display {label: "SMS Attribute To Add"} SmsAttributes attributes) 
+    isolated remote function setSMSAttributes(@display {label: "SMS Attribute To Add"} SmsAttribute attributes) 
                                               returns @display {label: "SMS Attribute Status"} error? {
         map<string> parameters = {};
         parameters = buildQueryString("SetSMSAttributes", parameters);
@@ -247,7 +247,7 @@ public isolated client class Client {
     isolated remote function getSMSAttributes(string[]? attributes = ()) returns GetSMSAttributesResponse|error {
         map<string> parameters = {};
         parameters = buildQueryString("GetSMSAttributes", parameters);
-        if (attributes is string[]) {
+        if attributes is string[]{
             parameters = addSmsAttributes(parameters, attributes);
         }
         http:Request request = check self.generateRequest(self.createPayload(parameters));
@@ -272,11 +272,11 @@ public isolated client class Client {
         parameters[VERSION] = VERSION_NUMBER;
         parameters["SubscriptionArn"] = subscriptionArn;
         parameters["AttributeName"] = attributeName;
-        if (attributeValue is string) {
+        if attributeValue is string{
             parameters["AttributeValue"] = attributeValue;
         }
         parameters = buildQueryString("SetSubscriptionAttributes", parameters, subscriptionArn, attributeName);
-        parameters = check addOptionalStringParameters(parameters, attributeValue);        
+        parameters = check addOptionalStringParameters(parameters, attributeValue);
         http:Request request = check self.generateRequest(self.createPayload(parameters));
         http:Response|error httpResponse = self.amazonSNSClient->post("/", request);
         xml response = check handleResponse(httpResponse);
@@ -304,7 +304,7 @@ public isolated client class Client {
         string payload = EMPTY_STRING;
         int parameterNumber = 1;
         foreach var [key, value] in parameters.entries() {
-            if (parameterNumber > 1) {
+            if parameterNumber > 1{
                 payload = payload + "&";
             }
             payload = payload + key + "=" + value;
@@ -319,7 +319,7 @@ public isolated client class Client {
         [int, decimal] & readonly currentTime = time:utcNow();
         string|error xamzDate = utcToString(currentTime, "yyyyMMdd'T'HHmmss'Z'");
         string|error dateStamp = utcToString(currentTime, "yyyyMMdd");
-        if (xamzDate is string && dateStamp is string) {
+        if xamzDate is string && dateStamp is string{
             string contentType = "application/x-www-form-urlencoded";
             string requestParameters = payload;
             string canonicalQuerystring = EMPTY_STRING;
@@ -327,7 +327,7 @@ public isolated client class Client {
             string canonicalHeaders = EMPTY_STRING;
             string signedHeaders = EMPTY_STRING;
             //Create a canonical request for Signature Version 4
-            if (availableSecurityToken is string) {
+            if availableSecurityToken is string{
                 canonicalHeaders = "content-type:" + contentType + "\n" + "host:" + self.amazonHost + "\n" 
                 + "x-amz-date:" + xamzDate + "\n" + "x-amz-security-token" + availableSecurityToken + "\n";
                 signedHeaders = "content-type;host;x-amz-date;x-amz-security-token";

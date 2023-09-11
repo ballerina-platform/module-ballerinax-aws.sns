@@ -1,6 +1,6 @@
-// Copyright (c) 2021 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2023 WSO2 LLC. (http://www.wso2.org).
 //
-// WSO2 Inc. licenses this file to you under the Apache License,
+// WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License.
 // You may obtain a copy of the License at
@@ -59,14 +59,15 @@ public type AwsCredentials record {
     string secretAccessKey;
 };
 
-public type TopicAttribute record {
+public type TopicAttribute record {|
     string deliveryPolicy?;
     string displayName?;
     boolean fifoTopic?;
     boolean contentBasedDeduplication?;
     string kmsMasterKeyId?;
     string policy?;
-};
+    json...;
+|};
 
 public type CreateTopicResponse record {
     CreateTopicResult createTopicResult;
@@ -151,33 +152,15 @@ public type SubscriptionAttribute record {
     string subscriptionRoleArn?;
 };
 
-public type SmsAttribute record {
+public type SmsAttribute record {|
     string monthlySpendLimit?;
     string deliveryStatusIAMRole?;
     string deliveryStatusSuccessSamplingRate?;
     string defaultSenderID?;
     string defaultSMSType?;
     string usageReportS3Bucket?;
-};
-
-public type SmsAttributeArray record {
-    string key?;
-    string value?;
-};
-
-public type SmsAttributes record {
-    SmsAttributeArray[] smsAttribute?;
-};
-
-public type TopicAttributes record {
-    TopicAttributeArray[] topicAttribute?;
-};
-
-public type TopicAttributeArray record {
-    string key?;
-    string value?;
-};
-
+    json...;
+|};
 
 public type MessageAttribute record {
     string key?;
