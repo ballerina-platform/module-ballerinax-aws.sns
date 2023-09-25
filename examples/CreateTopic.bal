@@ -30,8 +30,8 @@ sns:ConnectionConfig config = {
 public function main() returns error? {
     sns:Client snsClient = check new (config);
 
-    sns:TopicAttribute attributes = {
-        displayName: "Test"
+    sns:TopicAttributes attributes = {
+        "displayName": "Test"
     };
     sns:CreateTopicResponse response = check snsClient->createTopic("testTopic", attributes);
     log:printInfo("Created topic arn: " + response.createTopicResult.topicArn.toString());

@@ -215,7 +215,7 @@ isolated function setMessageAttributes(map<string> parameters, MessageAttribute 
 # + parameters - Parameter map
 # + attributes - SmsAttribute to convert to a map of string
 # + return - If successful returns `map<string>` response. Else returns error
-isolated function setSmsAttributes(map<string> parameters, SmsAttribute attributes) returns map<string> {
+isolated function setSmsAttributes(map<string> parameters, SmsAttributes attributes) returns map<string> {
     int attributeNumber = 1;
     map<anydata> attributeMap = <map<anydata>>attributes;
     foreach var [key, value] in attributeMap.entries() {
