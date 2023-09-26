@@ -17,16 +17,16 @@ jobs:
         env: 
           BALLERINA_${{ github.event.inputs.bal_central_environment }}_CENTRAL: true
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - name: Ballerina Build
-              uses: ballerina-platform/ballerina-action/@2201.2.1
+              uses: ballerina-platform/ballerina-action/@2201.8.0
               with:
                   args:
                       pack ./sns
 
             - name: Push to Staging
               if: github.event.inputs.bal_central_environment == 'STAGE'
-              uses: ballerina-platform/ballerina-action/@2201.2.1
+              uses: ballerina-platform/ballerina-action/@2201.8.0
               with:
                   args:
                       push
@@ -36,7 +36,7 @@ jobs:
             
             - name: Push to Dev
               if: github.event.inputs.bal_central_environment == 'DEV'
-              uses: ballerina-platform/ballerina-action/@2201.2.1
+              uses: ballerina-platform/ballerina-action/@2201.8.0
               with:
                   args:
                       push
