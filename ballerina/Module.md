@@ -39,8 +39,8 @@ sns:Client snsClient = check new (config);
 1. You can create a topic in SNS as follows with `createTopic` method for a preferred topic name and the required set of attributes.
 
     ```ballerina
-    sns:TopicAttribute attributes = {
-        displayName : "Test"
+    sns:TopicAttributes attributes = {
+        "displayName" : "Test"
     };
     sns:CreateTopicResponse response = check amazonSNSClient->createTopic("testTopic", attributes);
     log:printInfo("Created topic: " + response.toString());

@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches-ignore:
-      - "automated/dependency_version_update"
-      - "automated/dependency_version_update_tmp"
+    branches:
+      - main
+      - 2201.[0-9]+.x
   repository_dispatch:
     types:
       check_connector_for_breaking_changes
@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Setup Ballerina Environment
       - name: Set Up Ballerina
