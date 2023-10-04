@@ -14,16 +14,20 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type GenerateRequestFailed distinct error;
+public type Error distinct error;
+public type GenerateRequestFailed distinct Error;
 
-public type OperationError distinct error;
+public type OperationError distinct Error;
 
-public type DataMappingError distinct error;
+public type DataMappingError distinct Error;
 
+public type FileReadFailed distinct Error;
 
-public type FileReadFailed distinct error;
-public type ResponseHandleFailed distinct error;
+public type ResponseHandleFailedError distinct Error;
 
+public type CalculateSignatureFailedError distinct Error;
+
+public type InternalError distinct Error;
 
 const string CONVERT_XML_TO_INBOUND_MESSAGES_FAILED_MSG = "Error while converting XML to Inbound Messages.";
 const string CONVERT_XML_TO_INBOUND_MESSAGE_FAILED_MSG = "Error while converting XML to an Inbound Message.";
