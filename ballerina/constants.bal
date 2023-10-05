@@ -22,3 +22,11 @@ const string VERSION = "Version";
 const string VERSION_NUMBER = "2010-03-31";
 const string OPERATION_ERROR = "Error has occurred during an operation";
 const string REQUEST_ERROR = "Error has occurred during request";
+
+const map<string> SPECIAL_TOPIC_ATTRIBUTES_MAP = {
+    "httpMessageDeliveryLogging": "HTTP",
+    "lambdaMessageDeliveryLogging": "Lambda",
+    "sqsMessageDeliveryLogging": "SQS",
+    "firehoseMessageDeliveryLogging": "Firehose",
+    "applicationMessageDeliveryLogging": "Application"
+};

@@ -19,7 +19,7 @@ import ballerina/time;
 import ballerina/regex;
 import ballerina/io;
    
-json validPolicy = {"Version": "2008-10-17", "Id": "__default_policy_ID", "Statement": [{"Sid": "__default_statement_ID", "Effect": "Allow", "Principal": {"AWS": "*"}, "Action": ["SNS:Publish", "SNS:RemovePermission", "SNS:SetTopicAttributes", "SNS:DeleteTopic", "SNS:ListSubscriptionsByTopic", "SNS:GetTopicAttributes", "SNS:AddPermission", "SNS:Subscribe"], "Resource": "", "Condition": {"StringEquals": {"AWS:SourceOwner": "482724125666"}}}, {"Sid": "__console_sub_0", "Effect": "Allow", "Principal": {"AWS": "*"}, "Action": ["SNS:Subscribe"], "Resource": ""}]};
+json validPolicy = {"Version": "2008-10-17", "Id": "__default_policy_ID", "Statement": [{"Sid": "__default_statement_ID", "Effect": "Allow", "Principal": {"AWS": "*"}, "Action": ["SNS:Publish", "SNS:RemovePermission", "SNS:SetTopicAttributes", "SNS:DeleteTopic", "SNS:ListSubscriptionsByTopic", "SNS:GetTopicAttributes", "SNS:AddPermission", "SNS:Subscribe"], "Resource": "", "Condition": {"StringEquals": {"AWS:SourceOwner": "482724125666"}}}, {"Sid": "__console_sub_0", "Effect": "Allow", "Principal": {"AWS": "*"}, "Action": "SNS:Subscribe", "Resource": ""}]};
 json invalidPolicy = {"Version": "2008-10-17", "Id": "__default_policy_ID", "Statement": [{"Sid": "__default_statement_ID", "Effect": "Allow", "Principal": {"AWS": "*"}, "Action": ["SNS:Publishx", "SNS:RemovePermission", "SNS:SetTopicAttributes", "SNS:DeleteTopic", "SNS:ListSubscriptionsByTopic", "SNS:GetTopicAttributes", "SNS:AddPermission", "SNS:Subscribe"], "Resource": "", "Condition": {"StringEquals": {"AWS:SourceOwner": "482724125666"}}}, {"Sid": "__console_sub_0", "Effect": "Allow", "Principal": {"AWS": "*"}, "Action": ["SNS:Subscribe"], "Resource": ""}]};
 
 record {} validDeliveryPolicy = {
@@ -81,7 +81,7 @@ function createTopicWithInvalidNameTest() returns error? {
 }
 
 @test:Config {
-    groups: ["topics"]
+    groups: ["topicsy"]
 }
 function createTopicWithAttributesTest() returns error? {
     InitializableTopicAttributes attributes = {
@@ -92,7 +92,32 @@ function createTopicWithAttributesTest() returns error? {
         policy: validPolicy,
         tracingConfig: ACTIVE,
         kmsMasterKeyId: "testxyz",
-        contentBasedDeduplication: false
+        contentBasedDeduplication: false,
+        httpMessageDeliveryLogging: {
+            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
+            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackSampleRate: 5
+        },
+        lambdaMessageDeliveryLogging: {
+            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
+            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackSampleRate: 5
+        },
+        firehoseMessageDeliveryLogging: {
+            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
+            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackSampleRate: 5
+        },
+        applicationMessageDeliveryLogging: {
+            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
+            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackSampleRate: 5
+        },
+        sqsMessageDeliveryLogging: {
+            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
+            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackSampleRate: 5
+        }
     };
 
     string topicArn = check amazonSNSClient->createTopic(testRunId + "TopicWithAttributes.fifo", attributes);
@@ -324,23 +349,73 @@ function getTopicAttributesTest2() returns error? {
 @test:Config {
     groups: ["topics"]
 }
-function setTopicAttributesTest() returns error? {
-    string topicArn = check amazonSNSClient->createTopic(testRunId + "SetTopicAttributes");
+function setTopicAttributesTest1() returns error? {
+    string topicArn = check amazonSNSClient->createTopic(testRunId + "SetTopicAttributes1", {
+        fifoTopic: true,
+        contentBasedDeduplication: true
+    });
     GettableTopicAttributes attributes = check amazonSNSClient->getTopicAttributes(topicArn);
-    test:assertEquals(attributes.toString(), "{\"topicArn\":\"" + topicArn + "\",\"displayName\":\"\",\"effectiveDeliveryPolicy\":{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false,\"defaultRequestPolicy\":{\"headerContentType\":\"text/plain; charset=UTF-8\"}}},\"owner\":\"482724125666\",\"policy\":\"{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\"],\"Resource\":\"" + topicArn + "\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"482724125666\"}}}]}\",\"subscriptionsConfirmed\":0,\"subscriptionsDeleted\":0,\"subscriptionsPending\":0}");
+    test:assertEquals(attributes.toString(), "{\"topicArn\":\"" + topicArn + "\",\"displayName\":\"\",\"effectiveDeliveryPolicy\":{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false,\"defaultRequestPolicy\":{\"headerContentType\":\"text/plain; charset=UTF-8\"}}},\"owner\":\"482724125666\",\"policy\":\"{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\"],\"Resource\":\"" + topicArn + "\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"482724125666\"}}}]}\",\"subscriptionsConfirmed\":0,\"subscriptionsDeleted\":0,\"subscriptionsPending\":0,\"fifoTopic\":true,\"contentBasedDeduplication\":true}");
 
-    SettableTopicAttributes updateAttributes = {
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, {contentBasedDeduplication: false});
+    attributes = check amazonSNSClient->getTopicAttributes(topicArn);
+    test:assertEquals(attributes.toString(),"{\"topicArn\":\"" + topicArn + "\",\"displayName\":\"\",\"effectiveDeliveryPolicy\":{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false,\"defaultRequestPolicy\":{\"headerContentType\":\"text/plain; charset=UTF-8\"}}},\"owner\":\"482724125666\",\"policy\":\"{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\"],\"Resource\":\"" + topicArn + "\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"482724125666\"}}}]}\",\"subscriptionsConfirmed\":0,\"subscriptionsDeleted\":0,\"subscriptionsPending\":0,\"fifoTopic\":true,\"contentBasedDeduplication\":false}");
+};
+
+@test:Config {
+    groups: ["topicsx"]
+}
+function setTopicAttributesTest2() returns error? {
+    string topicArn = check amazonSNSClient->createTopic(testRunId + "SetTopicAttributes2");
+
+    SettableTopicAttributes setAttributes = {
         deliveryPolicy: validDeliveryPolicy.toJson(),
         displayName: "Test4",
         signatureVersion: SignatureVersion1,
         policy: validPolicy,
         tracingConfig: ACTIVE,
-        kmsMasterKeyId: "testxyz"
+        kmsMasterKeyId: "testxyz",
+        httpMessageDeliveryLogging: {
+            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
+            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackSampleRate: 5
+        },
+        lambdaMessageDeliveryLogging: {
+            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
+            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackSampleRate: 5
+        },
+        firehoseMessageDeliveryLogging: {
+            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
+            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackSampleRate: 5
+        },
+        applicationMessageDeliveryLogging: {
+            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
+            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackSampleRate: 5
+        },
+        sqsMessageDeliveryLogging: {
+            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
+            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackSampleRate: 5
+        }
     };
-    _ = check amazonSNSClient->setTopicAttributes(topicArn, updateAttributes);
-    attributes = check amazonSNSClient->getTopicAttributes(topicArn);
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, setAttributes);
+    GettableTopicAttributes attributes = check amazonSNSClient->getTopicAttributes(topicArn);
     io:println(attributes);
-    test:assertEquals(attributes.toString(),"{\"topicArn\":\"" + topicArn + "\",\"deliveryPolicy\":\"{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":10,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":1,\"numNoDelayRetries\":1,\"numMinDelayRetries\":1,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":true,\"defaultRequestPolicy\":{\"headerContentType\":\"application/json\"}}}\",\"displayName\":\"Test4\",\"effectiveDeliveryPolicy\":{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":10,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":1,\"numNoDelayRetries\":1,\"numMinDelayRetries\":1,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":true,\"defaultRequestPolicy\":{\"headerContentType\":\"application/json\"}}},\"owner\":\"482724125666\",\"policy\":\"{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:Publish\",\"SNS:RemovePermission\",\"SNS:SetTopicAttributes\",\"SNS:DeleteTopic\",\"SNS:ListSubscriptionsByTopic\",\"SNS:GetTopicAttributes\",\"SNS:AddPermission\",\"SNS:Subscribe\"],\"Resource\":\"\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"482724125666\"}}},{\"Sid\":\"__console_sub_0\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":\"SNS:Subscribe\",\"Resource\":\"\"}]}\",\"signatureVersion\":\"1\",\"subscriptionsConfirmed\":0,\"subscriptionsDeleted\":0,\"subscriptionsPending\":0,\"tracingConfig\":\"Active\",\"kmsMasterKeyId\":\"testxyz\"}");
+    test:assertEquals(attributes.topicArn, topicArn);
+    test:assertEquals(attributes?.deliveryPolicy, setAttributes?.deliveryPolicy);
+    test:assertEquals(attributes.displayName, setAttributes.displayName);
+    test:assertEquals(attributes.signatureVersion, setAttributes.signatureVersion);
+    test:assertEquals(attributes.policy, setAttributes?.policy);
+    test:assertEquals(attributes.tracingConfig, setAttributes?.tracingConfig);
+    test:assertEquals(attributes.kmsMasterKeyId, setAttributes?.kmsMasterKeyId);
+    test:assertEquals(attributes.httpMessageDeliveryLogging, setAttributes?.httpMessageDeliveryLogging);
+    test:assertEquals(attributes.lambdaMessageDeliveryLogging, setAttributes?.lambdaMessageDeliveryLogging);
+    test:assertEquals(attributes.firehoseMessageDeliveryLogging, setAttributes?.firehoseMessageDeliveryLogging);
+    test:assertEquals(attributes.applicationMessageDeliveryLogging, setAttributes?.applicationMessageDeliveryLogging);
+    test:assertEquals(attributes.sqsMessageDeliveryLogging, setAttributes?.sqsMessageDeliveryLogging);
 }
 
 @test:Config {

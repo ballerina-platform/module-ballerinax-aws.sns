@@ -19,6 +19,7 @@ import ballerina/http;
 import ballerina/lang.array;
 import ballerina/time;
 import ballerinax/'client.config;
+import ballerina/io;
 import ballerina/url;
 
 # Ballerina Amazon SNS API connector provides the capability to access Amazon's Simple Notification Service.
@@ -79,7 +80,8 @@ public isolated client class Client {
                 parameters["Name"] = name + ".fifo";
             }
 
-            setAttributes(parameters, attributes);
+            record {} formattedTopicAttributes = check formatAttributes(attributes, SPECIAL_TOPIC_ATTRIBUTES_MAP);
+            setAttributes(parameters, formattedTopicAttributes);
         }
 
         if dataProtectionPolicy != () {
@@ -153,8 +155,9 @@ public isolated client class Client {
         map<string> parameters = initiateRequest("SetTopicAttributes");
         parameters["TopicArn"] = topicArn;
 
-        foreach [string, anydata] [key, value] in attributes.entries() {
-            parameters["AttributeName"] = uppercaseFirstLetter(key);
+        record {} formattedTopicAttributes = check formatAttributes(attributes, SPECIAL_TOPIC_ATTRIBUTES_MAP);
+        foreach [string, anydata] [key, value] in formattedTopicAttributes.entries() {
+            parameters["AttributeName"] = key;
             if value is record {} {
                 parameters["AttributeValue"] = value.toJsonString();
             } else {
@@ -575,6 +578,7 @@ public isolated client class Client {
             if requestParameters is url:Error {
                 return error GenerateRequestFailed(requestParameters.message(), requestParameters);
             }
+            io:println(requestParameters);
 
             string canonicalQuerystring = EMPTY_STRING;
             string? availableSecurityToken = self.securityToken;

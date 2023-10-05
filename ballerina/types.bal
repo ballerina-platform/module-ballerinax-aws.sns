@@ -150,6 +150,17 @@ public type InitializableTopicAttributes record {|
     TracingConfig tracingConfig?;
     string kmsMasterKeyId?;
     boolean contentBasedDeduplication?;
+    MessageDeliveryLoggingConfig httpMessageDeliveryLogging?;
+    MessageDeliveryLoggingConfig firehoseMessageDeliveryLogging?;
+    MessageDeliveryLoggingConfig lambdaMessageDeliveryLogging?;
+    MessageDeliveryLoggingConfig applicationMessageDeliveryLogging?;
+    MessageDeliveryLoggingConfig sqsMessageDeliveryLogging?;
+|};
+
+public type MessageDeliveryLoggingConfig record {|
+    string successFeedbackRoleArn?;
+    string failureFeedbackRoleArn?;
+    int successFeedbackSampleRate?;
 |};
 
 # Represents the attributes of an Amazon SNS topic.
@@ -166,12 +177,8 @@ public type InitializableTopicAttributes record {|
 # + contentBasedDeduplication - Enables content-based deduplication for FIFO topics. Applies only to FIFO topics
 // TODO: convert fifo to ENUM (Standard/FIFO)
 public type SettableTopicAttributes record {|
-    json deliveryPolicy?;
-    string displayName?;
-    json policy?;
-    SignatureVersion signatureVersion?;
-    TracingConfig tracingConfig?;
-    string kmsMasterKeyId?;
+    *InitializableTopicAttributes;
+    never fifoTopic?;
 |};
 
 
@@ -238,6 +245,12 @@ public type GettableTopicAttributes record {
     string kmsMasterKeyId?;
     boolean fifoTopic?;
     boolean contentBasedDeduplication?;
+    MessageDeliveryLoggingConfig httpMessageDeliveryLogging?;
+    MessageDeliveryLoggingConfig firehoseMessageDeliveryLogging?;
+    MessageDeliveryLoggingConfig lambdaMessageDeliveryLogging?;
+    MessageDeliveryLoggingConfig applicationMessageDeliveryLogging?;
+    MessageDeliveryLoggingConfig sqsMessageDeliveryLogging?;
+
 };
 
 # Represents a message that is published to an Amazon SNS topic. If you are publishing to a topic and you want to send
