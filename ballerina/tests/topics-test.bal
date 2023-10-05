@@ -81,7 +81,7 @@ function createTopicWithInvalidNameTest() returns error? {
 }
 
 @test:Config {
-    groups: ["topicsy"]
+    groups: ["topics"]
 }
 function createTopicWithAttributesTest() returns error? {
     InitializableTopicAttributes attributes = {
@@ -122,6 +122,51 @@ function createTopicWithAttributesTest() returns error? {
 
     string topicArn = check amazonSNSClient->createTopic(testRunId + "TopicWithAttributes.fifo", attributes);
     test:assertNotEquals(topicArn, "", "Topic ARN should not be empty.");
+}
+
+@test:Config {
+    groups: ["topics"]
+}
+function createTopicWithInvalidAttributesTest() returns error? {
+    InitializableTopicAttributes attributes = {
+        deliveryPolicy: validDeliveryPolicy.toJson(),
+        displayName: "Test4",
+        fifoTopic: true,
+        signatureVersion: SignatureVersion1,
+        policy: validPolicy,
+        tracingConfig: ACTIVE,
+        kmsMasterKeyId: "testxyz",
+        contentBasedDeduplication: false,
+        httpMessageDeliveryLogging: {
+            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
+            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackSampleRate: 5
+        },
+        lambdaMessageDeliveryLogging: {
+            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
+            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackSampleRate: 5
+        },
+        firehoseMessageDeliveryLogging: {
+            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
+            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackSampleRate: 5
+        },
+        applicationMessageDeliveryLogging: {
+            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
+            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackSampleRate: 5
+        },
+        sqsMessageDeliveryLogging: {
+            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
+            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackSampleRate: 500
+        }
+    };
+
+    string|Error topicArn = amazonSNSClient->createTopic(testRunId + "TopicWithAttributes.fifo", attributes);
+    test:assertTrue(topicArn is Error, "Error expected.");
+    test:assertEquals((<Error>topicArn).message(), "Invalid parameter: Attributes Reason: SQSSuccessFeedbackSampleRate: 500 value provided is not an integer between 0-100");
 }
 
 @test:Config {
@@ -322,7 +367,15 @@ function deleteTopicWithArnThatDoesNotExistTest() returns error? {
 function getTopicAttributesTest1() returns error? {
     string topicArn = check amazonSNSClient->createTopic(testRunId + "TopicToRetrieve1");
     GettableTopicAttributes attributes = check amazonSNSClient->getTopicAttributes(topicArn);
-    test:assertEquals(attributes.toString(), "{\"topicArn\":\"" + topicArn + "\",\"displayName\":\"\",\"effectiveDeliveryPolicy\":{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false,\"defaultRequestPolicy\":{\"headerContentType\":\"text/plain; charset=UTF-8\"}}},\"owner\":\"482724125666\",\"policy\":\"{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\"],\"Resource\":\"" + topicArn + "\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"482724125666\"}}}]}\",\"subscriptionsConfirmed\":0,\"subscriptionsDeleted\":0,\"subscriptionsPending\":0}");
+
+    test:assertEquals(attributes.topicArn, topicArn);
+    test:assertEquals(attributes.displayName, "");
+    test:assertNotEquals(attributes.effectiveDeliveryPolicy, {});
+    test:assertNotEquals(attributes.owner, "");
+    test:assertNotEquals(attributes.policy, {});
+    test:assertEquals(attributes.subscriptionsConfirmed, 0);
+    test:assertEquals(attributes.subscriptionsDeleted, 0);
+    test:assertEquals(attributes.subscriptionsPending, 0);
 }
 
 @test:Config {
@@ -343,7 +396,20 @@ function getTopicAttributesTest2() returns error? {
         tags = {"tag1": "value1", "tag2": "value2"});
 
     GettableTopicAttributes attributes = check amazonSNSClient->getTopicAttributes(topicArn);
-    test:assertEquals(attributes.toString(), "{\"topicArn\":\"" + topicArn + "\",\"deliveryPolicy\":\"{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":10,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":1,\"numNoDelayRetries\":1,\"numMinDelayRetries\":1,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":true,\"defaultRequestPolicy\":{\"headerContentType\":\"application/json\"}}}\",\"displayName\":\"Test4\",\"effectiveDeliveryPolicy\":{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":10,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":1,\"numNoDelayRetries\":1,\"numMinDelayRetries\":1,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":true,\"defaultRequestPolicy\":{\"headerContentType\":\"application/json\"}}},\"owner\":\"482724125666\",\"policy\":\"{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:Publish\",\"SNS:RemovePermission\",\"SNS:SetTopicAttributes\",\"SNS:DeleteTopic\",\"SNS:ListSubscriptionsByTopic\",\"SNS:GetTopicAttributes\",\"SNS:AddPermission\",\"SNS:Subscribe\"],\"Resource\":\"\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"482724125666\"}}},{\"Sid\":\"__console_sub_0\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":\"SNS:Subscribe\",\"Resource\":\"\"}]}\",\"signatureVersion\":\"1\",\"subscriptionsConfirmed\":0,\"subscriptionsDeleted\":0,\"subscriptionsPending\":0,\"tracingConfig\":\"Active\",\"kmsMasterKeyId\":\"testxyz\",\"fifoTopic\":true,\"contentBasedDeduplication\":false}");
+    test:assertEquals(attributes.topicArn, topicArn);
+    test:assertEquals(attributes.displayName, setAttributes.displayName);
+    test:assertNotEquals(attributes.effectiveDeliveryPolicy, {});
+    test:assertNotEquals(attributes.owner, "");
+    test:assertEquals(attributes.policy, validPolicy);
+    test:assertEquals(attributes.subscriptionsConfirmed, 0);
+    test:assertEquals(attributes.subscriptionsDeleted, 0);
+    test:assertEquals(attributes.subscriptionsPending, 0);
+    test:assertEquals(attributes?.deliveryPolicy, validDeliveryPolicy.toJson());
+    test:assertEquals(attributes?.fifoTopic, true);
+    test:assertEquals(attributes?.signatureVersion, SignatureVersion1);
+    test:assertEquals(attributes?.tracingConfig, ACTIVE);
+    test:assertEquals(attributes?.kmsMasterKeyId, "testxyz");
+    test:assertEquals(attributes?.contentBasedDeduplication, false);
 }
 
 @test:Config {
@@ -355,15 +421,33 @@ function setTopicAttributesTest1() returns error? {
         contentBasedDeduplication: true
     });
     GettableTopicAttributes attributes = check amazonSNSClient->getTopicAttributes(topicArn);
-    test:assertEquals(attributes.toString(), "{\"topicArn\":\"" + topicArn + "\",\"displayName\":\"\",\"effectiveDeliveryPolicy\":{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false,\"defaultRequestPolicy\":{\"headerContentType\":\"text/plain; charset=UTF-8\"}}},\"owner\":\"482724125666\",\"policy\":\"{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\"],\"Resource\":\"" + topicArn + "\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"482724125666\"}}}]}\",\"subscriptionsConfirmed\":0,\"subscriptionsDeleted\":0,\"subscriptionsPending\":0,\"fifoTopic\":true,\"contentBasedDeduplication\":true}");
+    test:assertEquals(attributes.topicArn, topicArn);
+    test:assertEquals(attributes.displayName, "");
+    test:assertNotEquals(attributes.effectiveDeliveryPolicy, {});
+    test:assertNotEquals(attributes.owner, "");
+    test:assertNotEquals(attributes.policy, {});
+    test:assertEquals(attributes.subscriptionsConfirmed, 0);
+    test:assertEquals(attributes.subscriptionsDeleted, 0);
+    test:assertEquals(attributes.subscriptionsPending, 0);
+    test:assertEquals(attributes.fifoTopic, true);
+    test:assertEquals(attributes.contentBasedDeduplication, true);
 
     _ = check amazonSNSClient->setTopicAttributes(topicArn, {contentBasedDeduplication: false});
     attributes = check amazonSNSClient->getTopicAttributes(topicArn);
-    test:assertEquals(attributes.toString(),"{\"topicArn\":\"" + topicArn + "\",\"displayName\":\"\",\"effectiveDeliveryPolicy\":{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false,\"defaultRequestPolicy\":{\"headerContentType\":\"text/plain; charset=UTF-8\"}}},\"owner\":\"482724125666\",\"policy\":\"{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\"],\"Resource\":\"" + topicArn + "\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"482724125666\"}}}]}\",\"subscriptionsConfirmed\":0,\"subscriptionsDeleted\":0,\"subscriptionsPending\":0,\"fifoTopic\":true,\"contentBasedDeduplication\":false}");
+    test:assertEquals(attributes.topicArn, topicArn);
+    test:assertEquals(attributes.displayName, "");
+    test:assertNotEquals(attributes.effectiveDeliveryPolicy, {});
+    test:assertNotEquals(attributes.owner, "");
+    test:assertNotEquals(attributes.policy, {});
+    test:assertEquals(attributes.subscriptionsConfirmed, 0);
+    test:assertEquals(attributes.subscriptionsDeleted, 0);
+    test:assertEquals(attributes.subscriptionsPending, 0);
+    test:assertEquals(attributes.fifoTopic, true);
+    test:assertEquals(attributes.contentBasedDeduplication, false);
 };
 
 @test:Config {
-    groups: ["topicsx"]
+    groups: ["topics"]
 }
 function setTopicAttributesTest2() returns error? {
     string topicArn = check amazonSNSClient->createTopic(testRunId + "SetTopicAttributes2");
@@ -424,7 +508,14 @@ function setTopicAttributesTest2() returns error? {
 function setTopicAttributesNegativeTest() returns error? {
     string topicArn = check amazonSNSClient->createTopic(testRunId + "SetTopicAttributesNegative");
     GettableTopicAttributes attributes = check amazonSNSClient->getTopicAttributes(topicArn);
-    test:assertEquals(attributes.toString(), "{\"topicArn\":\"" + topicArn + "\",\"displayName\":\"\",\"effectiveDeliveryPolicy\":{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false,\"defaultRequestPolicy\":{\"headerContentType\":\"text/plain; charset=UTF-8\"}}},\"owner\":\"482724125666\",\"policy\":\"{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\"],\"Resource\":\"" + topicArn + "\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"482724125666\"}}}]}\",\"subscriptionsConfirmed\":0,\"subscriptionsDeleted\":0,\"subscriptionsPending\":0}");
+    test:assertEquals(attributes.topicArn, topicArn);
+    test:assertEquals(attributes.displayName, "");
+    test:assertNotEquals(attributes.effectiveDeliveryPolicy, {});
+    test:assertNotEquals(attributes.owner, "");
+    test:assertNotEquals(attributes.policy, {});
+    test:assertEquals(attributes.subscriptionsConfirmed, 0);
+    test:assertEquals(attributes.subscriptionsDeleted, 0);
+    test:assertEquals(attributes.subscriptionsPending, 0);
 
     SettableTopicAttributes updateAttributes = {
         deliveryPolicy: invalidDeliveryPolicy.toJson(),

@@ -46,7 +46,7 @@ isolated function mapJsonToGettableTopicAttributes(json jsonResponse) returns Ge
         subscriptionsPending: 0,
         subscriptionsConfirmed: 0,
         subscriptionsDeleted: 0,
-        policy: ""
+        policy: {}
     };
 
     foreach [string, anydata] [key, value] in response.entries() {
