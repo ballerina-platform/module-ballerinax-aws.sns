@@ -140,6 +140,13 @@ public enum RouteType {
 # + tracingConfig - Tracing mode of an Amazon SNS topic
 # + kmsMasterKeyId - The ID of an AWS-managed customer master key (CMK) for Amazon SNS or a custom CMK
 # + contentBasedDeduplication - Enables content-based deduplication for FIFO topics. Applies only to FIFO topics
+# + httpMessageDeliveryLogging - The configurations for message delivery logging for the HTTP delivery protocol
+# + firehoseMessageDeliveryLogging - The configurations for message delivery logging for the Amazon Kinesis Data
+#                                    Firehose delivery stream delivery protocol
+# + lambdaMessageDeliveryLogging - The configurations for message delivery logging for the Lambda delivery protocol
+# + applicationMessageDeliveryLogging - The configurations for message delivery logging for the application delivery
+# + sqsMessageDeliveryLogging - The configurations for message delivery logging for the Amazon SQS delivery protocol
+
 // TODO: convert fifo to ENUM (Standard/FIFO)
 public type InitializableTopicAttributes record {|
     json deliveryPolicy?;
@@ -165,17 +172,7 @@ public type MessageDeliveryLoggingConfig record {|
 
 # Represents the attributes of an Amazon SNS topic.
 #
-# + deliveryPolicy - The policy that defines how Amazon SNS retries failed deliveries to HTTP/S endpoints
-# + displayName - The display name to use for a topic with SMS subscriptions
-# + fifoTopic - Set to true to create a FIFO topic
-# + policy - The policy that defines who can access your topic
-# + signatureVersion - The signature version corresponds to the hashing algorithm used while creating the signature 
-#                      of the notifications, subscription confirmations, or unsubscribe confirmation messages sent by
-#                      Amazon SNS
-# + tracingConfig - Tracing mode of an Amazon SNS topic
-# + kmsMasterKeyId - The ID of an AWS-managed customer master key (CMK) for Amazon SNS or a custom CMK
-# + contentBasedDeduplication - Enables content-based deduplication for FIFO topics. Applies only to FIFO topics
-// TODO: convert fifo to ENUM (Standard/FIFO)
+# + fifoTopic - not settable
 public type SettableTopicAttributes record {|
     *InitializableTopicAttributes;
     never fifoTopic?;
@@ -216,41 +213,22 @@ public type SettableTopicAttributes record {|
 # Represents an Amazon SNS topic.
 #
 # + topicArn - The topic's ARN
-# + deliveryPolicy - The policy that defines how Amazon SNS retries failed deliveries to HTTP/S endpoints
-# + displayName - The human-readable name used in the From field for notifications to email and email-json endpoints
 # + effectiveDeliveryPolicy - The policy that defines how Amazon SNS retries failed deliveries to HTTP/S endpoints,
 #                             taking system defaults into account.
 # + owner - The AWS account ID of the topic's owner
 # + policy - The policy that defines who can access your topic
-# + signatureVersion - The signature version corresponds to the hashing algorithm used while creating the signature
 # + subscriptionsConfirmed - The number of confirmed subscriptions for the topic
 # + subscriptionsDeleted - The number of deleted subscriptions for the topic
 # + subscriptionsPending - The number of subscriptions pending confirmation for the topic
-# + tracingConfig - The tracing mode of an Amazon SNS topic
-# + kmsMasterKeyId - The ID of an AWS-managed customer master key (CMK) for Amazon SNS or a custom CMK
-# + fifoTopic - Whether the topic is an Amazon SNS FIFO (first-in first-out) topic
-# + contentBasedDeduplication - Whether content-based deduplication is enabled for the topic.
 public type GettableTopicAttributes record {
+    *InitializableTopicAttributes;
     string topicArn;
-    json deliveryPolicy?;
-    string displayName;
     json effectiveDeliveryPolicy;
     string owner;
     json policy;
-    SignatureVersion signatureVersion?;
     int subscriptionsConfirmed;
     int subscriptionsDeleted;
     int subscriptionsPending;
-    TracingConfig tracingConfig?;
-    string kmsMasterKeyId?;
-    boolean fifoTopic?;
-    boolean contentBasedDeduplication?;
-    MessageDeliveryLoggingConfig httpMessageDeliveryLogging?;
-    MessageDeliveryLoggingConfig firehoseMessageDeliveryLogging?;
-    MessageDeliveryLoggingConfig lambdaMessageDeliveryLogging?;
-    MessageDeliveryLoggingConfig applicationMessageDeliveryLogging?;
-    MessageDeliveryLoggingConfig sqsMessageDeliveryLogging?;
-
 };
 
 # Represents a message that is published to an Amazon SNS topic. If you are publishing to a topic and you want to send
@@ -259,30 +237,58 @@ public type GettableTopicAttributes record {
 public type Message string|MessageRecord;
 
 # Contains the messages to be published for each transport protocol.
+# 
+# + default - The default message that's used for all transport protocols if no individual message is specified
+# + subject - Optional parameter to be used as the "Subject" line when the message is delivered to email endpoints
+# + email - The message to be sent to email endpoints
+# + emailJson - The message to be sent to email endpoints formatted as a JSON object
+# + sqs - The message to be sent to Amazon SQS endpoints
+# + lambda - The message to be sent to AWS Lambda (Lambda) endpoints
+# + http - The message to be sent to HTTP endpoints
+# + https - The message to be sent to HTTPS endpoints
+# + sms - The message to be sent to SMS endpoints
+# + firehose - The message to be sent to Amazon Kinesis Data Firehose endpoints
+# + apns - The payload to be sent to APNS endpoints
+# + apnsSandbox - The payload to be sent to APNS sandbox endpoints
+# + apnsVoip - The payload to be sent to APNS VoIP endpoints
+# + apnsVoipSandbox - The payload to be sent to APNS VoIP sandbox endpoints
+# + macos - The payload to be sent to MacOS endpoints
+# + macosSandbox - The payload to be sent to MacOS sandbox endpoints
+# + gcm - The payload to be sent to GCM endpoints
+# + adm - The payload to be sent to ADM endpoints
+# + baidu - The payload to be sent to Baidu endpoints
+# + mpns - The payload to be sent to MPNS endpoints
+# + wns - The payload to be sent to WNS endpoints
 public type MessageRecord record {|
-    string default?;
+    string default;
+    string subject?;
     string email?;
+    string emailJson?;
     string sqs?;
     string lambda?;
     string http?;
     string https?;
     string sms?;
     string firehose?;
-    json apns?;
-    json apns_sandbox?;
-    json apns_voip?;
-    json apns_voip_sandbox?;
-    json macos?;
-    json macos_sanbox?;
-    json gcm?;
-    json adm?;
-    json baidu?;
-    json mpns?;
-    json wns?;
+    string apns?;
+    string apnsSandbox?;
+    string apnsVoip?;
+    string apnsVoipSandbox?;
+    string macos?;
+    string macosSandbox?;
+    string gcm?;
+    string adm?;
+    string baidu?;
+    string mpns?;
+    string wns?;
+    string...;
 |};
 
 # Represents an attribute value of a message.
-public type MessageAttributeValue string|string[]|int|float|decimal|byte[];
+public type MessageAttributeValue string|StringArrayElement[]|int|float|decimal|byte[];
+
+# Represents an element of the String.Array type of a message attribute value.
+public type StringArrayElement string|int|float|decimal|boolean|();
 
 # Represents the details of a single message in a publish batch request.
 public type PublishBatchRequestEntry record {|

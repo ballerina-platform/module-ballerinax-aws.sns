@@ -21,3 +21,10 @@ isolated function validateInitializableTopicAttributes(InitializableTopicAttribu
         return <Error>error("If content-based deduplication is enabled, it must also be a FIFO topic.");
     }
 }
+
+isolated function validatePublishParameters(string topicArn, TargetType targetType, string? groupId) returns Error? {
+    // If the topic is a FIFO topic, then a group ID must be provided
+    if (targetType is TOPIC && topicArn.endsWith(".fifo") && groupId == ()) {
+        return <Error>error("A message published to a FIFO topic requires a group ID.");
+    }
+}

@@ -15,8 +15,6 @@
 // under the License.
 
 import ballerina/test;
-import ballerina/time;
-import ballerina/regex;
 import ballerina/io;
    
 json validPolicy = {"Version": "2008-10-17", "Id": "__default_policy_ID", "Statement": [{"Sid": "__default_statement_ID", "Effect": "Allow", "Principal": {"AWS": "*"}, "Action": ["SNS:Publish", "SNS:RemovePermission", "SNS:SetTopicAttributes", "SNS:DeleteTopic", "SNS:ListSubscriptionsByTopic", "SNS:GetTopicAttributes", "SNS:AddPermission", "SNS:Subscribe"], "Resource": "", "Condition": {"StringEquals": {"AWS:SourceOwner": "482724125666"}}}, {"Sid": "__console_sub_0", "Effect": "Allow", "Principal": {"AWS": "*"}, "Action": "SNS:Subscribe", "Resource": ""}]};
@@ -60,8 +58,6 @@ record {} invalidDeliveryPolicy = {
 
 json validDataProtectionPolicy = {"Name": "basicPII-protection", "Description": "Protect basic types of sensitive data", "Version": "2021-06-01", "Statement": [{"Sid": "basicPII-inbound-protection", "DataDirection": "Inbound", "Principal": ["*"], "DataIdentifier": ["arn:aws:dataprotection::aws:data-identifier/Name", "arn:aws:dataprotection::aws:data-identifier/PhoneNumber-US"], "Operation": {"Deny": {}}}]};
 json invalidDataProtectionPolicy = {"Name": "basicPII-protection", "Description": "Protect basic types of sensitive data", "Version": "2021-06-01", "Statement": [{"Sid": "basicPII-inbound-protection", "DataDirection": "Inbxound", "Principal": ["*"], "DataIdentifier": ["arn:aws:dataprotection::aws:data-identifier/Name", "arn:aws:dataprotection::aws:data-identifier/PhoneNumber-US"], "Operation": {"Deny": {}}}]};
-
-string testRunId = regex:replaceAll(time:utcToString(time:utcNow()), "[:.]", "");
 
 @test:Config {
     groups: ["topics"]

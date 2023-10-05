@@ -171,30 +171,82 @@ public isolated client class Client {
 
     # Publishes a message to an SNS topic, a phone number, or a mobile platform endpoint.
     # 
-    # + target - The target (topic ARN, target ARN or phone number) to which to publish to message to
+    # + target - The target (topic ARN, target ARN or phone number) to which to publish the message to
     # + message - The message to publish. If you are publishing to a topic and you want to send the same message to all
     #             transport protocols, include the text of the message as a `string` value. If you want to send 
     #             different messages for each transport protocol, use a `MessageRecord` value
-    # + publishTarget - The type of target (topic, phone number, or mobile platform endpoint) to publish the message to
+    # + targetType - The type of target (topic, phone number, or application endpoint) to publish the message to
     # + attributes - Attributes of the message
-    # + deduplicationId - Every message must have a unique `deduplicationId``, which is a token used for deduplication of 
-    #                     sent messages. If a message with a particular `deduplicationId` is sent successfully, any 
-    #                     message sent with the same `deduplicationId`` during the 5-minute deduplication interval is 
-    #                     treated as a duplicate. If the topic has `contentBasedDeduplication`` set, the system 
+    # + deduplicationId - Every message must have a unique `deduplicationId`, which is a token used for deduplication 
+    #                     of sent messages. If a message with a particular `deduplicationId` is sent successfully, any 
+    #                     message sent with the same `deduplicationId` during the 5-minute deduplication interval is 
+    #                     treated as a duplicate. If the topic has `contentBasedDeduplication` set, the system 
     #                     generates a `deduplicationId` based on the contents of the message. Your `deduplicationId`
     #                     overrides the generated one. Applies to FIFO topics only
     # + groupId - Specifies the message group to which a message belongs to. Messages that belong to the same message 
     #             group are processed in a FIFO manner (however, messages in different message groups might be processed
     #             out of order). Every message must include a `groupId`. Applies to FIFO topics only
-    # + subject - Used as the "Subject" line when the message is delivered to email endpoints. This will also be
-    #             included, in the standard messages delivered to other endpoints
     # + return - `PublishMessageResponse` or `sns:Error` in case of failure
-    // TODO: can we move subject into Message?
-    // TODO: can we use soemthing like spread operator
-    isolated remote function publish(string target, Message message, TargetType publishTarget = TOPIC, 
-    map<MessageAttributeValue>? attributes = (), string? deduplicationId = (), string? groupId = (), 
-        string? subject = ()) returns PublishMessageResponse|Error {
-        return <Error>error ("Not implemented");
+    // TODO: can we move subject into Message? - DONE
+    // TODO: can we use soemthing like spread operator - unsure
+    isolated remote function publish(string target, Message message, TargetType targetType = TOPIC, 
+    map<MessageAttributeValue>? attributes = (), string? deduplicationId = (), string? groupId = ())
+        returns PublishMessageResponse|Error {
+        _ = check validatePublishParameters(target, targetType, groupId);
+        map<string> parameters = initiateRequest("Publish");
+
+        if (targetType == TOPIC) {
+            parameters["TopicArn"] = target;
+        } else if (targetType == ARN) {
+            parameters["TargetArn"] = target;
+        } else {
+            parameters["PhoneNumber"] = target;
+        }
+        
+        if message is string {
+            parameters["Message"] = <string>message;
+        } else {
+            parameters["MessageStructure"] = "json";
+
+            if message.hasKey("subject") {
+                parameters["Subject"] = message["subject"].toString();
+                _ = message.remove("subject");
+            }
+
+            parameters["Message"] = mapMessageRecordToJson(message).toJsonString();
+            io:println(mapMessageRecordToJson(message));
+        }
+
+        if (deduplicationId is string) {
+            parameters["MessageDeduplicationId"] = deduplicationId;
+        }
+
+        if (groupId is string) {
+            parameters["MessageGroupId"] = groupId;
+        }
+
+        if (attributes is map<MessageAttributeValue>) {
+            setMessageAttributes(parameters, attributes);
+        }
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+
+        do {
+            PublishMessageResponse publishMessageResponse = {
+                messageId: (check response.PublishResponse.PublishResult.MessageId).toString()
+            };
+
+            json|error sequenceNumber = response.PublishResponse.PublishResult.SequenceNumber;
+            if sequenceNumber is json && sequenceNumber.toString() != "" {
+                publishMessageResponse.sequenceNumber = sequenceNumber.toString();
+            }
+
+            return publishMessageResponse;
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
+
     };
 
     # Publishes up to ten messages to the specified topic.

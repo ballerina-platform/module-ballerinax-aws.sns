@@ -1,6 +1,3 @@
-import ballerina/lang.'int as langint;
-import ballerina/lang.'boolean as langboolean;
-
 isolated function setAttributes(map<string> parameters, map<anydata> attributes) {
     int attributeNumber = 1;
     foreach [string, anydata] [key, value] in attributes.entries() {
@@ -22,6 +19,29 @@ isolated function setTags(map<string> parameters, map<string> tags) {
         parameters["Tags.member." + tagNumber.toString() + ".Key"] = key;
         parameters["Tags.member." + tagNumber.toString() + ".Value"] = value;
         tagNumber = tagNumber + 1;
+    }
+}
+
+isolated function setMessageAttributes(map<string> parameters, map<MessageAttributeValue> attributes) {
+    int attributeNumber = 1;
+    foreach [string, MessageAttributeValue] [key, value] in attributes.entries() {
+        parameters["MessageAttributes.entry." + attributeNumber.toString() + ".Name"] = key;
+
+        if value is int|float|decimal {
+            parameters["MessageAttributes.entry." + attributeNumber.toString() + ".DataType"] = "String";
+            parameters["MessageAttributes.entry." + attributeNumber.toString() + ".StringValue"] = value.toString();
+        } else if value is byte[] {
+            parameters["MessageAttributes.entry." + attributeNumber.toString() + ".DataType"] = "Binary";
+            parameters["MessageAttributes.entry." + attributeNumber.toString() + ".BinaryValue"] = value.toString();
+        } else if value is StringArrayElement[] {
+            parameters["MessageAttributes.entry." + attributeNumber.toString() + ".DataType"] = "String.Array";
+            parameters["MessageAttributes.entry." + attributeNumber.toString() + ".StringValue"] = value.toString();
+        } else {
+            parameters["MessageAttributes.entry." + attributeNumber.toString() + ".DataType"] = "String";
+            parameters["MessageAttributes.entry." + attributeNumber.toString() + ".StringValue"] = value.toString();
+        }
+
+        attributeNumber = attributeNumber + 1;
     }
 }
 
@@ -56,9 +76,9 @@ isolated function mapJsonToGettableTopicAttributes(json jsonResponse) returns Ge
 
         anydata val = value;
         if intFields.indexOf(key) is int {
-            val = check langint:fromString(value.toString());
+            val = check stringToInt(value.toString());
         } else if booleanFields.indexOf(key) is int {
-            val = check langboolean:fromString(value.toString());
+            val = check stringToBoolean(value.toString());
         } else if jsonFields.indexOf(key) is int {
             val = check value.toString().fromJsonString();
         }
@@ -104,7 +124,7 @@ isolated function addMessageDeliveryLoggingFieldsToTopicAttributes(GettableTopic
         }
         if response.hasKey("HTTPSuccessFeedbackSampleRate") {
             httpMessageDeliveryLogging.successFeedbackSampleRate =
-                check langint:fromString(response["HTTPSuccessFeedbackSampleRate"].toString());
+                check stringToInt(response["HTTPSuccessFeedbackSampleRate"].toString());
         }
         topicAttributes.httpMessageDeliveryLogging = httpMessageDeliveryLogging;
     }
@@ -122,7 +142,7 @@ isolated function addMessageDeliveryLoggingFieldsToTopicAttributes(GettableTopic
         }
         if response.hasKey("FirehoseSuccessFeedbackSampleRate") {
             firehoseMessageDeliveryLogging.successFeedbackSampleRate =
-                check langint:fromString(response["FirehoseSuccessFeedbackSampleRate"].toString());
+                check stringToInt(response["FirehoseSuccessFeedbackSampleRate"].toString());
         }
         topicAttributes.firehoseMessageDeliveryLogging = firehoseMessageDeliveryLogging;
     }
@@ -138,7 +158,7 @@ isolated function addMessageDeliveryLoggingFieldsToTopicAttributes(GettableTopic
         }
         if response.hasKey("LambdaSuccessFeedbackSampleRate") {
             lambdaMessageDeliveryLogging.successFeedbackSampleRate =
-                check langint:fromString(response["LambdaSuccessFeedbackSampleRate"].toString());
+                check stringToInt(response["LambdaSuccessFeedbackSampleRate"].toString());
         }
         topicAttributes.lambdaMessageDeliveryLogging = lambdaMessageDeliveryLogging;
     }
@@ -154,7 +174,7 @@ isolated function addMessageDeliveryLoggingFieldsToTopicAttributes(GettableTopic
         }
         if response.hasKey("SQSSuccessFeedbackSampleRate") {
             sqsMessageDeliveryLogging.successFeedbackSampleRate =
-                check langint:fromString(response["SQSSuccessFeedbackSampleRate"].toString());
+                check stringToInt(response["SQSSuccessFeedbackSampleRate"].toString());
         }
         topicAttributes.sqsMessageDeliveryLogging = sqsMessageDeliveryLogging;
     }
@@ -172,9 +192,20 @@ isolated function addMessageDeliveryLoggingFieldsToTopicAttributes(GettableTopic
         }
         if response.hasKey("ApplicationSuccessFeedbackSampleRate") {
             applicationMessageDeliveryLogging.successFeedbackSampleRate =
-                check langint:fromString(response["ApplicationSuccessFeedbackSampleRate"].toString());
+                check stringToInt(response["ApplicationSuccessFeedbackSampleRate"].toString());
         }
         topicAttributes.applicationMessageDeliveryLogging = applicationMessageDeliveryLogging;
     }
+}
 
+isolated function mapMessageRecordToJson(record {} message) returns json {
+    record {} mappedMessage = {};
+    foreach string key in message.keys() {
+        if MESSAGE_RECORD_MAP.hasKey(key) {
+            mappedMessage[MESSAGE_RECORD_MAP.get(key)] = message[key].toString();
+        } else {
+            mappedMessage[key] = message[key].toString();
+        }
+    }
+    return mappedMessage.toJson();
 }

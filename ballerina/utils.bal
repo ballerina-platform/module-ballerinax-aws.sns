@@ -17,6 +17,8 @@
 import ballerina/time;
 import ballerina/jballerina.java;
 import ballerina/http;
+import ballerina/lang.'int as langint;
+import ballerina/lang.'boolean as langboolean;
 
 isolated function sendRequest(http:Client amazonSNSClient, http:Request request) returns json|Error {
     do {
@@ -96,4 +98,12 @@ isolated function lowercaseFirstLetter(string str) returns string {
     string firstLetter = str.substring(0, 1);
     string remainingLetters = str.substring(1);
     return firstLetter.toLowerAscii() + remainingLetters;
+}
+
+isolated function stringToInt(string str) returns int|error {
+    return check langint:fromString(str.toString());
+}
+
+isolated function stringToBoolean(string str) returns boolean|error {
+    return check langboolean:fromString(str.toString());
 }

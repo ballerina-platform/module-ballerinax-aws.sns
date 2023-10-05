@@ -6,7 +6,7 @@ public type ListTopicsResponse record {|
 
 public type PublishMessageResponse record {|
     string messageId;
-    int? sequenceNumber;
+    string sequenceNumber?;
 |};
 
 public type PublishBatchResponse record {|

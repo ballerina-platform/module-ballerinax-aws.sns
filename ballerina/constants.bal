@@ -30,3 +30,18 @@ const map<string> SPECIAL_TOPIC_ATTRIBUTES_MAP = {
     "firehoseMessageDeliveryLogging": "Firehose",
     "applicationMessageDeliveryLogging": "Application"
 };
+
+const map<string> MESSAGE_RECORD_MAP = {
+    "emailJson": "email-json",
+    "apns": "APNS",
+    "apnsSandbox": "APNS_SANDBOX",
+    "apnsVoip": "APNS_VOIP",
+    "apnsVoipSandbox": "APNS_VOIP_SANDBOX",
+    "macos": "MACOS",
+    "macosSandbox": "MACOS_SANDBOX",
+    "gcm": "GCM",
+    "adm": "ADM",
+    "baidu": "BAIDU",
+    "mpns": "MPNS",
+    "wns": "WNS"
+};
