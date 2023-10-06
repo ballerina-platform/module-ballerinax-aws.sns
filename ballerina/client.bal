@@ -226,7 +226,7 @@ public isolated client class Client {
         }
 
         if (attributes is map<MessageAttributeValue>) {
-            setMessageAttributes(parameters, attributes);
+            check setMessageAttributes(parameters, attributes);
         }
 
         http:Request request = check self.generateRequest(parameters);

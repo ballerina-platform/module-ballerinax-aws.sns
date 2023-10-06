@@ -119,7 +119,7 @@ function publishToInvalidApplication() returns error? {
 }
 
 @test:Config {
-    groups: ["publishx"]
+    groups: ["publish"]
 }
 function publishWithComplexPayload() returns error? {
     Message message = {
@@ -146,5 +146,21 @@ function publishWithComplexPayload() returns error? {
         wns: {title: "WNS", body: "WNS Body"}.toString()
     };
     PublishMessageResponse response = check amazonSNSClient->publish(temp, message);
+    test:assertTrue(response.messageId != "", "MessageID is empty.");
+}
+
+@test:Config {
+    groups: ["publish"]
+}
+function publishWithAttributesTest() returns error? {
+    map<MessageAttributeValue> attributes = {
+        "StringAttribute": "StringAttributeValue",
+        "IntAttribute": 123,
+        "FloatAttribute": 123.45,
+        "BinaryAttribute": "BinaryAttributeValue".toBytes(),
+        "StringArrayAttribute": ["StringListAttributeValue1", "StringListAttributeValue2", true, false, (), 123, 123.45]
+    };
+    PublishMessageResponse response = check amazonSNSClient->publish(standardTopic, "Test Message", 
+        attributes = attributes);
     test:assertTrue(response.messageId != "", "MessageID is empty.");
 }

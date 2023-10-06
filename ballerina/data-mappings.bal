@@ -1,3 +1,5 @@
+import ballerina/mime;
+
 isolated function setAttributes(map<string> parameters, map<anydata> attributes) {
     int attributeNumber = 1;
     foreach [string, anydata] [key, value] in attributes.entries() {
@@ -22,26 +24,31 @@ isolated function setTags(map<string> parameters, map<string> tags) {
     }
 }
 
-isolated function setMessageAttributes(map<string> parameters, map<MessageAttributeValue> attributes) {
-    int attributeNumber = 1;
+isolated function setMessageAttributes(map<string> parameters, map<MessageAttributeValue> attributes) returns Error? {
+    int i = 1;
     foreach [string, MessageAttributeValue] [key, value] in attributes.entries() {
-        parameters["MessageAttributes.entry." + attributeNumber.toString() + ".Name"] = key;
+        parameters["MessageAttributes.entry." + i.toString() + ".Name"] = key;
 
         if value is int|float|decimal {
-            parameters["MessageAttributes.entry." + attributeNumber.toString() + ".DataType"] = "String";
-            parameters["MessageAttributes.entry." + attributeNumber.toString() + ".StringValue"] = value.toString();
+            parameters["MessageAttributes.entry." + i.toString() + ".Value.DataType"] = "Number";
+            parameters["MessageAttributes.entry." + i.toString() + ".Value.StringValue"] = value.toString();
         } else if value is byte[] {
-            parameters["MessageAttributes.entry." + attributeNumber.toString() + ".DataType"] = "Binary";
-            parameters["MessageAttributes.entry." + attributeNumber.toString() + ".BinaryValue"] = value.toString();
+            parameters["MessageAttributes.entry." + i.toString() + ".Value.DataType"] = "Binary";
+            do {
+                parameters["MessageAttributes.entry." + i.toString() + ".Value.BinaryValue"] = 
+                    (check mime:base64Encode(value)).toString();
+            } on fail error e {
+                return error GenerateRequestFailed(e.message(), e);
+            }
         } else if value is StringArrayElement[] {
-            parameters["MessageAttributes.entry." + attributeNumber.toString() + ".DataType"] = "String.Array";
-            parameters["MessageAttributes.entry." + attributeNumber.toString() + ".StringValue"] = value.toString();
+            parameters["MessageAttributes.entry." + i.toString() + ".Value.DataType"] = "String.Array";
+            parameters["MessageAttributes.entry." + i.toString() + ".Value.StringValue"] = value.toString();
         } else {
-            parameters["MessageAttributes.entry." + attributeNumber.toString() + ".DataType"] = "String";
-            parameters["MessageAttributes.entry." + attributeNumber.toString() + ".StringValue"] = value.toString();
+            parameters["MessageAttributes.entry." + i.toString() + ".Value.DataType"] = "String";
+            parameters["MessageAttributes.entry." + i.toString() + ".Value.StringValue"] = value.toString();
         }
 
-        attributeNumber = attributeNumber + 1;
+        i = i + 1;
     }
 }
 
