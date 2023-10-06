@@ -237,7 +237,7 @@ function publishBatchToFifoTestNegative() returns error? {
 }
 
 @test:Config {
-    groups: ["publish", "batchx"]
+    groups: ["publish", "batch"]
 }
 function publishBatchWithComplexPayload() returns error? {
     PublishBatchRequestEntry[] entries = [
@@ -257,7 +257,35 @@ function publishBatchWithComplexPayload() returns error? {
 }
 
 @test:Config {
-    groups: ["publish", "batchx"]
+    groups: ["publish", "batch"]
+}
+function publishBatchWithAttributes() returns error? {
+    map<MessageAttributeValue> attributes = {
+        "StringAttribute": "StringAttributeValue",
+        "IntAttribute": 123,
+        "FloatAttribute": 123.45,
+        "BinaryAttribute": "BinaryAttributeValue".toBytes(),
+        "StringArrayAttribute": ["StringListAttributeValue1", "StringListAttributeValue2", true, false, (), 123, 123.45]
+    };
+
+    PublishBatchRequestEntry[] entries = [
+        {message: "Test Message 1", attributes: attributes},
+        {message: "Test Message 2", attributes: attributes},
+        {message: "Test Message 3", attributes: attributes}
+    ];
+    PublishBatchResponse response = check amazonSNSClient->publishBatch(standardTopic, entries);
+    test:assertEquals(response.successful.length(), 3);
+    test:assertEquals(response.failed.length(), 0);
+    test:assertEquals(response.successful[0].id, "1");
+    test:assertEquals(response.successful[1].id, "2");
+    test:assertEquals(response.successful[2].id, "3");
+    test:assertTrue(response.successful[0].messageId.length() > 0);
+    test:assertTrue(response.successful[1].messageId.length() > 0);
+    test:assertTrue(response.successful[2].messageId.length() > 0);
+}
+
+@test:Config {
+    groups: ["publish", "batch"]
 }
 function publishBatchWithFailures() returns error? {
     PublishBatchRequestEntry[] entries = [
