@@ -16,13 +16,13 @@ public type PublishBatchResponse record {|
 
 public type PublishBatchResultEntry record {|
     string id;  
-    string? messageId;
-    int? sequenceNumber;
+    string messageId;
+    string sequenceNumber?;
 |};
 
 public type BatchResultErrorEntry record {|
     string code;
     string id;
     boolean senderFault;
-    string? message;
+    string message?;
 |};

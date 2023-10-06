@@ -164,3 +164,121 @@ function publishWithAttributesTest() returns error? {
         attributes = attributes);
     test:assertTrue(response.messageId != "", "MessageID is empty.");
 }
+
+@test:Config {
+    groups: ["publish", "batch"]
+}
+function publishBatchTest() returns error? {
+    PublishBatchRequestEntry[] entries = [
+        {message: "Test Message 1"},
+        {message: "Test Message 2"},
+        {message: "Test Message 3"}
+    ];
+    PublishBatchResponse response = check amazonSNSClient->publishBatch(standardTopic, entries);
+    test:assertEquals(response.successful.length(), 3);
+    test:assertEquals(response.failed.length(), 0);
+}
+
+@test:Config {
+    groups: ["publish", "batch"]
+}
+function publishBatchWithIdsTest() returns error? {
+    PublishBatchRequestEntry[] entries = [
+        {id: "id1", message: "Test Message 1"},
+        {id: "id2", message: "Test Message 2"},
+        {id: "id3", message: "Test Message 3"}
+    ];
+    PublishBatchResponse response = check amazonSNSClient->publishBatch(standardTopic, entries);
+    test:assertEquals(response.successful.length(), 3);
+    test:assertEquals(response.failed.length(), 0);
+    test:assertEquals(response.successful[0].id, "id1");
+    test:assertEquals(response.successful[1].id, "id2");
+    test:assertEquals(response.successful[2].id, "id3");
+    test:assertTrue(response.successful[0].messageId.length() > 0);
+    test:assertTrue(response.successful[1].messageId.length() > 0);
+    test:assertTrue(response.successful[2].messageId.length() > 0);
+}
+
+@test:Config {
+    groups: ["publish", "batch"]
+}
+function publishBatchToFifoTest() returns error? {
+    PublishBatchRequestEntry[] entries = [
+        {id: "id1", message: "Test Message 1", groupId: "group1", deduplicationId: "dedup1"},
+        {id: "id2", message: "Test Message 2", groupId: "group2", deduplicationId: "dedup2"},
+        {id: "id3", message: "Test Message 3", groupId: "group3", deduplicationId: "dedup3"}
+    ];
+    PublishBatchResponse response = check amazonSNSClient->publishBatch(fifoTopicWithoutCBD, entries);
+    test:assertEquals(response.successful.length(), 3);
+    test:assertEquals(response.failed.length(), 0);
+    test:assertEquals(response.successful[0].id, "id1");
+    test:assertEquals(response.successful[1].id, "id2");
+    test:assertEquals(response.successful[2].id, "id3");
+    test:assertTrue(response.successful[0].messageId.length() > 0);
+    test:assertTrue(response.successful[1].messageId.length() > 0);
+    test:assertTrue(response.successful[2].messageId.length() > 0);
+    test:assertTrue(response.successful[0].sequenceNumber is string);
+    test:assertTrue(response.successful[1].sequenceNumber is string);
+    test:assertTrue(response.successful[2].sequenceNumber is string);
+}
+
+@test:Config {
+    groups: ["publish", "batch"]
+}
+function publishBatchToFifoTestNegative() returns error? {
+    PublishBatchRequestEntry[] entries = [
+        {id: "id1", message: "Test Message 1", groupId: "group1", deduplicationId: "dedup1"},
+        {id: "id2", message: "Test Message 2", groupId: "group2", deduplicationId: "dedup2"},
+        {id: "id3", message: "Test Message 3", groupId: "group3"}
+    ];
+    PublishBatchResponse|error response = amazonSNSClient->publishBatch(fifoTopicWithoutCBD, entries);
+    test:assertTrue(response is OperationError);
+    test:assertEquals((<Error>response).message(), "Invalid parameter: The topic should either have ContentBasedDeduplication enabled or MessageDeduplicationId provided explicitly");
+}
+
+@test:Config {
+    groups: ["publish", "batchx"]
+}
+function publishBatchWithComplexPayload() returns error? {
+    PublishBatchRequestEntry[] entries = [
+        {id: "id1", message: {default: "Test Message 1", subject: "Subject"}},
+        {id: "id2", message: {default: "Test Message 2", subject: "Subject", email: "Normal email", emailJson: "JSON email", sqs: "SQS", lambda: "Lambda", http: "HTTP", https: "HTTPS", sms: "SMS", firehose: "Firehose", apns: {title: "APNS", body: "APNS Body"}.toString(), apnsSandbox: {title: "APNS Sandbox", body: "APNS Sandbox Body"}.toString(), apnsVoip: {title: "APNS Voip", body: "APNS Voip Body"}.toString(), apnsVoipSandbox: {title: "APNS Voip Sandbox", body: "APNS Voip Sandbox Body"}.toString(), macos: {title: "MacOS", body: "MacOS Body"}.toString(), macosSandbox: {title: "MacOS Sandbox", body: "MacOS Sandbox Body"}.toString(), gcm: {title: "GCM", body: "GCM Body"}.toString(), adm: {title: "ADM", body: "ADM Body"}.toString(), baidu: {title: "Baidu", body: "Baidu Body"}.toString(), mpns: {title: "MPNS", body: "MPNS Body"}.toString(), wns: {title: "WNS", body: "WNS Body"}.toString()}},
+        {id: "id3", message: {default: "Test Message 2", subject: "Subject", email: "Normal email", emailJson: "JSON email", sqs: "SQS", lambda: "Lambda", http: "HTTP", https: "HTTPS", sms: "SMS", firehose: "Firehose", apns: {title: "APNS", body: "APNS Body"}.toString(), apnsSandbox: {title: "APNS Sandbox", body: "APNS Sandbox Body"}.toString(), apnsVoip: {title: "APNS Voip", body: "APNS Voip Body"}.toString(), apnsVoipSandbox: {title: "APNS Voip Sandbox", body: "APNS Voip Sandbox Body"}.toString(), macos: {title: "MacOS", body: "MacOS Body"}.toString(), macosSandbox: {title: "MacOS Sandbox", body: "MacOS Sandbox Body"}.toString(), gcm: {title: "GCM", body: "GCM Body"}.toString(), adm: {title: "ADM", body: "ADM Body"}.toString(), baidu: {title: "Baidu", body: "Baidu Body"}.toString(), mpns: {title: "MPNS", body: "MPNS Body"}.toString(), wns: {title: "WNS", body: "WNS Body"}.toString()}}
+    ];
+    PublishBatchResponse response = check amazonSNSClient->publishBatch(standardTopic, entries);
+    test:assertEquals(response.successful.length(), 3);
+    test:assertEquals(response.failed.length(), 0);
+    test:assertEquals(response.successful[0].id, "id1");
+    test:assertEquals(response.successful[1].id, "id2");
+    test:assertEquals(response.successful[2].id, "id3");
+    test:assertTrue(response.successful[0].messageId.length() > 0);
+    test:assertTrue(response.successful[1].messageId.length() > 0);
+    test:assertTrue(response.successful[2].messageId.length() > 0);
+}
+
+@test:Config {
+    groups: ["publish", "batchx"]
+}
+function publishBatchWithFailures() returns error? {
+    PublishBatchRequestEntry[] entries = [
+        {id: "id1", message: {default: "Test Message 1", subject: "Subject"}},
+        {id: "id2", message: {default: "Test Message 2", subject: "Invalid\nSubject", email: "Normal email", emailJson: "JSON email", sqs: "SQS", lambda: "Lambda", http: "HTTP", https: "HTTPS", sms: "SMS", firehose: "Firehose", apns: {title: "APNS", body: "APNS Body"}.toString(), apnsSandbox: {title: "APNS Sandbox", body: "APNS Sandbox Body"}.toString(), apnsVoip: {title: "APNS Voip", body: "APNS Voip Body"}.toString(), apnsVoipSandbox: {title: "APNS Voip Sandbox", body: "APNS Voip Sandbox Body"}.toString(), macos: {title: "MacOS", body: "MacOS Body"}.toString(), macosSandbox: {title: "MacOS Sandbox", body: "MacOS Sandbox Body"}.toString(), gcm: {title: "GCM", body: "GCM Body"}.toString(), adm: {title: "ADM", body: "ADM Body"}.toString(), baidu: {title: "Baidu", body: "Baidu Body"}.toString(), mpns: {title: "MPNS", body: "MPNS Body"}.toString(), wns: {title: "WNS", body: "WNS Body"}.toString()}},
+        {id: "id3", message: {default: "Test Message 2", subject: "Subject", email: "Normal email", emailJson: "JSON email", sqs: "SQS", lambda: "Lambda", http: "HTTP", https: "HTTPS", sms: "SMS", firehose: "Firehose", apns: {title: "APNS", body: "APNS Body"}.toString(), apnsSandbox: {title: "APNS Sandbox", body: "APNS Sandbox Body"}.toString(), apnsVoip: {title: "APNS Voip", body: "APNS Voip Body"}.toString(), apnsVoipSandbox: {title: "APNS Voip Sandbox", body: "APNS Voip Sandbox Body"}.toString(), macos: {title: "MacOS", body: "MacOS Body"}.toString(), macosSandbox: {title: "MacOS Sandbox", body: "MacOS Sandbox Body"}.toString(), gcm: {title: "GCM", body: "GCM Body"}.toString(), adm: {title: "ADM", body: "ADM Body"}.toString(), baidu: {title: "Baidu", body: "Baidu Body"}.toString(), mpns: {title: "MPNS", body: "MPNS Body"}.toString(), wns: {title: "WNS", body: "WNS Body"}.toString()}},
+        {id: "id4", message: {default: "Test Message 2", subject: "Invalid\nSubject", email: "Normal email", emailJson: "JSON email", sqs: "SQS", lambda: "Lambda", http: "HTTP", https: "HTTPS", sms: "SMS", firehose: "Firehose", apns: {title: "APNS", body: "APNS Body"}.toString(), apnsSandbox: {title: "APNS Sandbox", body: "APNS Sandbox Body"}.toString(), apnsVoip: {title: "APNS Voip", body: "APNS Voip Body"}.toString(), apnsVoipSandbox: {title: "APNS Voip Sandbox", body: "APNS Voip Sandbox Body"}.toString(), macos: {title: "MacOS", body: "MacOS Body"}.toString(), macosSandbox: {title: "MacOS Sandbox", body: "MacOS Sandbox Body"}.toString(), gcm: {title: "GCM", body: "GCM Body"}.toString(), adm: {title: "ADM", body: "ADM Body"}.toString(), baidu: {title: "Baidu", body: "Baidu Body"}.toString(), mpns: {title: "MPNS", body: "MPNS Body"}.toString(), wns: {title: "WNS", body: "WNS Body"}.toString()}}
+    ];
+    PublishBatchResponse response = check amazonSNSClient->publishBatch(standardTopic, entries);
+    test:assertEquals(response.successful.length(),2);
+    test:assertEquals(response.failed.length(), 2);
+    test:assertEquals(response.successful[0].id, "id1");
+    test:assertEquals(response.successful[1].id, "id3");
+    test:assertTrue(response.successful[0].messageId.length() > 0);
+    test:assertTrue(response.successful[1].messageId.length() > 0);
+    test:assertEquals(response.failed[0].id, "id2");
+    test:assertEquals(response.failed[1].id, "id4");
+    test:assertEquals(response.failed[0].code , "InvalidParameter");
+    test:assertEquals(response.failed[1].code, "InvalidParameter");
+    test:assertEquals(response.failed[0].message, "Invalid parameter: Subject");
+    test:assertEquals(response.failed[1].message, "Invalid parameter: Subject");
+    test:assertTrue(response.failed[0].senderFault);
+    test:assertTrue(response.failed[1].senderFault);
+}

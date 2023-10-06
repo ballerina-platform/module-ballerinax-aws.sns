@@ -209,12 +209,11 @@ public isolated client class Client {
             parameters["MessageStructure"] = "json";
 
             if message.hasKey("subject") {
-                parameters["Subject"] = message["subject"].toString();
+                parameters["Subject"] = <string>message.subject;
                 _ = message.remove("subject");
             }
 
             parameters["Message"] = mapMessageRecordToJson(message).toJsonString();
-            io:println(mapMessageRecordToJson(message));
         }
 
         if (deduplicationId is string) {
@@ -239,7 +238,7 @@ public isolated client class Client {
 
             json|error sequenceNumber = response.PublishResponse.PublishResult.SequenceNumber;
             if sequenceNumber is json && sequenceNumber.toString() != "" {
-                publishMessageResponse.sequenceNumber = sequenceNumber.toString();
+                publishMessageResponse.sequenceNumber = check sequenceNumber;
             }
 
             return publishMessageResponse;
@@ -256,7 +255,55 @@ public isolated client class Client {
     # + return - `PublishBatchResponse` or `sns:Error` in case of failure
     isolated remote function publishBatch(string topicArn, PublishBatchRequestEntry[] entries) 
         returns PublishBatchResponse|Error {
-        return <Error>error ("Not implemented");
+        map<string> parameters = initiateRequest("PublishBatch");
+        parameters["TopicArn"] = topicArn;
+
+        check setPublishBatchEntries(parameters, entries);
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+        io:println(response);
+
+        do {
+            PublishBatchResponse publishBatchResponse = {
+                successful: [],
+                failed: []
+            };
+
+            json[] successful = check (check response.PublishBatchResponse.PublishBatchResult.Successful).ensureType();
+            foreach [int, json] [_ , successfulEntry] in successful.enumerate() {
+                PublishBatchResultEntry entry = {
+                    id: check successfulEntry.Id,
+                    messageId: check successfulEntry.MessageId
+                };
+
+                if successfulEntry.SequenceNumber is json {
+                    entry.sequenceNumber = (check successfulEntry.SequenceNumber);
+                }
+
+                publishBatchResponse.successful.push(entry);
+            }
+
+            json[] failed = check (check response.PublishBatchResponse.PublishBatchResult.Failed).ensureType();
+            foreach [int, json] [_, failedEntry] in failed.enumerate() {
+                BatchResultErrorEntry entry = {
+                    code: check failedEntry.Code,
+                    id: check failedEntry.Id,
+                    senderFault: check failedEntry.SenderFault
+                };
+
+                if failedEntry.Message is json {
+                    entry.message = check failedEntry.Message;
+                }
+
+                publishBatchResponse.failed.push(entry);
+            }
+
+            return publishBatchResponse;
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
+
     };
 
     # Creates a subscription to a topic. If the endpoint type is HTTP/S or email, or if the endpoint and the topic are

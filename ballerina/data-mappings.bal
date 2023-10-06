@@ -24,28 +24,71 @@ isolated function setTags(map<string> parameters, map<string> tags) {
     }
 }
 
-isolated function setMessageAttributes(map<string> parameters, map<MessageAttributeValue> attributes) returns Error? {
+isolated function setMessageAttributes(map<string> parameters, map<MessageAttributeValue> attributes, 
+    string prefix = "") returns Error? {
     int i = 1;
     foreach [string, MessageAttributeValue] [key, value] in attributes.entries() {
-        parameters["MessageAttributes.entry." + i.toString() + ".Name"] = key;
+        parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Name"] = key;
 
         if value is int|float|decimal {
-            parameters["MessageAttributes.entry." + i.toString() + ".Value.DataType"] = "Number";
-            parameters["MessageAttributes.entry." + i.toString() + ".Value.StringValue"] = value.toString();
+            parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Value.DataType"] = "Number";
+            parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Value.StringValue"] = value.toString();
         } else if value is byte[] {
-            parameters["MessageAttributes.entry." + i.toString() + ".Value.DataType"] = "Binary";
+            parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Value.DataType"] = "Binary";
             do {
-                parameters["MessageAttributes.entry." + i.toString() + ".Value.BinaryValue"] = 
+                parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Value.BinaryValue"] =
                     (check mime:base64Encode(value)).toString();
             } on fail error e {
                 return error GenerateRequestFailed(e.message(), e);
             }
         } else if value is StringArrayElement[] {
-            parameters["MessageAttributes.entry." + i.toString() + ".Value.DataType"] = "String.Array";
-            parameters["MessageAttributes.entry." + i.toString() + ".Value.StringValue"] = value.toString();
+            parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Value.DataType"] = "String.Array";
+            parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Value.StringValue"] = value.toString();
         } else {
-            parameters["MessageAttributes.entry." + i.toString() + ".Value.DataType"] = "String";
-            parameters["MessageAttributes.entry." + i.toString() + ".Value.StringValue"] = value.toString();
+            parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Value.DataType"] = "String";
+            parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Value.StringValue"] = value.toString();
+        }
+
+        i = i + 1;
+    }
+}
+
+isolated function setPublishBatchEntries(map<string> parameters, PublishBatchRequestEntry[] entries) returns Error? {
+    int i = 1;
+    foreach PublishBatchRequestEntry entry in entries {
+        if entry.id is string {
+            parameters["PublishBatchRequestEntries.member." + i.toString() + ".Id"] = <string>entry.id;
+        } else {
+            parameters["PublishBatchRequestEntries.member." + i.toString() + ".Id"] = i.toString();
+        }
+
+        if entry.message is MessageRecord {
+            MessageRecord messageRecord = <MessageRecord>entry.message;
+            if messageRecord.hasKey("subject") {
+                parameters["PublishBatchRequestEntries.member." + i.toString() + ".Subject"] = 
+                    messageRecord["subject"].toString();
+                _ = messageRecord.remove("subject");
+            }
+            parameters["PublishBatchRequestEntries.member." + i.toString() + ".MessageStructure"] = "json";
+            parameters["PublishBatchRequestEntries.member." + i.toString() + ".Message"] = 
+                mapMessageRecordToJson(messageRecord).toJsonString();
+        } else {
+            parameters["PublishBatchRequestEntries.member." + i.toString() + ".Message"] = 
+                entry.message.toString();
+        }
+
+        if entry.deduplicationId is string {
+            parameters["PublishBatchRequestEntries.member." + i.toString() + ".MessageDeduplicationId"] = 
+                <string>entry.deduplicationId;
+        }
+
+        if entry.groupId is string {
+            parameters["PublishBatchRequestEntries.member." + i.toString() + ".MessageGroupId"] = <string>entry.groupId;
+        }
+
+        if entry.attributes is map<MessageAttributeValue> {
+            check setMessageAttributes(parameters, <map<MessageAttributeValue>>entry.attributes, 
+                "PublishBatchRequestEntries.member." + i.toString() + ".");
         }
 
         i = i + 1;
@@ -205,7 +248,7 @@ isolated function addMessageDeliveryLoggingFieldsToTopicAttributes(GettableTopic
     }
 }
 
-isolated function mapMessageRecordToJson(record {} message) returns json {
+isolated function mapMessageRecordToJson(MessageRecord message) returns json {
     record {} mappedMessage = {};
     foreach string key in message.keys() {
         if MESSAGE_RECORD_MAP.hasKey(key) {

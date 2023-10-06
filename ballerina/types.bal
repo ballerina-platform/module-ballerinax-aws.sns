@@ -291,13 +291,25 @@ public type MessageAttributeValue string|StringArrayElement[]|int|float|decimal|
 public type StringArrayElement string|int|float|decimal|boolean|();
 
 # Represents the details of a single message in a publish batch request.
+# 
+# + id - A unique identifier for the message in the batch
+# + message - The message to send
+# + attributes - The attributes of the message
+# + deduplicationId - Every message must have a unique `deduplicationId`, which is a token used for deduplication 
+#                     of sent messages. If a message with a particular `deduplicationId` is sent successfully, any 
+#                     message sent with the same `deduplicationId` during the 5-minute deduplication interval is 
+#                     treated as a duplicate. If the topic has `contentBasedDeduplication` set, the system 
+#                     generates a `deduplicationId` based on the contents of the message. Your `deduplicationId`
+#                     overrides the generated one. Applies to FIFO topics only
+# + groupId - Specifies the message group to which a message belongs to. Messages that belong to the same message 
+#             group are processed in a FIFO manner (however, messages in different message groups might be processed
+#             out of order). Every message must include a `groupId`. Applies to FIFO topics only
 public type PublishBatchRequestEntry record {|
-    string id;
+    string id?;
     Message message;
-    map<MessageAttributeValue>? attributes = ();
-    string? deduplicationId;
-    string? groupId;
-    string? subject;
+    map<MessageAttributeValue> attributes?;
+    string deduplicationId?;
+    string groupId?;
 |};
 
 # Represents the attributes that can be set when creating a subscription.
