@@ -371,6 +371,27 @@ public isolated client class Client {
         }
     };
 
+    # Retrieves the attributes of the requested subscription.
+    # 
+    # + subscriptionArn - The ARN of the subscription
+    # + return - `SubscriptionObject` or `sns:Error` in case of failure
+    isolated remote function getSubscriptionAttributes(string subscriptionArn) returns GettableSubscriptionAttributes|Error {
+        map<string> parameters = initiateRequest("GetSubscriptionAttributes");
+        parameters["SubscriptionArn"] = subscriptionArn;
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+        io:println(response.GetSubscriptionAttributesResponse.GetSubscriptionAttributesResult.Attributes);
+
+        do {
+            json attributes = 
+                check response.GetSubscriptionAttributesResponse.GetSubscriptionAttributesResult.Attributes;
+            return check mapJsonToSubscriptionAttributes(attributes);
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
+    };
+
     # Modifies the attributes of a subscription.
     # 
     # + subscriptionArn - The ARN of the subscription to modify
@@ -378,7 +399,21 @@ public isolated client class Client {
     # + return - `()` or `sns:Error` in case of failure
     isolated remote function setSubscriptionAttributes(string subscriptionArn, SubscriptionAttributes attributes)
         returns Error? {
-        return <Error>error ("Not implemented");
+        map<string> parameters = initiateRequest("SetSubscriptionAttributes");
+        parameters["SubscriptionArn"] = subscriptionArn;
+
+        record {} formattedTopicAttributes = check formatAttributes(attributes);
+        foreach [string, anydata] [key, value] in formattedTopicAttributes.entries() {
+            parameters["AttributeName"] = key;
+            if value is record {} {
+                parameters["AttributeValue"] = value.toJsonString();
+            } else {
+                parameters["AttributeValue"] = value.toString();
+            }
+
+            http:Request request = check self.generateRequest(parameters);
+            _ = check sendRequest(self.amazonSNSClient, request);
+        }
     };
 
     # Deletes a subscription. If the subscription requires authentication for deletion, only the owner of the 
@@ -402,14 +437,6 @@ public isolated client class Client {
     #            `sns:Error` in case of failure
     isolated remote function listSubscriptions(string? topicArn = (), string? nextToken = ()) 
         returns [SubscriptionListObject[], string?]|Error {
-        return <Error>error ("Not implemented");
-    };
-
-    # Retrieves the attributes of the requested subscription.
-    # 
-    # + subscriptionArn - The ARN of the subscription
-    # + return - `SubscriptionObject` or `sns:Error` in case of failure
-    isolated remote function getSubscription(string subscriptionArn) returns SubscriptionObject|Error {
         return <Error>error ("Not implemented");
     };
 

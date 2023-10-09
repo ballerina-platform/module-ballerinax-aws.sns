@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/test;
-import ballerina/io;
    
 json validPolicy = {"Version": "2008-10-17", "Id": "__default_policy_ID", "Statement": [{"Sid": "__default_statement_ID", "Effect": "Allow", "Principal": {"AWS": "*"}, "Action": ["SNS:Publish", "SNS:RemovePermission", "SNS:SetTopicAttributes", "SNS:DeleteTopic", "SNS:ListSubscriptionsByTopic", "SNS:GetTopicAttributes", "SNS:AddPermission", "SNS:Subscribe"], "Resource": "", "Condition": {"StringEquals": {"AWS:SourceOwner": "482724125666"}}}, {"Sid": "__console_sub_0", "Effect": "Allow", "Principal": {"AWS": "*"}, "Action": "SNS:Subscribe", "Resource": ""}]};
 json invalidPolicy = {"Version": "2008-10-17", "Id": "__default_policy_ID", "Statement": [{"Sid": "__default_statement_ID", "Effect": "Allow", "Principal": {"AWS": "*"}, "Action": ["SNS:Publishx", "SNS:RemovePermission", "SNS:SetTopicAttributes", "SNS:DeleteTopic", "SNS:ListSubscriptionsByTopic", "SNS:GetTopicAttributes", "SNS:AddPermission", "SNS:Subscribe"], "Resource": "", "Condition": {"StringEquals": {"AWS:SourceOwner": "482724125666"}}}, {"Sid": "__console_sub_0", "Effect": "Allow", "Principal": {"AWS": "*"}, "Action": ["SNS:Subscribe"], "Resource": ""}]};
@@ -483,7 +482,6 @@ function setTopicAttributesTest2() returns error? {
     };
     _ = check amazonSNSClient->setTopicAttributes(topicArn, setAttributes);
     GettableTopicAttributes attributes = check amazonSNSClient->getTopicAttributes(topicArn);
-    io:println(attributes);
     test:assertEquals(attributes.topicArn, topicArn);
     test:assertEquals(attributes?.deliveryPolicy, setAttributes?.deliveryPolicy);
     test:assertEquals(attributes.displayName, setAttributes.displayName);

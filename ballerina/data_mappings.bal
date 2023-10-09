@@ -24,8 +24,8 @@ isolated function setTags(map<string> parameters, map<string> tags) {
     }
 }
 
-isolated function setMessageAttributes(map<string> parameters, map<MessageAttributeValue> attributes, 
-    string prefix = "") returns Error? {
+isolated function setMessageAttributes(map<string> parameters, map<MessageAttributeValue> attributes,
+        string prefix = "") returns Error? {
     int i = 1;
     foreach [string, MessageAttributeValue] [key, value] in attributes.entries() {
         parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Name"] = key;
@@ -65,20 +65,20 @@ isolated function setPublishBatchEntries(map<string> parameters, PublishBatchReq
         if entry.message is MessageRecord {
             MessageRecord messageRecord = <MessageRecord>entry.message;
             if messageRecord.hasKey("subject") {
-                parameters["PublishBatchRequestEntries.member." + i.toString() + ".Subject"] = 
+                parameters["PublishBatchRequestEntries.member." + i.toString() + ".Subject"] =
                     messageRecord["subject"].toString();
                 _ = messageRecord.remove("subject");
             }
             parameters["PublishBatchRequestEntries.member." + i.toString() + ".MessageStructure"] = "json";
-            parameters["PublishBatchRequestEntries.member." + i.toString() + ".Message"] = 
+            parameters["PublishBatchRequestEntries.member." + i.toString() + ".Message"] =
                 mapMessageRecordToJson(messageRecord).toJsonString();
         } else {
-            parameters["PublishBatchRequestEntries.member." + i.toString() + ".Message"] = 
+            parameters["PublishBatchRequestEntries.member." + i.toString() + ".Message"] =
                 entry.message.toString();
         }
 
         if entry.deduplicationId is string {
-            parameters["PublishBatchRequestEntries.member." + i.toString() + ".MessageDeduplicationId"] = 
+            parameters["PublishBatchRequestEntries.member." + i.toString() + ".MessageDeduplicationId"] =
                 <string>entry.deduplicationId;
         }
 
@@ -87,7 +87,7 @@ isolated function setPublishBatchEntries(map<string> parameters, PublishBatchReq
         }
 
         if entry.attributes is map<MessageAttributeValue> {
-            check setMessageAttributes(parameters, <map<MessageAttributeValue>>entry.attributes, 
+            check setMessageAttributes(parameters, <map<MessageAttributeValue>>entry.attributes,
                 "PublishBatchRequestEntries.member." + i.toString() + ".");
         }
 
@@ -100,42 +100,27 @@ isolated function mapJsonToGettableTopicAttributes(json jsonResponse) returns Ge
     string[] booleanFields = ["FifoTopic", "ContentBasedDeduplication"];
     string[] jsonFields = ["EffectiveDeliveryPolicy", "Policy", "DeliveryPolicy"];
     string[] skipFields = [
-        "HTTPSuccessFeedbackRoleArn", "HTTPFailureFeedbackRoleArn", "HTTPSuccessFeedbackSampleRate",
-        "FirehoseSuccessFeedbackRoleArn", "FirehoseFailureFeedbackRoleArn", "FirehoseSuccessFeedbackSampleRate",
-        "LambdaSuccessFeedbackRoleArn", "LambdaFailureFeedbackRoleArn", "LambdaSuccessFeedbackSampleRate",
-        "SQSSuccessFeedbackRoleArn", "SQSFailureFeedbackRoleArn", "SQSSuccessFeedbackSampleRate",
-        "ApplicationSuccessFeedbackRoleArn", "ApplicationFailureFeedbackRoleArn", "ApplicationSuccessFeedbackSampleRate"
+        "HTTPSuccessFeedbackRoleArn",
+        "HTTPFailureFeedbackRoleArn",
+        "HTTPSuccessFeedbackSampleRate",
+        "FirehoseSuccessFeedbackRoleArn",
+        "FirehoseFailureFeedbackRoleArn",
+        "FirehoseSuccessFeedbackSampleRate",
+        "LambdaSuccessFeedbackRoleArn",
+        "LambdaFailureFeedbackRoleArn",
+        "LambdaSuccessFeedbackSampleRate",
+        "SQSSuccessFeedbackRoleArn",
+        "SQSFailureFeedbackRoleArn",
+        "SQSSuccessFeedbackSampleRate",
+        "ApplicationSuccessFeedbackRoleArn",
+        "ApplicationFailureFeedbackRoleArn",
+        "ApplicationSuccessFeedbackSampleRate"
     ];
-    record {} response = check jsonResponse.cloneWithType();
+    record {} mapped = check mapJsonToRecord(jsonResponse, intFields = intFields, booleanFields = booleanFields, 
+        jsonFields = jsonFields, skipFields = skipFields);
+    GettableTopicAttributes topicAttributes = check mapped.cloneWithType();
+    check addMessageDeliveryLoggingFieldsToTopicAttributes(topicAttributes, jsonResponse);
 
-    GettableTopicAttributes topicAttributes = {
-        topicArn: "",
-        effectiveDeliveryPolicy: {},
-        owner: "",
-        displayName: "",
-        subscriptionsPending: 0,
-        subscriptionsConfirmed: 0,
-        subscriptionsDeleted: 0,
-        policy: {}
-    };
-
-    foreach [string, anydata] [key, value] in response.entries() {
-        if (skipFields.indexOf(key) is int) {
-            continue;
-        }
-
-        anydata val = value;
-        if intFields.indexOf(key) is int {
-            val = check stringToInt(value.toString());
-        } else if booleanFields.indexOf(key) is int {
-            val = check stringToBoolean(value.toString());
-        } else if jsonFields.indexOf(key) is int {
-            val = check value.toString().fromJsonString();
-        }
-        topicAttributes[lowercaseFirstLetter(key)] = val;
-    }
-
-    check addMessageDeliveryLoggingFieldsToTopicAttributes(topicAttributes, response);
     return topicAttributes;
 }
 
@@ -161,8 +146,11 @@ isolated function formatAttributes(record {} r, map<string> formatMap = {}) retu
     return flattenedRecord;
 }
 
-isolated function addMessageDeliveryLoggingFieldsToTopicAttributes(GettableTopicAttributes topicAttributes, 
-    record {} response) returns error? {
+isolated function addMessageDeliveryLoggingFieldsToTopicAttributes(GettableTopicAttributes topicAttributes,
+    json jsonResponse) returns error? {
+
+    record {} response = check jsonResponse.cloneWithType();
+
     if (response.hasKey("HTTPSuccessFeedbackRoleArn") || response.hasKey("HTTPFailureFeedbackRoleArn") ||
         response.hasKey("HTTPSuccessFeedbackSampleRate")) {
         MessageDeliveryLoggingConfig httpMessageDeliveryLogging = {};
@@ -258,4 +246,36 @@ isolated function mapMessageRecordToJson(MessageRecord message) returns json {
         }
     }
     return mappedMessage.toJson();
+}
+
+isolated function mapJsonToSubscriptionAttributes(json jsonResponse) returns GettableSubscriptionAttributes|error {
+    string[] booleanFields = ["ConfirmationWasAuthenticated", "PendingConfirmation", "RawMessageDelivery"];
+    string[] jsonFields = ["DeliveryPolicy", "EffectiveDeliveryPolicy", "FilterPolicy", "RedrivePolicy"];
+
+    record {} mapped = check mapJsonToRecord(jsonResponse, booleanFields = booleanFields, jsonFields = jsonFields);
+    return mapped.cloneWithType();
+}
+
+isolated function mapJsonToRecord(json jsonResponse, string[] intFields = [], string[] booleanFields = [], 
+    string[] jsonFields = [], string[] skipFields = []) returns record {}|error {
+    record {} response = check jsonResponse.cloneWithType();
+    record {} attributes = {};
+
+    foreach [string, anydata] [key, value] in response.entries() {
+        if (skipFields.indexOf(key) is int) {
+            continue;
+        }
+
+        anydata val = value;
+        if intFields.indexOf(key) is int {
+            val = check stringToInt(value.toString());
+        } else if booleanFields.indexOf(key) is int {
+            val = check stringToBoolean(value.toString());
+        } else if jsonFields.indexOf(key) is int {
+            val = check value.toString().fromJsonString();
+        }
+        attributes[lowercaseFirstLetter(key)] = val;
+    }
+
+    return attributes;
 }

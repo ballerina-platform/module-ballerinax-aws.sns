@@ -41,7 +41,7 @@ function subscribeWithoutReturnArnTest() returns error? {
 function subscribeWithReturnArnTest() returns error? {
     string subsriptionArn = 
         check amazonSNSClient->subscribe(topic, testEmail, EMAIL, returnSubscriptionArn = true);
-    test:assertTrue(subsriptionArn.matches(arnRegex), "Returned value is not an ARN.");
+    test:assertTrue(isArn(subsriptionArn), "Returned value is not an ARN.");
 }
 
 @test:Config {
@@ -50,7 +50,7 @@ function subscribeWithReturnArnTest() returns error? {
 function subscribeHttpTest() returns error? {
     string subsriptionArn =
         check amazonSNSClient->subscribe(topic, testHttp, HTTP, returnSubscriptionArn = true);
-    test:assertTrue(subsriptionArn.matches(arnRegex), "Returned value is not an ARN.");
+    test:assertTrue(isArn(subsriptionArn), "Returned value is not an ARN.");
 }
 
 @test:Config {
@@ -59,7 +59,7 @@ function subscribeHttpTest() returns error? {
 function subscribeHttpsTest() returns error? {
     string subsriptionArn =
         check amazonSNSClient->subscribe(topic, testHttps, HTTPS, returnSubscriptionArn = true);
-    test:assertTrue(subsriptionArn.matches(arnRegex), "Returned value is not an ARN.");
+    test:assertTrue(isArn(subsriptionArn), "Returned value is not an ARN.");
 }
 
 @test:Config {
@@ -68,7 +68,7 @@ function subscribeHttpsTest() returns error? {
 function subscribeEmailTest() returns error? {
     string subsriptionArn =
         check amazonSNSClient->subscribe(topic, testEmail, EMAIL, returnSubscriptionArn = true);
-    test:assertTrue(subsriptionArn.matches(arnRegex), "Returned value is not an ARN.");
+    test:assertTrue(isArn(subsriptionArn), "Returned value is not an ARN.");
 }
 
 @test:Config {
@@ -77,7 +77,7 @@ function subscribeEmailTest() returns error? {
 function subscribeEmailJsonTest() returns error? {
     string subsriptionArn =
         check amazonSNSClient->subscribe(topic, testEmail, EMAIL_JSON, returnSubscriptionArn = true);
-    test:assertTrue(subsriptionArn.matches(arnRegex), "Returned value is not an ARN.");
+    test:assertTrue(isArn(subsriptionArn), "Returned value is not an ARN.");
 }
 
 @test:Config {
@@ -86,7 +86,7 @@ function subscribeEmailJsonTest() returns error? {
 function subscribeSmsTest()returns error? {
     string subsriptionArn =
         check amazonSNSClient->subscribe(topic, testPhoneNumber, SMS, returnSubscriptionArn = true);
-    test:assertTrue(subsriptionArn.matches(arnRegex), "Returned value is not an ARN.");
+    test:assertTrue(isArn(subsriptionArn), "Returned value is not an ARN.");
 }
 
 // TODO: Enable test case for SQS
@@ -105,7 +105,7 @@ function subscribeSmsTest()returns error? {
 function subscribeApplicationTest() returns error? {
     string subsriptionArn =
         check amazonSNSClient->subscribe(topic, testApplication, APPLICATION, returnSubscriptionArn = true);
-    test:assertTrue(subsriptionArn.matches(arnRegex), "Returned value is not an ARN.");
+    test:assertTrue(isArn(subsriptionArn), "Returned value is not an ARN.");
 }
 
 // TODO: Enable test case for Lambda
@@ -173,7 +173,7 @@ function subscribeWithAttributesTest() returns error? {
     };
     string subsriptionArn =
         check amazonSNSClient->subscribe(topic, testHttp, HTTP, attributes, true);
-    test:assertTrue(subsriptionArn.matches(arnRegex), "Returned value is not an ARN.");
+    test:assertTrue(isArn(subsriptionArn), "Returned value is not an ARN.");
 }
 
 @test:Config {
@@ -188,7 +188,7 @@ function subscribeWithInvalidAttributeTest() returns error? {
     };
     string|Error subsriptionArn =
         amazonSNSClient->subscribe(topic, testEmail, EMAIL, attributes, true);
-    test:assertTrue(subsriptionArn is OperationError, "Expected error.");
+    test:assertTrue(subsriptionArn is Error, "Expected error.");
     test:assertEquals((<OperationError>subsriptionArn).message(), "Invalid parameter: Attributes Reason: Delivery protocol [email] does not support raw message delivery.");
 }
 
@@ -201,7 +201,7 @@ function confirmSubscriptionTest() returns error? {
     _ = check amazonSNSClient->subscribe(topic, testEmail, EMAIL);
     string token = "2336412f37fb687f5d51e6e2425c464cefc6029303415bf22f632d6c1109584e3a0c5a9cb81735ec0ba6302001ae62e84c830f41c6cae9c7eeea0532b02990b572d9105532fe2ee1e97e3e06eb4b7931171f38d544f59f1077fe3dba807e1b570e992ebd62fef0677d928fafd61cf2a3b91e511bf54e99ae3270528fbd38b10709758e4c1d77ff77bbc7d460ef177618";
     string subsriptionArn = check amazonSNSClient->confirmSubscription(topic, token);
-    test:assertTrue(subsriptionArn.matches(arnRegex), "Returned value is not an ARN.");
+    test:assertTrue(isArn(subsriptionArn), "Returned value is not an ARN.");
 }
 
 @test:Config {
@@ -215,4 +215,53 @@ function confirmSubscriptionWithInvalidTokenTest() returns error? {
     string|error subsriptionArn = amazonSNSClient->confirmSubscription(topic, token);
     test:assertTrue(subsriptionArn is OperationError, "Expected error.");
     test:assertEquals((<OperationError>subsriptionArn).message(), "Invalid token");
+}
+
+@test:Config {
+    groups: ["subscribe"]
+}
+function getSubscriptionAttributesTest1() returns error? {
+    string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic5");
+    string subscription = check amazonSNSClient->subscribe(topic, testEmail, EMAIL, returnSubscriptionArn = true);
+
+    GettableSubscriptionAttributes attributes = check amazonSNSClient->getSubscriptionAttributes(subscription);
+    test:assertEquals(attributes.subscriptionArn, subscription);
+    test:assertEquals(attributes.endpoint, testEmail);
+    test:assertEquals(attributes.protocol, EMAIL);
+    test:assertEquals(attributes.topicArn, topic);
+    test:assertTrue(isArn(attributes.subscriptionPrincipal));
+    test:assertEquals(attributes.confirmationWasAuthenticated, false);
+    test:assertEquals(attributes.pendingConfirmation, true);
+    test:assertEquals(attributes.rawMessageDelivery, false);
+    test:assertEquals(attributes.owner.length(), 12);
+}
+
+@test:Config {
+    groups: ["subscribex"]
+}
+function getSubscriptionAttributesTest2() returns error? {
+    string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic5");
+
+    SubscriptionAttributes setAttributes = {
+        deliveryPolicy: {healthyRetryPolicy: {numRetries: 3, minDelayTarget: 5, maxDelayTarget: 10}},
+        filterPolicy: {store: ["example_corp"]},
+        filterPolicyScope: MESSAGE_BODY,
+        //TODO: test redrive policy and subscription role ARN
+        rawMessageDelivery: false
+    };
+    string subscription = check amazonSNSClient->subscribe(topic, testHttp, HTTP, setAttributes, true);
+
+    GettableSubscriptionAttributes attributes = check amazonSNSClient->getSubscriptionAttributes(subscription);
+    test:assertEquals(attributes.subscriptionArn, subscription);
+    test:assertEquals(attributes.endpoint, testHttp);
+    test:assertEquals(attributes.protocol, HTTP);
+    test:assertEquals(attributes.topicArn, topic);
+    test:assertTrue(isArn(attributes.subscriptionPrincipal));
+    test:assertEquals(attributes.confirmationWasAuthenticated, false);
+    test:assertEquals(attributes.pendingConfirmation, true);
+    test:assertEquals(attributes.rawMessageDelivery, false);
+    test:assertEquals(attributes.owner.length(), 12);
+    test:assertTrue(attributes?.deliveryPolicy is json);
+    test:assertEquals(attributes?.filterPolicy, setAttributes?.filterPolicy);
+    test:assertEquals(attributes.filterPolicyScope, setAttributes.filterPolicyScope);
 }

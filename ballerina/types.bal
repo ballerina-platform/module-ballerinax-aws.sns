@@ -328,15 +328,8 @@ public type SubscriptionAttributes record {|
     json filterPolicy?; // TODO: change to open record
     FilterPolicyScope filterPolicyScope?;
     boolean rawMessageDelivery?;
-    RedrivePolicy redrivePolicy?;
+    json redrivePolicy?;
     string subscriptionRoleArn?;
-|};
-
-# Represents the redrive policy attached to a subscription.
-# 
-# + deadLetterTargetArn - The Amazon Resource Name (ARN) of the dead-letter queue to which Amazon SNS moves messages
-public type RedrivePolicy record {|
-    string deadLetterTargetArn;
 |};
 
 # Represents an Amazon SNS subscription object returned when calling the `listSubscriptions` operation.
@@ -356,6 +349,11 @@ public type SubscriptionListObject record {|
 
 # Represents an Amazon SNS subscription object returned when calling the `getSubscription` operation.
 # 
+# + subscriptionArn - The subscription's ARN
+# + endpoint - The subscription's endpoint (format depends on the protocol)
+# + protocol - The subscription's protocol
+# + topicArn - The ARN of the subscription's topic
+# + subscriptionPrincipal - The subscription's principal
 # + confirmationWasAuthenticated - Whether the subscription confirmation request was authenticated
 # + deliveryPolicy - The policy that defines how Amazon SNS retries failed deliveries to HTTP/S endpoints
 # + effectiveDeliveryPolicy - The policy that defines how Amazon SNS retries failed deliveries to HTTP/S endpoints, 
@@ -367,26 +365,26 @@ public type SubscriptionListObject record {|
 # + pendingConfirmation - Whether the subscription has been confirmed
 # + rawMessageDelivery - Whether raw message delivery is enabled for the subscription
 # + redrivePolicy - The redrive policy attached to the subscription
-# + subscriptionArn - The subscription's ARN
-# + topicArn - The ARN of the subscription's topic
 # + subscriptionRoleArn - The ARN of the IAM role that has permission to write to the Kinesis Data Firehose delivery and
 #                         has Amazon SNS listed as a trusted entity. Applies only to Amazon Kinesis Data Firehose
 #                         delivery stream subscriptions.
-# + subscriptionArn - The subscription's ARN
-public type SubscriptionObject record {|
+public type GettableSubscriptionAttributes record {
+    string subscriptionArn;
+    string endpoint;
+    SubscriptionProtocol protocol;
+    string topicArn;
+    string subscriptionPrincipal;
     boolean confirmationWasAuthenticated;
-    json deliveryPolicy;
-    json effectiveDeliveryPolicy;
-    json filterPolicy;
-    FilterPolicyScope filterPolicyScope;
+    json deliveryPolicy?;
+    json effectiveDeliveryPolicy?;
+    json filterPolicy?;
+    FilterPolicyScope filterPolicyScope?;
     string owner;
     boolean pendingConfirmation;
     boolean rawMessageDelivery;
-    RedrivePolicy redrivePolicy;
-    string subscriptionArn;
-    string topicArn;
-    string subscriptionRoleArn;
-|};
+    json redrivePolicy?;
+    string subscriptionRoleArn?;
+};
 
 # Represents the attributes of an Amazon SNS platform appication.
 #
