@@ -321,7 +321,7 @@ public type PublishBatchRequestEntry record {|
 # + rawMessageDelivery - When set to true, enables raw message delivery to Amazon SQS or HTTP/S endpoints
 # + redrivePolicy - When specified, sends undeliverable messages to the specified Amazon SQS dead-letter queue
 # + subscriptionRoleArn - The ARN of the IAM role that has permission to write to the Kinesis Data Firehose delivery 
-#                         stream and has Amazon SNS listed as a trusted entity.Applies only to Amazon Kinesis Data 
+#                         stream and has Amazon SNS listed as a trusted entity. Applies only to Amazon Kinesis Data 
 #                         Firehose delivery stream subscriptions.
 public type SubscriptionAttributes record {|
     json deliveryPolicy?;

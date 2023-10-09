@@ -321,7 +321,25 @@ public isolated client class Client {
     isolated remote function subscribe(string topicArn, string endpoint, SubscriptionProtocol protocol, 
         SubscriptionAttributes? attributes = (), boolean returnSubscriptionArn = false) 
         returns string|Error {
-        return <Error>error ("Not implemented");
+        map<string> parameters = initiateRequest("Subscribe");
+        parameters["TopicArn"] = topicArn;
+        parameters["Endpoint"] = endpoint;
+        parameters["Protocol"] = protocol;
+        parameters["ReturnSubscriptionArn"] = returnSubscriptionArn.toString();
+
+        if attributes is SubscriptionAttributes {
+            record {} formattedSubscriptionsAttributes = check formatAttributes(attributes);
+            setAttributes(parameters, formattedSubscriptionsAttributes);
+        }
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+
+        do {
+            return (check response.SubscribeResponse.SubscribeResult.SubscriptionArn).toString();
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
     };
 
     # Verifies an endpoint owner's intent to receive messages by validating the token sent to the endpoint by an 
@@ -330,11 +348,27 @@ public isolated client class Client {
     # + topicArn - The ARN of the topic for which you wish to confirm a subscription
     # + token - Short-lived token sent to an endpoint during the subscribe action
     # + authenticateOnUnsubscribe - Disallows unauthenticated unsubscribes of the subscription. If the value of this 
-    #                               parameter is `true``, then only the topic owner and the subscription owner can 
+    #                               parameter is `true`, then only the topic owner and the subscription owner can 
     #                               unsubscribe the endpoint.
-    isolated remote function confirmSubscription(string topicArn, string token, boolean authenticateOnUnsubscribe)
+    # + return - The ARN of the created subscription or `sns:Error` in case of failure
+    isolated remote function confirmSubscription(string topicArn, string token, boolean? authenticateOnUnsubscribe = ())
         returns string|Error {
-        return <Error>error("Not implemented");
+        map<string> parameters = initiateRequest("ConfirmSubscription");
+        parameters["TopicArn"] = topicArn;
+        parameters["Token"] = token;
+
+        if authenticateOnUnsubscribe is boolean {
+            parameters["AuthenticateOnUnsubscribe"] = authenticateOnUnsubscribe.toString();
+        }
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+
+        do {
+            return (check response.ConfirmSubscriptionResponse.ConfirmSubscriptionResult.SubscriptionArn).toString();
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
     };
 
     # Modifies the attributes of a subscription.

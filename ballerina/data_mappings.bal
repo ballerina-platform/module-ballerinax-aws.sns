@@ -139,7 +139,7 @@ isolated function mapJsonToGettableTopicAttributes(json jsonResponse) returns Ge
     return topicAttributes;
 }
 
-isolated function formatAttributes(record {} r, map<string> formatMap) returns record {}|Error {
+isolated function formatAttributes(record {} r, map<string> formatMap = {}) returns record {}|Error {
     record {} flattenedRecord = {};
     string[] elementKeys = formatMap.keys();
 
