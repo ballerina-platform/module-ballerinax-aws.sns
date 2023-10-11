@@ -220,55 +220,6 @@ function confirmSubscriptionWithInvalidTokenTest() returns error? {
 @test:Config {
     groups: ["subscribe"]
 }
-function getSubscriptionAttributesTest1() returns error? {
-    string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic5");
-    string subscription = check amazonSNSClient->subscribe(topic, testEmail, EMAIL, returnSubscriptionArn = true);
-
-    GettableSubscriptionAttributes attributes = check amazonSNSClient->getSubscriptionAttributes(subscription);
-    test:assertEquals(attributes.subscriptionArn, subscription);
-    test:assertEquals(attributes.endpoint, testEmail);
-    test:assertEquals(attributes.protocol, EMAIL);
-    test:assertEquals(attributes.topicArn, topic);
-    test:assertTrue(isArn(attributes.subscriptionPrincipal));
-    test:assertEquals(attributes.confirmationWasAuthenticated, false);
-    test:assertEquals(attributes.pendingConfirmation, true);
-    test:assertEquals(attributes.rawMessageDelivery, false);
-    test:assertEquals(attributes.owner.length(), 12);
-}
-
-@test:Config {
-    groups: ["subscribe"]
-}
-function getSubscriptionAttributesTest2() returns error? {
-    string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic5");
-
-    SubscriptionAttributes setAttributes = {
-        deliveryPolicy: {healthyRetryPolicy: {numRetries: 3, minDelayTarget: 5, maxDelayTarget: 10}},
-        filterPolicy: {store: ["example_corp"]},
-        filterPolicyScope: MESSAGE_BODY,
-        //TODO: test redrive policy and subscription role ARN
-        rawMessageDelivery: false
-    };
-    string subscription = check amazonSNSClient->subscribe(topic, testHttp, HTTP, setAttributes, true);
-
-    GettableSubscriptionAttributes attributes = check amazonSNSClient->getSubscriptionAttributes(subscription);
-    test:assertEquals(attributes.subscriptionArn, subscription);
-    test:assertEquals(attributes.endpoint, testHttp);
-    test:assertEquals(attributes.protocol, HTTP);
-    test:assertEquals(attributes.topicArn, topic);
-    test:assertTrue(isArn(attributes.subscriptionPrincipal));
-    test:assertEquals(attributes.confirmationWasAuthenticated, false);
-    test:assertEquals(attributes.pendingConfirmation, true);
-    test:assertEquals(attributes.rawMessageDelivery, false);
-    test:assertEquals(attributes.owner.length(), 12);
-    test:assertTrue(attributes?.deliveryPolicy is json);
-    test:assertEquals(attributes?.filterPolicy, setAttributes?.filterPolicy);
-    test:assertEquals(attributes.filterPolicyScope, setAttributes.filterPolicyScope);
-}
-
-@test:Config {
-    groups: ["subscribe"]
-}
 function listSubscriptionsTest() returns error? {
     string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic6");
     string subscriptionArn = 
@@ -372,3 +323,103 @@ function listSubscriptionsByTopicDoesNotExist() returns error? {
     test:assertTrue(e is OperationError, "Expected error.");
     test:assertEquals((<OperationError>e).message(), "Topic does not exist");
 }
+
+@test:Config {
+    groups: ["subscribe"]
+}
+function getSubscriptionAttributesTest1() returns error? {
+    string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic5");
+    string subscription = check amazonSNSClient->subscribe(topic, testEmail, EMAIL, returnSubscriptionArn = true);
+
+    GettableSubscriptionAttributes attributes = check amazonSNSClient->getSubscriptionAttributes(subscription);
+    test:assertEquals(attributes.subscriptionArn, subscription);
+    test:assertEquals(attributes.endpoint, testEmail);
+    test:assertEquals(attributes.protocol, EMAIL);
+    test:assertEquals(attributes.topicArn, topic);
+    test:assertTrue(isArn(attributes.subscriptionPrincipal));
+    test:assertEquals(attributes.confirmationWasAuthenticated, false);
+    test:assertEquals(attributes.pendingConfirmation, true);
+    test:assertEquals(attributes.rawMessageDelivery, false);
+    test:assertEquals(attributes.owner.length(), 12);
+}
+
+@test:Config {
+    groups: ["subscribe"]
+}
+function getSubscriptionAttributesTest2() returns error? {
+    string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic5");
+
+    SubscriptionAttributes setAttributes = {
+        deliveryPolicy: {healthyRetryPolicy: {numRetries: 3, minDelayTarget: 5, maxDelayTarget: 10}},
+        filterPolicy: {store: ["example_corp"]},
+        filterPolicyScope: MESSAGE_BODY,
+        //TODO: test redrive policy and subscription role ARN
+        rawMessageDelivery: false
+    };
+    string subscription = check amazonSNSClient->subscribe(topic, testHttp, HTTP, setAttributes, true);
+
+    GettableSubscriptionAttributes attributes = check amazonSNSClient->getSubscriptionAttributes(subscription);
+    test:assertEquals(attributes.subscriptionArn, subscription);
+    test:assertEquals(attributes.endpoint, testHttp);
+    test:assertEquals(attributes.protocol, HTTP);
+    test:assertEquals(attributes.topicArn, topic);
+    test:assertTrue(isArn(attributes.subscriptionPrincipal));
+    test:assertEquals(attributes.confirmationWasAuthenticated, false);
+    test:assertEquals(attributes.pendingConfirmation, true);
+    test:assertEquals(attributes.rawMessageDelivery, false);
+    test:assertEquals(attributes.owner.length(), 12);
+    test:assertTrue(attributes?.deliveryPolicy is json);
+    test:assertEquals(attributes?.filterPolicy, setAttributes?.filterPolicy);
+    test:assertEquals(attributes.filterPolicyScope, setAttributes.filterPolicyScope);
+}
+
+@test:Config {
+    groups: ["subscribe"]
+}
+function setSubscriptionAttributesTest() returns error? {
+    string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic10");
+    string subscription = check amazonSNSClient->subscribe(topic, testHttp, HTTP, returnSubscriptionArn = true);
+
+    SubscriptionAttributes setAttributes = {
+        deliveryPolicy: {healthyRetryPolicy: {numRetries: 3, minDelayTarget: 5, maxDelayTarget: 10}},
+        filterPolicy: {store: ["example_corp"]},
+        filterPolicyScope: MESSAGE_BODY,
+        //TODO: test redrive policy and subscription role ARN
+        rawMessageDelivery: true
+    };
+    _ = check amazonSNSClient->setSubscriptionAttributes(subscription, setAttributes);
+
+    GettableSubscriptionAttributes attributes = check amazonSNSClient->getSubscriptionAttributes(subscription);
+    test:assertEquals(attributes.subscriptionArn, subscription);
+    test:assertEquals(attributes.endpoint, testHttp);
+    test:assertEquals(attributes.protocol, HTTP);
+    test:assertEquals(attributes.topicArn, topic);
+    test:assertTrue(isArn(attributes.subscriptionPrincipal));
+    test:assertEquals(attributes.confirmationWasAuthenticated, false);
+    test:assertEquals(attributes.pendingConfirmation, true);
+    test:assertEquals(attributes.rawMessageDelivery, true);
+    test:assertEquals(attributes.owner.length(), 12);
+    test:assertTrue(attributes?.deliveryPolicy is json);
+    test:assertEquals(attributes?.filterPolicy, setAttributes?.filterPolicy);
+    test:assertEquals(attributes.filterPolicyScope, setAttributes.filterPolicyScope);
+};
+
+@test:Config {
+    groups: ["subscribe"]
+}
+function setSubscriptionAttributesTestNegative() returns error? {
+    string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic10");
+    string subscription = check amazonSNSClient->subscribe(topic, testPhoneNumber, SMS, returnSubscriptionArn = true);
+
+    SubscriptionAttributes setAttributes = {
+        deliveryPolicy: {healthyRetryPolicy: {numRetries: 3, minDelayTarget: 5, maxDelayTarget: 10}},
+        filterPolicy: {store: ["example_corp"]},
+        filterPolicyScope: MESSAGE_BODY,
+        //TODO: test redrive policy and subscription role ARN
+        rawMessageDelivery: true
+    };
+    Error? e = amazonSNSClient->setSubscriptionAttributes(subscription, setAttributes);
+    
+    test:assertTrue(e is OperationError, "Expected error.");
+    test:assertEquals((<OperationError>e).message(), "Invalid parameter: Delivery protocol [sms] does not support raw message delivery.");
+};
