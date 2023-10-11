@@ -371,6 +371,20 @@ public isolated client class Client {
         }
     };
 
+    # Retrieves a list of the requester's subscriptions. Each call returns a limited list of subscriptions, up to 100. If 
+    # there are more subscriptions, a NextToken is also returned. Use the NextToken parameter in a new ListSubscriptions
+    # call to get further results.
+    # 
+    # + topicArn - The ARN of the topic for which you wish list the subscriptions
+    # + return - A tuple of `SubscriptionListObject[]` and `string?` containing the subscriptions and NextToken (if exists), or an
+    #            `sns:Error` in case of failure
+    isolated remote function listSubscriptions(string? topicArn = ()) returns stream<Subscription, Error?> {
+        SubscriptionsStream subscriptionsStreamObject = new (self.amazonSNSClient, self.generateRequest, topicArn);
+        stream<Subscription, Error?> subscriptionsStream = new (subscriptionsStreamObject);
+        return subscriptionsStream;
+
+    } 
+
     # Retrieves the attributes of the requested subscription.
     # 
     # + subscriptionArn - The ARN of the subscription
@@ -424,19 +438,6 @@ public isolated client class Client {
     # + subscriptionArn - The ARN of the subscription to be deleted
     # + return - `()` or `sns:Error` in case of failure
     isolated remote function unsubscribe(string subscriptionArn) returns Error? {
-        return <Error>error ("Not implemented");
-    };
-
-    # Retrieves a list of the requester's subscriptions. Each call returns a limited list of subscriptions, up to 100. If 
-    # there are more subscriptions, a NextToken is also returned. Use the NextToken parameter in a new ListSubscriptions
-    # call to get further results.
-    # 
-    # + topicArn - The ARN of the topic for which you wish list the subscriptions
-    # + nextToken - The token returned by the previous `listSubscriptions` call
-    # + return - A tuple of `SubscriptionListObject[]` and `string?` containing the subscriptions and NextToken (if exists), or an
-    #            `sns:Error` in case of failure
-    isolated remote function listSubscriptions(string? topicArn = (), string? nextToken = ()) 
-        returns [SubscriptionListObject[], string?]|Error {
         return <Error>error ("Not implemented");
     };
 

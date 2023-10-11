@@ -339,7 +339,7 @@ public type SubscriptionAttributes record {|
 # + protocol - The subscription's protocol
 # + endpoint - The subscription's endpoint (format depends on the protocol)
 # + topicArn - The ARN of the subscription's topic
-public type SubscriptionListObject record {|
+public type Subscription record {|
     string subscriptionArn;
     string owner;
     SubscriptionProtocol protocol;

@@ -237,7 +237,7 @@ function getSubscriptionAttributesTest1() returns error? {
 }
 
 @test:Config {
-    groups: ["subscribex"]
+    groups: ["subscribe"]
 }
 function getSubscriptionAttributesTest2() returns error? {
     string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic5");
@@ -264,4 +264,111 @@ function getSubscriptionAttributesTest2() returns error? {
     test:assertTrue(attributes?.deliveryPolicy is json);
     test:assertEquals(attributes?.filterPolicy, setAttributes?.filterPolicy);
     test:assertEquals(attributes.filterPolicyScope, setAttributes.filterPolicyScope);
+}
+
+@test:Config {
+    groups: ["subscribe"]
+}
+function listSubscriptionsTest() returns error? {
+    string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic6");
+    string subscriptionArn = 
+        check amazonSNSClient->subscribe(topic, testPhoneNumber, SMS);
+
+    stream<Subscription, Error?> subscriptionsStream = amazonSNSClient->listSubscriptions();
+    Subscription[] subscriptions = check from Subscription subscription in subscriptionsStream
+        select subscription;
+
+    string[] subscriptionArns = from Subscription subscription in subscriptions
+        select subscription.subscriptionArn;
+
+    // Validate newly created subscription
+    Subscription[] retrievedSubscription = from Subscription subscription in subscriptions
+        where subscription.subscriptionArn == subscriptionArn
+        limit 1
+        select subscription;
+    test:assertEquals(retrievedSubscription.length(), 1, "Subscription not found in the list.");
+    test:assertEquals(retrievedSubscription[0].endpoint, testPhoneNumber);
+    test:assertEquals(retrievedSubscription[0].protocol, SMS);
+    test:assertEquals(retrievedSubscription[0].topicArn, topic);
+    test:assertEquals(retrievedSubscription[0].owner.length(), 12);
+
+    test:assertTrue(subscriptions.length() > 100, "There should be over 100 subscriptions.");
+
+    // Ensure there are no duplicates
+    foreach string subscriptionArn1 in subscriptionArns {
+        if (subscriptionArn1 == "PendingConfirmation") {
+            continue;
+        }
+
+        test:assertEquals(subscriptionArns.indexOf(subscriptionArn1), subscriptionArns.lastIndexOf(subscriptionArn1),
+            "Subscription " + subscriptionArn1 + " duplicated in the list.");
+    }
+}
+
+@test:Config {
+    groups: ["subscribe"]
+}
+function listSubscriptionsByTopicTest() returns error? {
+    string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic7");
+    string subscriptionArn = check amazonSNSClient->subscribe(topic, testPhoneNumber, SMS);
+    _ = check amazonSNSClient->subscribe(topic, testHttp, HTTP);
+    _ = check amazonSNSClient->subscribe(topic, testHttps, HTTPS);
+    _ = check amazonSNSClient->subscribe(topic, testEmail, EMAIL);
+
+    stream<Subscription, Error?> subscriptionsStream = amazonSNSClient->listSubscriptions(topic);
+    Subscription[] subscriptions = check from Subscription subscription in subscriptionsStream
+        order by subscription.protocol
+        select subscription;
+
+    test:assertEquals(subscriptions.length(), 4);
+
+    test:assertEquals(subscriptions[0].subscriptionArn, "PendingConfirmation");
+    test:assertEquals(subscriptions[0].endpoint, testEmail);
+    test:assertEquals(subscriptions[0].protocol, EMAIL);
+    test:assertEquals(subscriptions[0].topicArn, topic);
+    test:assertEquals(subscriptions[0].owner.length(), 12);
+
+    test:assertEquals(subscriptions[1].subscriptionArn, "PendingConfirmation");
+    test:assertEquals(subscriptions[1].endpoint, testHttp);
+    test:assertEquals(subscriptions[1].protocol, HTTP);
+    test:assertEquals(subscriptions[1].topicArn, topic);
+    test:assertEquals(subscriptions[1].owner.length(), 12);
+
+    test:assertEquals(subscriptions[2].subscriptionArn, "PendingConfirmation");
+    test:assertEquals(subscriptions[2].endpoint, testHttps);
+    test:assertEquals(subscriptions[2].protocol, HTTPS);
+    test:assertEquals(subscriptions[2].topicArn, topic);
+    test:assertEquals(subscriptions[2].owner.length(), 12);
+
+    test:assertEquals(subscriptions[3].subscriptionArn, subscriptionArn);
+    test:assertEquals(subscriptions[3].endpoint, testPhoneNumber);
+    test:assertEquals(subscriptions[3].protocol, SMS);
+    test:assertEquals(subscriptions[3].topicArn, topic);
+    test:assertEquals(subscriptions[3].owner.length(), 12);
+}
+
+@test:Config {
+    groups: ["subscribe"]
+}
+function listSubscriptionsByTopicEmptyTest() returns error? {
+    string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic8");
+
+    stream<Subscription, Error?> subscriptionsStream = amazonSNSClient->listSubscriptions(topic);
+    Subscription[] subscriptions = check from Subscription subscription in subscriptionsStream
+        select subscription;
+    test:assertEquals(subscriptions.length(), 0);
+}
+
+@test:Config {
+    groups: ["subscribe"]
+}
+function listSubscriptionsByTopicDoesNotExist() returns error? {
+    string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic9");
+    _ = check amazonSNSClient->deleteTopic(topic);
+
+    stream<Subscription, Error?> subscriptionsStream = amazonSNSClient->listSubscriptions(topic);
+    Subscription[]|Error? e = from Subscription subscription in subscriptionsStream
+        select subscription;
+    test:assertTrue(e is OperationError, "Expected error.");
+    test:assertEquals((<OperationError>e).message(), "Topic does not exist");
 }
