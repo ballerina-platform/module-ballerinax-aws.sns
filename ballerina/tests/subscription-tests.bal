@@ -423,3 +423,40 @@ function setSubscriptionAttributesTestNegative() returns error? {
     test:assertTrue(e is OperationError, "Expected error.");
     test:assertEquals((<OperationError>e).message(), "Invalid parameter: Delivery protocol [sms] does not support raw message delivery.");
 };
+
+@test:Config {
+    groups: ["subscribe"]
+}
+function unsubscribeTest() returns error? {
+    string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic11");
+    string subscription = check amazonSNSClient->subscribe(topic, testPhoneNumber, SMS, returnSubscriptionArn = true);
+    string[] subscriptions = check from Subscription subscripion in amazonSNSClient->listSubscriptions(topic) 
+                                         select subscripion.subscriptionArn;
+    test:assertTrue(subscriptions.indexOf(subscription) != ());
+
+    _ = check amazonSNSClient->unsubscribe(subscription);
+    subscriptions = check from Subscription subscripion in amazonSNSClient->listSubscriptions(topic) 
+                          select subscripion.subscriptionArn;
+    test:assertTrue(subscriptions.indexOf(subscription) is ());
+}
+
+@test:Config {
+    groups: ["subscribe"]
+}
+function unsubscribeWithInvalidArnTest() returns error? {
+    string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic13");
+    string subscription = check amazonSNSClient->subscribe(topic, testEmail, EMAIL); // Valid ARN is not returned
+
+    Error? e = amazonSNSClient->unsubscribe(subscription);
+    test:assertTrue(e is OperationError, "Expected error.");
+    test:assertEquals((<OperationError>e).message(), "Invalid parameter: SubscriptionArn Reason: An ARN must have at least 6 elements, not 1");
+}
+
+@test:Config {
+    groups: ["subscribe"]
+}
+function usubscribeUnauthorizedTest() returns error? {
+    Error? e = amazonSNSClient->unsubscribe("arn:aws:sns:us-east-1:invalid:2023-10-11T103913903939ZSubscribeTopic12:45f03920-f890-4a2f-bd77-32f9689b8013");
+    test:assertTrue(e is OperationError, "Expected error.");
+    test:assertTrue((<OperationError>e).message().includes("is not authorized to perform: SNS:Unsubscribe on resource"));
+}

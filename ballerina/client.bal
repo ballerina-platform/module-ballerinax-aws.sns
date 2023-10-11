@@ -438,7 +438,11 @@ public isolated client class Client {
     # + subscriptionArn - The ARN of the subscription to be deleted
     # + return - `()` or `sns:Error` in case of failure
     isolated remote function unsubscribe(string subscriptionArn) returns Error? {
-        return <Error>error ("Not implemented");
+        map<string> parameters = initiateRequest("Unsubscribe");
+        parameters["SubscriptionArn"] = subscriptionArn;
+
+        http:Request request = check self.generateRequest(parameters);
+        _ = check sendRequest(self.amazonSNSClient, request);
     };
 
     # Creates a platform application object for one of the supported push notification services. You must specify 
