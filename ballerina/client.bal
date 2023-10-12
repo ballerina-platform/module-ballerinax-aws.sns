@@ -376,8 +376,7 @@ public isolated client class Client {
     # call to get further results.
     # 
     # + topicArn - The ARN of the topic for which you wish list the subscriptions
-    # + return - A tuple of `SubscriptionListObject[]` and `string?` containing the subscriptions and NextToken (if exists), or an
-    #            `sns:Error` in case of failure
+    # + return - A stream of `Subscription` records or `sns:Error` in case of failure
     isolated remote function listSubscriptions(string? topicArn = ()) returns stream<Subscription, Error?> {
         SubscriptionsStream subscriptionsStreamObject = new (self.amazonSNSClient, self.generateRequest, topicArn);
         stream<Subscription, Error?> subscriptionsStream = new (subscriptionsStreamObject);
@@ -395,7 +394,6 @@ public isolated client class Client {
 
         http:Request request = check self.generateRequest(parameters);
         json response = check sendRequest(self.amazonSNSClient, request);
-        io:println(response.GetSubscriptionAttributesResponse.GetSubscriptionAttributesResult.Attributes);
 
         do {
             json attributes = 
@@ -446,7 +444,7 @@ public isolated client class Client {
     };
 
     # Creates a platform application object for one of the supported push notification services. You must specify 
-    # `attributes.platformPrincipal` and `attributes.platformCredential` attributes.
+    # `auth.platformPrincipal` and `auth.platformCredential` parameters.
     # - for `ADM` the `platformPrincipal` is the `client id` and `platformCredential` is the `client secret`
     # - for `APNS` and `APNS_SANDBOX` using certificate credentials, the `platformPrincipal` is the `SSL certificate` 
     #   and `platformCredential` is the `private key`
@@ -455,36 +453,75 @@ public isolated client class Client {
     # - for `FCM` there is no `platformPrincipal` and `platformCredential` is the `API key`
     # - for `BAIDU` the `platformPrincipal` is the `API key` and `platformCredential` is the `secret key`
     # - for `MPNS` the `platformPrincipal` is the `TLS certificate` and `platformCredential` is the `private key`
-    # - for `WNS` the `platformPrincipal` is the `Package Security Identifier` and `platformCredential` is the `secret 
-    #   key`
+    # - for `WNS` the `platformPrincipal` is the `Package Security Identifier` and `platformCredential` is the 
+    #   `secret key`
     # 
     # + name - The name of the platform application object to create
     # + platform - The platform of the application
     # + attributes - Attributes of the platform application
+    # + auth - Authentication credentials for the platform application
     # + return - The ARN of the platform application if successful, or `sns:Error` in case of failure
     isolated remote function createPlatformApplication(string name, Platform platform, 
-        PlatformApplicationAttributes attributes) returns string|Error {
-        return <Error>error ("Not implemented");
+        PlatformApplicationAuthentication auth, PlatformApplicationAttributes? attributes = ()) returns string|Error {
+        map<string> parameters = initiateRequest("CreatePlatformApplication");
+        parameters["Name"] = name;
+        parameters["Platform"] = platform;
+
+        record {} attributesRecord = {};
+        if attributes is PlatformApplicationAttributes {
+            attributesRecord = {
+                ...auth,
+                ...attributes
+            };
+        } else {
+            attributesRecord = auth;
+        }
+
+        record {} formattedPlatformApplicationAttributes = check formatAttributes(attributesRecord);
+        setAttributes(parameters, formattedPlatformApplicationAttributes);
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+
+        do {
+            return (check response.CreatePlatformApplicationResponse.CreatePlatformApplicationResult
+                .PlatformApplicationArn).toString();
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
     };
 
     # Lists the platform application objects for the supported push notification services. Each call returns a limited
     # list of applications, up to 100. If there are more applications, a NextToken is also returned. Use the NextToken
     # parameter in a new `listPlatformApplications` call to get further results.
     # 
-    # + nextToken - The token returned by the previous `listPlatformApplications` call
-    # + return - A tuple of `PlatformApplication[]` and `string?` containing the platform applications and NextToken 
-    isolated remote function listPlatformApplications(string? nextToken = ()) 
-        returns [PlatformApplication[], string?]|Error {
-        return <Error>error ("Not implemented");
+    # + return - A stream of `PlatformApplication` records or `sns:Error` in case of failure
+    isolated remote function listPlatformApplications() returns stream<PlatformApplication, Error?> {
+        PlatformApplicationsStream platformApplicationsStreamObject = new (self.amazonSNSClient, self.generateRequest);
+        stream<PlatformApplication, Error?> platformApplicationsStream = new (platformApplicationsStreamObject);
+        return platformApplicationsStream;
     };
 
     # Retrieves a platform application object for one of the supported push notification services.
     # 
     # + platformApplicationArn - The ARN of the platform application object to retrieve
     # + return - `PlatformApplication` or `sns:Error` in case of failure
-    isolated remote function getPlatformApplication(string platformApplicationArn) 
-        returns PlatformApplication|Error {
-        return <Error>error ("Not implemented");
+    isolated remote function getPlatformApplicationAttributes(string platformApplicationArn) 
+        returns RetrievablePlatformApplicationAttributes|Error {
+        map<string> parameters = initiateRequest("GetPlatformApplicationAttributes");
+        parameters["PlatformApplicationArn"] = platformApplicationArn;
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+
+        do {
+            json attributes =
+                check response.GetPlatformApplicationAttributesResponse.GetPlatformApplicationAttributesResult
+                    .Attributes;
+            return check mapJsonToPlatformApplicationAttributes(attributes);
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
     };
 
     # Modifies the attributes of a platform application object for one of the supported push notification services.
@@ -493,8 +530,15 @@ public isolated client class Client {
     # + attributes - The attributes to modify
     # + return - `()` or `sns:Error` in case of failure
     isolated remote function setPlatformApplicationAttributes(string platformApplicationArn, 
-        PlatformApplicationAttributes attributes) returns Error? {
-        return <Error>error ("Not implemented");
+        SettablePlatformApplicationAttributes attributes) returns Error? {
+        map<string> parameters = initiateRequest("SetPlatformApplicationAttributes");
+        parameters["PlatformApplicationArn"] = platformApplicationArn;
+
+        record {} formattedPlatformApplicationAttributes = check formatAttributes(attributes);
+        setAttributes(parameters, formattedPlatformApplicationAttributes);
+
+        http:Request request = check self.generateRequest(parameters);
+        _ = check sendRequest(self.amazonSNSClient, request);
     };
 
     # Deletes a platform application object for one of the supported push notification services.
@@ -502,7 +546,12 @@ public isolated client class Client {
     # + platformApplicationArn - The ARN of the platform application object to delete
     # + return - `()` or `sns:Error` in case of failure
     isolated remote function deletePlatformApplication(string platformApplicationArn) returns Error? {
-        return <Error>error ("Not implemented");
+        map<string> parameters = initiateRequest("DeletePlatformApplication");
+        parameters["PlatformApplicationArn"] = platformApplicationArn;
+
+        http:Request request = check self.generateRequest(parameters);
+        json j = check sendRequest(self.amazonSNSClient, request);
+        io:println(j);
     };
 
     # Creates an endpoint for a device and mobile app on one of the supported push notification services. This action is

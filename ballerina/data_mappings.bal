@@ -256,6 +256,16 @@ isolated function mapJsonToSubscriptionAttributes(json jsonResponse) returns Get
     return mapped.cloneWithType();
 }
 
+isolated function mapJsonToPlatformApplicationAttributes(json jsonResponse) 
+    returns RetrievablePlatformApplicationAttributes|error {
+    string[] booleanFields = ["Enabled"];
+    string[] intFields = ["SuccessFeedbackSampleRate"];
+
+    record {} mapped = check mapJsonToRecord(jsonResponse, booleanFields = booleanFields, intFields = intFields);
+    return mapped.cloneWithType();
+}
+
+
 isolated function mapJsonToRecord(json jsonResponse, string[] intFields = [], string[] booleanFields = [], 
     string[] jsonFields = [], string[] skipFields = []) returns record {}|error {
     record {} response = check jsonResponse.cloneWithType();

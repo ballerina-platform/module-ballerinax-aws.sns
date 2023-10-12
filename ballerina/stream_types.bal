@@ -162,3 +162,80 @@ public class SubscriptionsStream {
     }
 }
 
+public class PlatformApplicationsStream {
+
+    private final http:Client amazonSNSClient;
+    private final (isolated function (map<string>) returns http:Request|Error) & readonly generateRequest;
+
+    private PlatformApplication[] platformApplications = [];
+    private string? nextToken = ();
+    private boolean initialized = false;
+
+    public isolated function init(http:Client amazonSNSClient, 
+        isolated function (map<string>) returns http:Request|Error generateRequest) {
+        self.amazonSNSClient = amazonSNSClient;
+        self.generateRequest = generateRequest;
+    }
+
+    private isolated function fetchPlatformApplications() returns Error? {
+        map<string> parameters = initiateRequest("ListPlatformApplications");
+
+        if self.nextToken is string {
+            parameters["NextToken"] = <string>self.nextToken;
+        }
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+
+        json|error nextToken = response.ListPlatformApplicationsResponse.ListPlatformApplicationsResult.NextToken;
+
+        if nextToken is json && nextToken != () {
+            self.nextToken = nextToken.toString();
+        } else {
+            self.nextToken = ();
+        }
+
+        do {
+            json[] platformApplications = <json[]>(check response.ListPlatformApplicationsResponse
+                .ListPlatformApplicationsResult.PlatformApplications);
+
+            foreach json platformApplication in platformApplications {
+
+                RetrievablePlatformApplicationAttributes attributes = 
+                    check mapJsonToPlatformApplicationAttributes(check platformApplication.Attributes);
+                PlatformApplication application = {
+                    platformApplicationArn: (check platformApplication.PlatformApplicationArn),
+                    ...attributes
+                };
+                self.platformApplications.push(application);
+                
+            }
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
+    }
+
+    public isolated function next() returns record {|PlatformApplication value;|}|Error? {
+        if self.platformApplications.length() == 0 {
+            if self.initialized && self.nextToken is () {
+                return ();
+            }
+
+            Error? e = self.fetchPlatformApplications();
+            self.initialized = true;
+            if e is error {
+                return e;
+            }
+        }
+
+        if self.platformApplications.length() == 0 {
+            return ();
+        }
+
+        return {value: self.platformApplications.remove(0)};
+    }
+
+    public isolated function close() returns Error? {
+        return ();
+    }
+}

@@ -388,8 +388,6 @@ public type GettableSubscriptionAttributes record {
 
 # Represents the attributes of an Amazon SNS platform appication.
 #
-# + platformCredential - The credential received from the notification service
-# + platformPrincipal - The principal received from the notification service
 # + eventEndpointCreated - The topic ARN to which `EndpointCreated` event notifications should be sent
 # + eventEndpointDeleted - The topic ARN to which `EndpointDeleted` event notifications should be sent
 # + eventEndpointUpdated - The topic ARN to which `EndpointUpdated` event notifications should be sent
@@ -398,11 +396,7 @@ public type GettableSubscriptionAttributes record {
 # + successFeedbackRoleArn - The IAM role ARN used to give Amazon SNS write access to use CloudWatch Logs on your behalf
 # + failureFeedbackRoleArn - The IAM role ARN used to give Amazon SNS write access to use CloudWatch Logs on your behalf
 # + successFeedbackSampleRate - The percentage of success to sample (0-100)
-# + applePlatformTeamId - The identifier that's assigned to your Apple developer account team
-# + applePlatformBundleId - The bundle identifier that's used for APNs tokens
 public type PlatformApplicationAttributes record {|
-    string platformCredential;
-    string platformPrincipal?;
     string eventEndpointCreated?;
     string eventEndpointDeleted?;
     string eventEndpointUpdated?;
@@ -410,29 +404,50 @@ public type PlatformApplicationAttributes record {|
     string successFeedbackRoleArn?;
     string failureFeedbackRoleArn?;
     int successFeedbackSampleRate?;
+|};
+
+# Represents the authentication attributes of an Amazon SNS platform appication that can be set.
+# 
+# + platformCredential - The credential received from the notification service
+# + platformPrincipal - The principal received from the notification service
+# + applePlatformTeamId - The identifier that's assigned to your Apple developer account team
+# + applePlatformBundleId - The bundle identifier that's used for APNs tokens
+public type PlatformApplicationAuthentication record {|
+    string platformCredential;
+    string platformPrincipal?;
+    string applePlatformTeamId?;
+    string applePlatformBundleId?;
+|};
+
+# Represents the attributes of an Amazon SNS platform appication that can be set using the 
+# `setPlatformApplicationAttributes` action.
+# 
+# + platformCredential - The credential received from the notification service
+# + platformPrincipal - The principal received from the notification service
+# + applePlatformTeamId - The identifier that's assigned to your Apple developer account team
+# + applePlatformBundleId - The bundle identifier that's used for APNs tokens
+
+public type SettablePlatformApplicationAttributes record {|
+    *PlatformApplicationAttributes;
+    string platformCredential?;
+    string platformPrincipal?;
     string applePlatformTeamId?;
     string applePlatformBundleId?;
 |};
 
 # Represents the attributes of an Amazon SNS platform application that can be retrieved.
 # 
+# + enabled - Whether the platform application is enabled for direct publishing from Amazon SNS
 # + appleCertificateExpiryDate - The expiry date of the SSL certificate used to configure certificate-based 
 #                                authentication
 # + applePlatformTeamId - The Apple developer account ID used to configure token-based authentication
 # + applePlatformBundleId - The bundle identifier used to configure token-based authentication
-# + eventEndpointCreated - The topic ARN to which `EndpointCreated` event notifications should be sent
-# + eventEndpointDeleted - The topic ARN to which `EndpointDeleted` event notifications should be sent
-# + eventEndpointUpdated - The topic ARN to which `EndpointUpdated` event notifications should be sent
-# + eventDeliveryFailure - The topic ARN to which `DeliveryFailure` event notifications should be sent upon Direct
-#                          Publish delivery failure (permanent) to one of the application's endpoints
 public type RetrievablePlatformApplicationAttributes record {|
-    time:Date appleCertificateExpiryDate?;
+    boolean enabled;
+    string appleCertificateExpiryDate?;
     string applePlatformTeamId?;
     string applePlatformBundleId?;
-    string eventEndpointCreated?;
-    string eventEndpointDeleted?;
-    string eventEndpointUpdated?;
-    string eventDeliveryFailure?;
+    *PlatformApplicationAttributes;
 |};
 
 # Represents an Amazon SNS platform appication.
