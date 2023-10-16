@@ -19,7 +19,7 @@ import ballerina/test;
 string standardTopic = "";
 string fifoTopicWithCBD = "";
 string fifoTopicWithoutCBD = "";
-string applicationArn = "arn:aws:sns:us-east-1:482724125666:endpoint/GCM/KaneelApplication/e1097da7-0f72-32e1-bb1e-8df05ad14443";
+string applicationArn = "arn:aws:sns:us-east-1:482724125666:app/ADM/2023-10-16T085246647686ZEndpointTestApplication";
 string invalidApplicationArn = "arn:aws:sns:us-east-1:482724125666:endpoint/GCM/KaneelApplication/e1097da7-0f72-32e1-bb1e-8df05ad14444";
 string temp = "arn:aws:sns:us-east-1:482724125666:2023-10-05T104426830397ZPublishStandardTopic";
 

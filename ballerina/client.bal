@@ -550,8 +550,7 @@ public isolated client class Client {
         parameters["PlatformApplicationArn"] = platformApplicationArn;
 
         http:Request request = check self.generateRequest(parameters);
-        json j = check sendRequest(self.amazonSNSClient, request);
-        io:println(j);
+        _ = check sendRequest(self.amazonSNSClient, request);
     };
 
     # Creates an endpoint for a device and mobile app on one of the supported push notification services. This action is
@@ -562,10 +561,31 @@ public isolated client class Client {
     # + token - Unique identifier created by the notification service for an app on a device. The specific name for 
     #           the token will vary, depending on which notification service is being used
     # + attributes - Attributes of the endpoint
+    # + customUserData - Arbitrary user data to associate with the endpoint. Amazon SNS does not use this data
     # + return - The ARN of the endpoint if successful, or `sns:Error` in case of failure
-    isolated remote function createEndpoint(string platformApplicationArn, string token, 
-        EndpointAttributes? attributes = ()) returns string|Error {
-        return <Error>error ("Not implemented");
+    isolated remote function createPlatformEndpoint(string platformApplicationArn, string token, 
+        EndpointAttributes? attributes = (), string? customUserData = ()) returns string|Error {
+        map<string> parameters = initiateRequest("CreatePlatformEndpoint");
+        parameters["PlatformApplicationArn"] = platformApplicationArn;
+        parameters["Token"] = token;
+
+        if customUserData is string {
+            parameters["CustomUserData"] = customUserData;
+        }
+
+        if (attributes is EndpointAttributes) {
+            record {} formattedTopicAttributes = check formatAttributes(attributes);
+            setAttributes(parameters, formattedTopicAttributes);
+        }
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+
+        do {
+            return (check response.CreatePlatformEndpointResponse.CreatePlatformEndpointResult.EndpointArn).toString();
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
     };
 
     # Lists the endpoints associated with a specific platform application. Each call returns a limited list of 
@@ -575,16 +595,19 @@ public isolated client class Client {
     # + platformApplicationArn - The ARN of the platform application to retrieve endpoints for
     # + nextToken - The token returned by the previous `listEndpoints` call
     # + return - A tuple of `Endpoint[]` and `string?` containing the endpoints and the NextToken
-    isolated remote function listEndpoints(string platformApplicationArn, string? nextToken = ()) 
-        returns [Endpoint[], string?]|Error {
-        return <Error>error ("Not implemented");
+    isolated remote function listPlatformApplicationEndpoints(string platformApplicationArn, string? nextToken = ()) 
+        returns stream<PlatformApplicationEndpoint, Error?> {
+        PlatformApplicationEndpointsStream platformApplicationEndpointsStreamObject = 
+            new (self.amazonSNSClient, self.generateRequest, platformApplicationArn);
+        stream<PlatformApplicationEndpoint, Error?> platformApplicationEndpointsStream = new (platformApplicationEndpointsStreamObject);
+        return platformApplicationEndpointsStream;
     };
 
     # Retrieves a platform application endpoint.
     # 
     # + endpointArn - The ARN of the endpoint
     # + return - An `Endpoint` or `sns:Error` in case of failure
-    isolated remote function getEndpoint(string endpointArn) returns Endpoint|Error {
+    isolated remote function getEndpoint(string endpointArn) returns PlatformApplicationEndpoint|Error {
         return <Error>error ("Not implemented");
     };
 

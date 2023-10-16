@@ -239,3 +239,86 @@ public class PlatformApplicationsStream {
         return ();
     }
 }
+
+public class PlatformApplicationEndpointsStream {
+
+    private final http:Client amazonSNSClient;
+    private final (isolated function (map<string>) returns http:Request|Error) & readonly generateRequest;
+    private final string platformApplicationArn;
+
+    private PlatformApplicationEndpoint[] endpoints = [];
+    private string? nextToken = ();
+    private boolean initialized = false;
+
+    public isolated function init(http:Client amazonSNSClient,
+            isolated function (map<string>) returns http:Request|Error generateRequest, 
+            string platformApplicationArn) {
+        self.amazonSNSClient = amazonSNSClient;
+        self.generateRequest = generateRequest;
+        self.platformApplicationArn = platformApplicationArn;
+    }
+
+    private isolated function fetchPlatformApplicationEndpoints() returns Error? {
+        map<string> parameters = initiateRequest("ListEndpointsByPlatformApplication");
+        parameters["PlatformApplicationArn"] = <string>self.platformApplicationArn;
+
+        if self.nextToken is string {
+            parameters["NextToken"] = <string>self.nextToken;
+        }
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+
+        json|error nextToken = response.ListEndpointsByPlatformApplicationResponse
+            .ListEndpointsByPlatformApplicationResult.NextToken;
+
+        if nextToken is json && nextToken != () {
+            self.nextToken = nextToken.toString();
+        } else {
+            self.nextToken = ();
+        }
+
+        do {
+            json[] platformApplicationEndpoints = <json[]>(check response.ListEndpointsByPlatformApplicationResponse
+                .ListEndpointsByPlatformApplicationResult.Endpoints);
+
+            foreach json platformApplicationEndpoint in platformApplicationEndpoints {
+
+                EndpointAttributes attributes = check mapJsonToPlatformApplicationEndpointAttributes(
+                    check platformApplicationEndpoint.Attributes);
+                PlatformApplicationEndpoint endpoint = {
+                    endpointArn: check platformApplicationEndpoint.EndpointArn,
+                    ...attributes
+                };
+                self.endpoints.push(endpoint);
+
+            }
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
+    }
+
+    public isolated function next() returns record {|PlatformApplicationEndpoint value;|}|Error? {
+        if self.endpoints.length() == 0 {
+            if self.initialized && self.nextToken is () {
+                return ();
+            }
+
+            Error? e = self.fetchPlatformApplicationEndpoints();
+            self.initialized = true;
+            if e is error {
+                return e;
+            }
+        }
+
+        if self.endpoints.length() == 0 {
+            return ();
+        }
+
+        return {value: self.endpoints.remove(0)};
+    }
+
+    public isolated function close() returns Error? {
+        return ();
+    }
+}

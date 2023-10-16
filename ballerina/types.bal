@@ -474,10 +474,7 @@ public type EndpointAttributes record {|
 # Represents an Amazon SNS platform appication endpoint.
 # 
 # + endpointArn - The endpoint's ARN
-# + customUserData - Arbitrary user data associated with the endpoint
-# + enabled - flag that enables/disables delivery to the endpoint
-# + token - Unique identifier created by the notification service for an app on a device
-public type Endpoint record {|
+public type PlatformApplicationEndpoint record {|
     string endpointArn;
     *EndpointAttributes;
 |};
