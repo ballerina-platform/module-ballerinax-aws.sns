@@ -20,7 +20,7 @@ import ballerina/test;
     groups: ["endpoint"]
 }
 function createEndpointTest() returns error? {
-    string arn = check amazonSNSClient->createPlatformEndpoint(applicationArn, "testDeviceToken");
+    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken");
     test:assertTrue(isArn(arn));
 }
 
@@ -28,7 +28,7 @@ function createEndpointTest() returns error? {
     groups: ["endpoint"]
 }
 function createEndpointWithEmptyTokenTest() returns error? {
-    string|Error arn = amazonSNSClient->createPlatformEndpoint(applicationArn, "");
+    string|Error arn = amazonSNSClient->createEndpoint(applicationArn, "");
     test:assertTrue(arn is OperationError);
     test:assertEquals((<OperationError>arn).message(), "Invalid parameter: Token Reason: cannot be empty");
 }
@@ -37,7 +37,7 @@ function createEndpointWithEmptyTokenTest() returns error? {
     groups: ["endpoint"]
 }
 function createEndpointWithInvalidArnTest() returns error? {
-    string|Error arn = amazonSNSClient->createPlatformEndpoint(invalidApplicationArn, "testDeviceToken");
+    string|Error arn = amazonSNSClient->createEndpoint(invalidApplicationArn, testRunId + "testDeviceToken2");
     test:assertTrue(arn is OperationError);
     test:assertEquals((<OperationError>arn).message(), "Invalid parameter: PlatformApplicationArn Reason: Wrong number of slashes in relative portion of the ARN.");
 }
@@ -46,7 +46,7 @@ function createEndpointWithInvalidArnTest() returns error? {
     groups: ["endpoint"]
 }
 function createEndpointWithCustomUserDataTest() returns error? {
-    string arn = check amazonSNSClient->createPlatformEndpoint(applicationArn, "testDeviceToken", 
+    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken3",
         customUserData = "testCustomUserData");
     test:assertTrue(isArn(arn));
 }
@@ -55,8 +55,8 @@ function createEndpointWithCustomUserDataTest() returns error? {
     groups: ["endpoint"]
 }
 function createEndpointWithAttributes() returns error? {
-    EndpointAttributes attributes = {enabled: true, token: "testToken2", customUserData: "testCustomUserData2"};
-    string arn = check amazonSNSClient->createPlatformEndpoint(applicationArn, "testDeviceToken", attributes);
+    EndpointAttributes attributes = {enabled: true, token: testRunId + "testToken4", customUserData: "testCustomUserData2"};
+    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken4", attributes);
     test:assertTrue(isArn(arn));
 }
 
@@ -65,31 +65,31 @@ function createEndpointWithAttributes() returns error? {
 }
 function createEndpointWithInvalidAttributes() returns error? {
     EndpointAttributes attributes = {enabled: true, token: "", customUserData: "testCustomUserData2"};
-    string|Error arn = check amazonSNSClient->createPlatformEndpoint(applicationArn, "testDeviceToken", attributes);
+    string|Error arn = amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken5", attributes);
     test:assertTrue(arn is OperationError);
     test:assertEquals((<OperationError>arn).message(), "Invalid parameter: Attributes Reason: Invalid value for attribute: Token: cannot be empty");
 }
 
 @test:Config {
-    groups: ["endpointx"]
+    groups: ["endpoint"]
 }
 function listPlatformApplicationEndpointsTest() returns error? {
     EndpointAttributes attributes = {enabled: false};
-    string arn = check amazonSNSClient->createPlatformEndpoint(applicationArn, "testDeviceTokenNew", attributes, 
+    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceTokenNew", attributes,
         "CustomDataNew");
 
-    stream<PlatformApplicationEndpoint, Error?> endpointStream = 
-        amazonSNSClient->listPlatformApplicationEndpoints(applicationArn);
-    PlatformApplicationEndpoint[] endpoints = check from PlatformApplicationEndpoint endpoint in endpointStream
+    stream<Endpoint, Error?> endpointStream = 
+        amazonSNSClient->listEndpoints(applicationArn);
+    Endpoint[] endpoints = check from Endpoint endpoint in endpointStream
                                                     select endpoint;
 
     test:assertTrue(endpoints.length() > 100, "Over 100 endpoints should be listed");
 
-    PlatformApplicationEndpoint[] findEndpoint = from PlatformApplicationEndpoint endpoint in endpoints
+    Endpoint[] findEndpoint = from Endpoint endpoint in endpoints
                                                  where arn == endpoint.endpointArn
                                                  select endpoint;
     test:assertTrue(findEndpoint.length() == 1, "Newly created endpoint not found");
-    test:assertEquals(findEndpoint[0].token, "testDeviceTokenNew");
+    test:assertEquals(findEndpoint[0].token, testRunId + "testDeviceTokenNew");
     test:assertEquals(findEndpoint[0].customUserData, "CustomDataNew");
     test:assertEquals(findEndpoint[0].enabled, false);
 

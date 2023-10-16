@@ -122,7 +122,7 @@ public isolated client class Client {
     # 
     # + return - A stream of topic ARNs or `sns:Error` in case of failure
     isolated remote function listTopics() returns stream<string, Error?> {
-        TopicsStream topicsStreamObject = new (self.amazonSNSClient, self.generateRequest);
+        TopicStream topicsStreamObject = new (self.amazonSNSClient, self.generateRequest);
         stream<string, Error?> topicsStream = new (topicsStreamObject);
         return topicsStream;
     }
@@ -378,7 +378,7 @@ public isolated client class Client {
     # + topicArn - The ARN of the topic for which you wish list the subscriptions
     # + return - A stream of `Subscription` records or `sns:Error` in case of failure
     isolated remote function listSubscriptions(string? topicArn = ()) returns stream<Subscription, Error?> {
-        SubscriptionsStream subscriptionsStreamObject = new (self.amazonSNSClient, self.generateRequest, topicArn);
+        SubscriptionStream subscriptionsStreamObject = new (self.amazonSNSClient, self.generateRequest, topicArn);
         stream<Subscription, Error?> subscriptionsStream = new (subscriptionsStreamObject);
         return subscriptionsStream;
 
@@ -497,7 +497,7 @@ public isolated client class Client {
     # 
     # + return - A stream of `PlatformApplication` records or `sns:Error` in case of failure
     isolated remote function listPlatformApplications() returns stream<PlatformApplication, Error?> {
-        PlatformApplicationsStream platformApplicationsStreamObject = new (self.amazonSNSClient, self.generateRequest);
+        PlatformApplicationStream platformApplicationsStreamObject = new (self.amazonSNSClient, self.generateRequest);
         stream<PlatformApplication, Error?> platformApplicationsStream = new (platformApplicationsStreamObject);
         return platformApplicationsStream;
     };
@@ -563,7 +563,7 @@ public isolated client class Client {
     # + attributes - Attributes of the endpoint
     # + customUserData - Arbitrary user data to associate with the endpoint. Amazon SNS does not use this data
     # + return - The ARN of the endpoint if successful, or `sns:Error` in case of failure
-    isolated remote function createPlatformEndpoint(string platformApplicationArn, string token, 
+    isolated remote function createEndpoint(string platformApplicationArn, string token, 
         EndpointAttributes? attributes = (), string? customUserData = ()) returns string|Error {
         map<string> parameters = initiateRequest("CreatePlatformEndpoint");
         parameters["PlatformApplicationArn"] = platformApplicationArn;
@@ -595,19 +595,18 @@ public isolated client class Client {
     # + platformApplicationArn - The ARN of the platform application to retrieve endpoints for
     # + nextToken - The token returned by the previous `listEndpoints` call
     # + return - A tuple of `Endpoint[]` and `string?` containing the endpoints and the NextToken
-    isolated remote function listPlatformApplicationEndpoints(string platformApplicationArn, string? nextToken = ()) 
-        returns stream<PlatformApplicationEndpoint, Error?> {
-        PlatformApplicationEndpointsStream platformApplicationEndpointsStreamObject = 
-            new (self.amazonSNSClient, self.generateRequest, platformApplicationArn);
-        stream<PlatformApplicationEndpoint, Error?> platformApplicationEndpointsStream = new (platformApplicationEndpointsStreamObject);
-        return platformApplicationEndpointsStream;
+    isolated remote function listEndpoints(string platformApplicationArn, string? nextToken = ()) 
+        returns stream<Endpoint, Error?> {
+        EndpointStream endpointsStreamObject = new (self.amazonSNSClient, self.generateRequest, platformApplicationArn);
+        stream<Endpoint, Error?> endpointsStream = new (endpointsStreamObject);
+        return endpointsStream;
     };
 
     # Retrieves a platform application endpoint.
     # 
     # + endpointArn - The ARN of the endpoint
     # + return - An `Endpoint` or `sns:Error` in case of failure
-    isolated remote function getEndpoint(string endpointArn) returns PlatformApplicationEndpoint|Error {
+    isolated remote function getEndpoint(string endpointArn) returns Endpoint|Error {
         return <Error>error ("Not implemented");
     };
 

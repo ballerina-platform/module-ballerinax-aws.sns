@@ -20,6 +20,7 @@ string standardTopic = "";
 string fifoTopicWithCBD = "";
 string fifoTopicWithoutCBD = "";
 string applicationArn = "arn:aws:sns:us-east-1:482724125666:app/ADM/2023-10-16T085246647686ZEndpointTestApplication";
+string endpointArn = "arn:aws:sns:us-east-1:482724125666:endpoint/ADM/2023-10-16T085246647686ZEndpointTestApplication/bf7e3fbd-c1e1-3554-aba6-7e74cff15580";
 string invalidApplicationArn = "arn:aws:sns:us-east-1:482724125666:endpoint/GCM/KaneelApplication/e1097da7-0f72-32e1-bb1e-8df05ad14444";
 string temp = "arn:aws:sns:us-east-1:482724125666:2023-10-05T104426830397ZPublishStandardTopic";
 
@@ -103,7 +104,7 @@ function publishToInvalidPhoneNumber() returns error? {
     groups: ["publish"]
 }
 function publishToApplication() returns error? {
-    PublishMessageResponse response = check amazonSNSClient->publish(applicationArn, "Test Message",
+    PublishMessageResponse response = check amazonSNSClient->publish(endpointArn, "Test Message",
         targetType = ARN);
     test:assertTrue(response.messageId != "", "MessageID is empty.");
 }

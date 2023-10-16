@@ -199,7 +199,7 @@ function subscribeWithInvalidAttributeTest() returns error? {
 function confirmSubscriptionTest() returns error? {
     string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic3");
     _ = check amazonSNSClient->subscribe(topic, testEmail, EMAIL);
-    string token = "2336412f37fb687f5d51e6e2425c464cefc6029303415bf22f632d6c1109584e3a0c5a9cb81735ec0ba6302001ae62e84c830f41c6cae9c7eeea0532b02990b572d9105532fe2ee1e97e3e06eb4b7931171f38d544f59f1077fe3dba807e1b570e992ebd62fef0677d928fafd61cf2a3b91e511bf54e99ae3270528fbd38b10709758e4c1d77ff77bbc7d460ef177618";
+    string token = "2336412f37fb687f5d51e6e2425c464cefc60320762a6170a49b5c54805f379c1314d96e0fe2abc55dbe9c22429da22590a9aef52aae003208e2a189ff30944b79be41796e4f3cb374e9a7b32eb63744c0fbc2ebad8140c2a9fa83177525f79c8ac94b2555b44c8a87d5ca4ef8445514da6a76ba572b6b0b324a552df6d9ef528012b069c3989ebcec4dc7d66209e660";
     string subsriptionArn = check amazonSNSClient->confirmSubscription(topic, token);
     test:assertTrue(isArn(subsriptionArn), "Returned value is not an ARN.");
 }

@@ -1,6 +1,6 @@
 import ballerina/http;
 
-public class TopicsStream {
+public class TopicStream {
 
     private final http:Client amazonSNSClient;
     private final (isolated function(map<string>) returns http:Request|Error) & readonly generateRequest;
@@ -66,7 +66,7 @@ public class TopicsStream {
     }
 }
 
-public class SubscriptionsStream {
+public class SubscriptionStream {
 
     private final http:Client amazonSNSClient;
     private final (isolated function (map<string>) returns http:Request|Error) & readonly generateRequest;
@@ -162,7 +162,7 @@ public class SubscriptionsStream {
     }
 }
 
-public class PlatformApplicationsStream {
+public class PlatformApplicationStream {
 
     private final http:Client amazonSNSClient;
     private final (isolated function (map<string>) returns http:Request|Error) & readonly generateRequest;
@@ -240,13 +240,13 @@ public class PlatformApplicationsStream {
     }
 }
 
-public class PlatformApplicationEndpointsStream {
+public class EndpointStream {
 
     private final http:Client amazonSNSClient;
     private final (isolated function (map<string>) returns http:Request|Error) & readonly generateRequest;
     private final string platformApplicationArn;
 
-    private PlatformApplicationEndpoint[] endpoints = [];
+    private Endpoint[] endpoints = [];
     private string? nextToken = ();
     private boolean initialized = false;
 
@@ -286,7 +286,7 @@ public class PlatformApplicationEndpointsStream {
 
                 EndpointAttributes attributes = check mapJsonToPlatformApplicationEndpointAttributes(
                     check platformApplicationEndpoint.Attributes);
-                PlatformApplicationEndpoint endpoint = {
+                Endpoint endpoint = {
                     endpointArn: check platformApplicationEndpoint.EndpointArn,
                     ...attributes
                 };
@@ -298,7 +298,7 @@ public class PlatformApplicationEndpointsStream {
         }
     }
 
-    public isolated function next() returns record {|PlatformApplicationEndpoint value;|}|Error? {
+    public isolated function next() returns record {|Endpoint value;|}|Error? {
         if self.endpoints.length() == 0 {
             if self.initialized && self.nextToken is () {
                 return ();

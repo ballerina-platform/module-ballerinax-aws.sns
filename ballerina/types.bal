@@ -474,7 +474,7 @@ public type EndpointAttributes record {|
 # Represents an Amazon SNS platform appication endpoint.
 # 
 # + endpointArn - The endpoint's ARN
-public type PlatformApplicationEndpoint record {|
+public type Endpoint record {|
     string endpointArn;
     *EndpointAttributes;
 |};
