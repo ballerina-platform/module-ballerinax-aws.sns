@@ -265,7 +265,7 @@ isolated function mapJsonToPlatformApplicationAttributes(json jsonResponse)
     return mapped.cloneWithType();
 }
 
-isolated function mapJsonToPlatformApplicationEndpointAttributes(json jsonResponse)
+isolated function mapJsonToEndpointAttributes(json jsonResponse)
     returns EndpointAttributes|error {
     string[] booleanFields = ["Enabled"];
 

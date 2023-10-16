@@ -92,5 +92,84 @@ function listPlatformApplicationEndpointsTest() returns error? {
     test:assertEquals(findEndpoint[0].token, testRunId + "testDeviceTokenNew");
     test:assertEquals(findEndpoint[0].customUserData, "CustomDataNew");
     test:assertEquals(findEndpoint[0].enabled, false);
+}
 
+@test:Config {
+    groups: ["endpoint"]
+}
+function getEndpointAttributesTest() returns error? {
+    EndpointAttributes attributes = {enabled: false};
+    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken7", attributes,
+        "CustomData7");
+
+    EndpointAttributes retrievedAttributes = check amazonSNSClient->getEndpointAttributes(arn);
+    test:assertEquals(retrievedAttributes.token, testRunId + "testDeviceToken7");
+    test:assertEquals(retrievedAttributes.customUserData, "CustomData7");
+    test:assertEquals(retrievedAttributes.enabled, false);
+}
+
+@test:Config {
+    groups: ["endpoint"]
+}
+function getEndpointAttributesWithInvalidArnTest() returns error? {
+    EndpointAttributes attributes = {enabled: false};
+    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken7", attributes,
+        "CustomData7");
+
+    EndpointAttributes|Error retrievedAttributes = amazonSNSClient->getEndpointAttributes(arn + "invalid");
+    test:assertTrue(retrievedAttributes is OperationError);
+    test:assertEquals((<OperationError>retrievedAttributes).message(), "Invalid parameter: EndpointArn Reason: ARN specifies an invalid endpointId: UUID must be encoded in exactly 36 characters.");
+}
+
+@test:Config {
+    groups: ["endpoint"]
+}
+function setEndpointAttributesTest() returns error? {
+    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken8");
+    _ = check amazonSNSClient->setEndpointAttributes(arn, {
+            enabled: false, token: testRunId + "testDeviceToken9", customUserData: "CustomData9"
+    });
+
+    EndpointAttributes retrievedAttributes = check amazonSNSClient->getEndpointAttributes(arn);
+    test:assertEquals(retrievedAttributes.token, testRunId + "testDeviceToken9");
+    test:assertEquals(retrievedAttributes.customUserData, "CustomData9");
+    test:assertEquals(retrievedAttributes.enabled, false);
+}
+
+@test:Config {
+    groups: ["endpoint"]
+}
+function setEndpointAttributesWithInvalidArnTest() returns error? {
+    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken10");
+    Error? e = amazonSNSClient->setEndpointAttributes(arn + "invalid", {
+        enabled: false,
+        token: testRunId + "testDeviceToken10",
+        customUserData: "CustomData10"
+    });
+
+    test:assertTrue(e is OperationError);
+    test:assertEquals((<OperationError>e).message(), "Invalid parameter: EndpointArn Reason: ARN specifies an invalid endpointId: UUID must be encoded in exactly 36 characters.");
+}
+
+@test:Config {
+    groups: ["endpoin"]
+}
+function deleteEndpointTest() returns error? {
+    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken11");
+    _ = check amazonSNSClient->deleteEndpoint(arn);
+    
+    EndpointAttributes|Error attributes = amazonSNSClient->getEndpointAttributes(arn);
+    test:assertTrue(attributes is OperationError);
+    test:assertEquals((<OperationError>attributes).message(), "Endpoint does not exist");
+}
+
+@test:Config {
+    groups: ["endpoint"]
+}
+function deleteEndpointWithInvalidTest() returns error? {
+    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken11");
+    Error? e = amazonSNSClient->deleteEndpoint(arn + "invalid");
+
+    test:assertTrue(e is OperationError);
+    test:assertEquals((<OperationError>e).message(), "Invalid parameter: EndpointArn Reason: ARN specifies an invalid endpointId: UUID must be encoded in exactly 36 characters.");
 }

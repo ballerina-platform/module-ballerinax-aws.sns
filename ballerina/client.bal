@@ -605,9 +605,20 @@ public isolated client class Client {
     # Retrieves a platform application endpoint.
     # 
     # + endpointArn - The ARN of the endpoint
-    # + return - An `Endpoint` or `sns:Error` in case of failure
-    isolated remote function getEndpoint(string endpointArn) returns Endpoint|Error {
-        return <Error>error ("Not implemented");
+    # + return - The attributes of the endpoint or `sns:Error` in case of failure
+    isolated remote function getEndpointAttributes(string endpointArn) returns EndpointAttributes|Error {
+         map<string> parameters = initiateRequest("GetEndpointAttributes");
+        parameters["EndpointArn"] = endpointArn;
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+
+        do {
+            json attributes = check response.GetEndpointAttributesResponse.GetEndpointAttributesResult.Attributes;
+            return check mapJsonToEndpointAttributes(attributes);
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
     };
 
     # Modifies the attributes of a platform application endpoint.
@@ -617,7 +628,14 @@ public isolated client class Client {
     # + return - `()` or `sns:Error` in case of failure
     isolated remote function setEndpointAttributes(string endpointArn, EndpointAttributes attributes) 
         returns Error? {
-        return <Error>error ("Not implemented");
+        map<string> parameters = initiateRequest("SetEndpointAttributes");
+        parameters["EndpointArn"] = endpointArn;
+
+        record {} formattedPlatformApplicationAttributes = check formatAttributes(attributes);
+        setAttributes(parameters, formattedPlatformApplicationAttributes);
+
+        http:Request request = check self.generateRequest(parameters);
+        _ = check sendRequest(self.amazonSNSClient, request);
     };
 
     # Deletes a platform application endpoint. This action is idempotent. When you delete an endpoint that is also 
@@ -626,7 +644,11 @@ public isolated client class Client {
     # + endpointArn - The ARN of the endpoint
     # + return - `()` or `sns:Error` in case of failure
     isolated remote function deleteEndpoint(string endpointArn) returns Error? {
-        return <Error>error ("Not implemented");
+        map<string> parameters = initiateRequest("DeleteEndpoint");
+        parameters["EndpointArn"] = endpointArn;
+
+        http:Request request = check self.generateRequest(parameters);
+        _ = check sendRequest(self.amazonSNSClient, request);
     };
 
     # Adds a destination phone number to an AWS account in the SMS sandbox and sends a one-time password (OTP) to that 

@@ -284,7 +284,7 @@ public class EndpointStream {
 
             foreach json platformApplicationEndpoint in platformApplicationEndpoints {
 
-                EndpointAttributes attributes = check mapJsonToPlatformApplicationEndpointAttributes(
+                EndpointAttributes attributes = check mapJsonToEndpointAttributes(
                     check platformApplicationEndpoint.Attributes);
                 Endpoint endpoint = {
                     endpointArn: check platformApplicationEndpoint.EndpointArn,
