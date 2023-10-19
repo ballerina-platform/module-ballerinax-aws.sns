@@ -117,10 +117,9 @@ public isolated client class Client {
         _ = check sendRequest(self.amazonSNSClient, request);
     }
 
-    # Returns a list of the topics ARNs. Each call returns a limited list of topics, up to 100.
-    # If there are more topics, a NextToken is also returned, which can be used to retrieve the next set of topics.
+    # Returns the topics ARNs that are owned by the AWS account.
     # 
-    # + return - A stream of topic ARNs or `sns:Error` in case of failure
+    # + return - A stream of topic ARNs
     isolated remote function listTopics() returns stream<string, Error?> {
         TopicStream topicsStreamObject = new (self.amazonSNSClient, self.generateRequest);
         stream<string, Error?> topicsStream = new (topicsStreamObject);
@@ -371,12 +370,10 @@ public isolated client class Client {
         }
     };
 
-    # Retrieves a list of the requester's subscriptions. Each call returns a limited list of subscriptions, up to 100. If 
-    # there are more subscriptions, a NextToken is also returned. Use the NextToken parameter in a new ListSubscriptions
-    # call to get further results.
+    # Retrieves the requester's subscriptions.
     # 
     # + topicArn - The ARN of the topic for which you wish list the subscriptions
-    # + return - A stream of `Subscription` records or `sns:Error` in case of failure
+    # + return - A stream of `Subscription` records
     isolated remote function listSubscriptions(string? topicArn = ()) returns stream<Subscription, Error?> {
         SubscriptionStream subscriptionsStreamObject = new (self.amazonSNSClient, self.generateRequest, topicArn);
         stream<Subscription, Error?> subscriptionsStream = new (subscriptionsStreamObject);
@@ -491,11 +488,9 @@ public isolated client class Client {
         }
     };
 
-    # Lists the platform application objects for the supported push notification services. Each call returns a limited
-    # list of applications, up to 100. If there are more applications, a NextToken is also returned. Use the NextToken
-    # parameter in a new `listPlatformApplications` call to get further results.
+    # Retrives the platform application objects for the supported push notification services.
     # 
-    # + return - A stream of `PlatformApplication` records or `sns:Error` in case of failure
+    # + return - A stream of `PlatformApplication` records
     isolated remote function listPlatformApplications() returns stream<PlatformApplication, Error?> {
         PlatformApplicationStream platformApplicationsStreamObject = new (self.amazonSNSClient, self.generateRequest);
         stream<PlatformApplication, Error?> platformApplicationsStream = new (platformApplicationsStreamObject);
@@ -588,14 +583,11 @@ public isolated client class Client {
         }
     };
 
-    # Lists the endpoints associated with a specific platform application. Each call returns a limited list of 
-    # endpoints, up to 100. If there are more applications, a NextToken is also returned. Use the `nextToken` parameter
-    # in a new `listEndpoints` call to get further results.
+    # Retrieves the endpoints associated with a specific platform application.
     # 
     # + platformApplicationArn - The ARN of the platform application to retrieve endpoints for
-    # + nextToken - The token returned by the previous `listEndpoints` call
-    # + return - A tuple of `Endpoint[]` and `string?` containing the endpoints and the NextToken
-    isolated remote function listEndpoints(string platformApplicationArn, string? nextToken = ()) 
+    # + return - A stream of `Endpoint` records
+    isolated remote function listEndpoints(string platformApplicationArn) 
         returns stream<Endpoint, Error?> {
         EndpointStream endpointsStreamObject = new (self.amazonSNSClient, self.generateRequest, platformApplicationArn);
         stream<Endpoint, Error?> endpointsStream = new (endpointsStreamObject);
@@ -607,7 +599,7 @@ public isolated client class Client {
     # + endpointArn - The ARN of the endpoint
     # + return - The attributes of the endpoint or `sns:Error` in case of failure
     isolated remote function getEndpointAttributes(string endpointArn) returns EndpointAttributes|Error {
-         map<string> parameters = initiateRequest("GetEndpointAttributes");
+        map<string> parameters = initiateRequest("GetEndpointAttributes");
         parameters["EndpointArn"] = endpointArn;
 
         http:Request request = check self.generateRequest(parameters);
@@ -659,7 +651,14 @@ public isolated client class Client {
     # + return - `()` or `sns:Error` in case of failure
     isolated remote function createSMSSandboxPhoneNumber(string phoneNumber, LanguageCode? languageCode = EN_US) 
         returns Error? {
-        return <Error>error ("Not implemented");
+        map<string> parameters = initiateRequest("CreateSMSSandboxPhoneNumber");
+        parameters["PhoneNumber"] = phoneNumber;
+        if languageCode is LanguageCode {
+            parameters["LanguageCode"] = languageCode.toString();
+        }
+
+        http:Request request = check self.generateRequest(parameters);
+        _ = check sendRequest(self.amazonSNSClient, request);
     };
 
     # Verifies a destination phone number with a one-time password (OTP) for the calling AWS account.
@@ -668,19 +667,23 @@ public isolated client class Client {
     # + otp - The OTP sent to the destination number
     # + return - `()` or `sns:Error` in case of failure
     isolated remote function verifySMSSandboxPhoneNumber(string phoneNumber, string otp) returns Error? {
-        return <Error>error ("Not implemented");
+        map<string> parameters = initiateRequest("VerifySMSSandboxPhoneNumber");
+        parameters["PhoneNumber"] = phoneNumber;
+        parameters["OneTimePassword"] = otp;
+
+        http:Request request = check self.generateRequest(parameters);
+        _ = check sendRequest(self.amazonSNSClient, request);
     };
 
-    # Lists the current verified and pending destination phone numbers in the SMS sandbox. Each call returns a limited 
-    # list of phone numbers, up to 100. If there are more phone numbers, a NextToken is also returned. Use the 
-    # `nextToken` parameter in a new `listSMSSandboxPhoneNumbers` call to get further results.
+    # Retrieves the current verified and pending destination phone numbers in the SMS sandbox.
     # 
-    # + maxResults - The maximum number of phone numbers to return
-    # + nextToken - The token returned by the previous `listSMSSandboxPhoneNumbers` call
-    # + return - A tuple of `SMSSandboxPhoneNumber[]` and `string?` containing the phone numbers and the NextToken
-    isolated remote function listSMSSandboxPhoneNumbers(int maxResults, string? nextToken = ()) 
-        returns [SMSSandboxPhoneNumber[], string?]|Error {
-        return <Error>error ("Not implemented");
+    # + return - A stream of `SMSSandboxPhoneNumber` records
+    isolated remote function listSMSSandboxPhoneNumbers() 
+        returns stream<SMSSandboxPhoneNumber, Error?> {
+        SMSSandboxPhoneNumberStream SMSSandboxPhoneNumberStreamObject = 
+            new (self.amazonSNSClient, self.generateRequest);
+        stream<SMSSandboxPhoneNumber, Error?> SMSSandboxPhoneNumberStream = new (SMSSandboxPhoneNumberStreamObject);
+        return SMSSandboxPhoneNumberStream;
     };
 
     # Deletes a verified or pending phone number from the SMS sandbox.
@@ -688,7 +691,11 @@ public isolated client class Client {
     # + phoneNumber - The destination phone number to delete
     # + return - `()` or `sns:Error` in case of failure
     isolated remote function deleteSMSSandboxPhoneNumber(string phoneNumber) returns Error? {
-        return <Error>error ("Not implemented");
+        map<string> parameters = initiateRequest("DeleteSMSSandboxPhoneNumber");
+        parameters["PhoneNumber"] = phoneNumber;
+
+        http:Request request = check self.generateRequest(parameters);
+        _ = check sendRequest(self.amazonSNSClient, request);
     };
 
     # Retrieves the SMS sandbox status for the calling AWS account in the target AWS Region.
@@ -696,28 +703,35 @@ public isolated client class Client {
     # + return - The SMS sandbox status for the calling AWS account in the target AWS Region or `sns:Error` in case of
     #            failure
     isolated remote function getSMSSandboxAccountStatus() returns boolean|Error {
-        return <Error>error ("Not implemented");
+        map<string> parameters = initiateRequest("GetSMSSandboxAccountStatus");
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+
+        do {
+            return check 
+                (check response.GetSMSSandboxAccountStatusResponse.GetSMSSandboxAccountStatusResult.IsInSandbox)
+                .ensureType(boolean);
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
     };
 
-    # Lists the calling AWS account's dedicated origination numbers and their metadata. Each call returns a limited 
-    # list of phone numbers, up to 30. If there are more phone numbers, a NextToken is also returned. Use the 
-    # `nextToken` parameter in a new `listOriginationNumbers` call to get further results.
+    # Retrieves the calling AWS account's dedicated origination numbers and their metadata. 
     # 
     # + maxResults - The maximum number (between 1 and 30 inclusive) of phone numbers to return
-    # + nextToken - The token returned by the previous `listOriginationNumbers` call
-    # + return - A tuple of `PhoneNumber[]` and `string?` containing the phone numbers and the NextToken
-    isolated remote function listOriginationNumbers(int maxResults, string? nextToken = ()) 
-        returns [OriginationPhoneNumber[], string?]|Error {
-        return <Error>error ("Not implemented");
+    # + return - A stream of `OriginationPhoneNumber` records
+    isolated remote function listOriginationNumbers() returns stream<OriginationPhoneNumber, Error?> {
+        OriginationPhoneNumberStream originationPhoneNumberStreamObject =
+            new (self.amazonSNSClient, self.generateRequest);
+        stream<OriginationPhoneNumber, Error?> orignationPhoneNumberStream = new (originationPhoneNumberStreamObject);
+        return SMSSandboxPhoneNumberStream;
     }
 
-    # Returns a list of phone numbers that are opted out, meaning you cannot send SMS messages to them. Each call 
-    # returns a limited list of phone numbers, up to 100. If there are more phone numbers, a NextToken is also returned.
-    # Use the `nextToken` parameter in a new `listPhoneNumbersOptedOut` call to get further results.
+    # Retrieves a list of phone numbers that are opted out, meaning you cannot send SMS messages to them.
     # 
-    # + nextToken - The token returned by the previous `listPhoneNumbersOptedOut` call
-    # + return - A tuple of `string[]` and `string?` containing the phone numbers and the NextToken
-    isolated remote function listPhoneNumbersOptedOut(string? nextToken = ()) 
+    # + return - A stream of phone numbers that are opted out
+    isolated remote function listPhoneNumbersOptedOut() 
         returns [string[], string?]|Error {
         return <Error>error ("Not implemented");
     }

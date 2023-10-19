@@ -322,3 +322,78 @@ public class EndpointStream {
         return ();
     }
 }
+
+public class SMSSandboxPhoneNumberStream {
+
+    private final http:Client amazonSNSClient;
+    private final (isolated function (map<string>) returns http:Request|Error) & readonly generateRequest;
+
+    private SMSSandboxPhoneNumber[] phoneNumbers = [];
+    private string? nextToken = ();
+    private boolean initialized = false;
+
+    public isolated function init(http:Client amazonSNSClient,
+            isolated function (map<string>) returns http:Request|Error generateRequest) {
+        self.amazonSNSClient = amazonSNSClient;
+        self.generateRequest = generateRequest;
+    }
+
+    private isolated function fetchSMSSandboxPhoneNumbers() returns Error? {
+        map<string> parameters = initiateRequest("ListSMSSandboxPhoneNumbers");
+
+        if self.nextToken is string {
+            parameters["NextToken"] = <string>self.nextToken;
+        }
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+
+        json|error nextToken = response.ListSMSSandboxPhoneNumbersResponse.ListSMSSandboxPhoneNumbersResult.NextToken;
+
+        if nextToken is json && nextToken != () {
+            self.nextToken = nextToken.toString();
+        } else {
+            self.nextToken = ();
+        }
+
+        do {
+            json[] phoneNumbers = <json[]>(check response.ListSMSSandboxPhoneNumbersResponse
+                .ListSMSSandboxPhoneNumbersResult.PhoneNumbers);
+
+            foreach json phoneNumber in phoneNumbers {
+                SMSSandboxPhoneNumber smsSandboxPhoneNumber = {
+                    phoneNumber: check phoneNumber.PhoneNumber,
+                    status: <Status>(check phoneNumber.Status)
+                };
+                self.phoneNumbers.push(smsSandboxPhoneNumber);
+
+            }
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
+    }
+
+    public isolated function next() returns record {|SMSSandboxPhoneNumber value;|}|Error? {
+        if self.phoneNumbers.length() == 0 {
+            if self.initialized && self.nextToken is () {
+                return ();
+            }
+
+            Error? e = self.fetchSMSSandboxPhoneNumbers();
+            self.initialized = true;
+            if e is error {
+                return e;
+            }
+        }
+
+        if self.phoneNumbers.length() == 0 {
+            return ();
+        }
+
+        return {value: self.phoneNumbers.remove(0)};
+    }
+
+    public isolated function close() returns Error? {
+        return ();
+    }
+}
