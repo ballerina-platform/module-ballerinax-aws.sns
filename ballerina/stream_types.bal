@@ -1,3 +1,4 @@
+import ballerina/io;
 import ballerina/http;
 
 public class TopicStream {
@@ -469,3 +470,72 @@ public class OriginationPhoneNumberStream {
         return ();
     }
 }
+
+public class OptedOutPhoneNumberStream {
+
+    private final http:Client amazonSNSClient;
+    private final (isolated function (map<string>) returns http:Request|Error) & readonly generateRequest;
+
+    private string[] phoneNumbers = [];
+    private string? nextToken = ();
+    private boolean initialized = false;
+
+    public isolated function init(http:Client amazonSNSClient,
+            isolated function (map<string>) returns http:Request|Error generateRequest) {
+        self.amazonSNSClient = amazonSNSClient;
+        self.generateRequest = generateRequest;
+    }
+
+    private isolated function fetchOptedOutPhoneNumbers() returns Error? {
+        map<string> parameters = initiateRequest("ListPhoneNumbersOptedOut");
+        if self.nextToken is string {
+            parameters["nextToken"] = <string>self.nextToken;
+        }
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+        io:println(response);
+
+        json|error nextToken = response.ListPhoneNumbersOptedOutResponse.ListPhoneNumbersOptedOutResult.nextToken;
+        if nextToken is json && nextToken != () {
+            self.nextToken = nextToken.toString();
+        } else {
+            self.nextToken = ();
+        }
+
+        do {
+            json[] phoneNumbers = <json[]>(check response.ListPhoneNumbersOptedOutResponse
+                .ListPhoneNumbersOptedOutResult.phoneNumbers);
+            foreach json phoneNumber in phoneNumbers {
+                self.phoneNumbers.push(phoneNumber.toString());
+            }
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
+    }
+
+    public isolated function next() returns record {|string value;|}|Error? {
+        if self.phoneNumbers.length() == 0 {
+            if self.initialized && self.nextToken is () {
+                return ();
+            }
+
+            Error? e = self.fetchOptedOutPhoneNumbers();
+            self.initialized = true;
+            if e is error {
+                return e;
+            }
+        }
+
+        if self.phoneNumbers.length() == 0 {
+            return ();
+        }
+
+        return {value: self.phoneNumbers.remove(0)};
+    }
+
+    public isolated function close() returns Error? {
+        return ();
+    }
+}
+

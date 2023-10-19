@@ -730,9 +730,10 @@ public isolated client class Client {
     # Retrieves a list of phone numbers that are opted out, meaning you cannot send SMS messages to them.
     # 
     # + return - A stream of phone numbers that are opted out
-    isolated remote function listPhoneNumbersOptedOut() 
-        returns [string[], string?]|Error {
-        return <Error>error ("Not implemented");
+    isolated remote function listPhoneNumbersOptedOut() returns stream<string, Error?> {
+        OptedOutPhoneNumberStream optedOutPhoneNumberStreamObject = new (self.amazonSNSClient, self.generateRequest);
+        stream<string, Error?> optedOutPhoneNumberStream = new (optedOutPhoneNumberStreamObject);
+        return optedOutPhoneNumberStream;
     }
 
     # Checks whether a phone number is opted out, meaning you cannot send SMS messages to it.
@@ -740,7 +741,19 @@ public isolated client class Client {
     # + phoneNumber - The phone number for which you want to check the opt out status.
     # + return - `true` if the phone number is opted out, `false` otherwise or `sns:Error` in case of failure
     isolated remote function checkIfPhoneNumberIsOptedOut(string phoneNumber) returns boolean|Error {
-        return <Error>error ("Not implemented");
+        map<string> parameters = initiateRequest("CheckIfPhoneNumberIsOptedOut");
+        parameters["phoneNumber"] = phoneNumber;
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+
+        do {
+            return check
+                (check response.CheckIfPhoneNumberIsOptedOutResponse.CheckIfPhoneNumberIsOptedOutResult.isOptedOut)
+                .ensureType(boolean);
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
     }
 
     # Requests to opt in a phone number that is opted out, which enables you to resume sending SMS messages to the 

@@ -85,7 +85,7 @@ function subscribeEmailJsonTest() returns error? {
 }
 function subscribeSmsTest()returns error? {
     string subsriptionArn =
-        check amazonSNSClient->subscribe(topic, testPhoneNumber, SMS, returnSubscriptionArn = true);
+        check amazonSNSClient->subscribe(topic, "+94771952226", SMS, returnSubscriptionArn = true);
     test:assertTrue(isArn(subsriptionArn), "Returned value is not an ARN.");
 }
 

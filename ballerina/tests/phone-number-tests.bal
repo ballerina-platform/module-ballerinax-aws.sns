@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/io;
 import ballerina/test;
 
 @test:Config {
@@ -23,5 +24,34 @@ function listOrignationPhoneNumbersTest() returns error? {
     stream<OriginationPhoneNumber, Error?> phoneNumberStream = amazonSNSClient->listOriginationNumbers();
     OriginationPhoneNumber[] phoneNumbers = check from OriginationPhoneNumber phoneNumber in phoneNumberStream 
                                                   select phoneNumber;
+    io:println(phoneNumbers);
     test:assertEquals(phoneNumbers.length(), 1, "Invalid number of origination phone numbers");
 }
+
+@test:Config {
+    groups: ["phone-number"]
+}
+function listOptedOutPhoneNumbersTest() returns error? {
+    stream<string, Error?> phoneNumberStream = amazonSNSClient->listPhoneNumbersOptedOut();
+    string[] phoneNumbers = check from string phoneNumber in phoneNumberStream
+        select phoneNumber;
+    io:println(phoneNumbers);
+    test:assertEquals(phoneNumbers.length(), 0, "Invalid number of opted out phone numbers");
+}
+
+@test:Config {
+    groups: ["phone-number"]
+}
+function checkIfPhoneNumberisOptedOutTest() returns error? {
+    _ = check amazonSNSClient->checkIfPhoneNumberIsOptedOut(testPhoneNumber);
+}
+
+@test:Config {
+    groups: ["phone-numberx"]
+}
+function checkIfPhoneNumberisOptedOutWithInvalidTest() returns error? {
+    boolean|Error optedOut = amazonSNSClient->checkIfPhoneNumberIsOptedOut(testPhoneNumber + "x");
+    test:assertTrue(optedOut is OperationError, "Operation Error expected");
+    test:assertEquals((<OperationError>optedOut).message(), "Invalid parameter: PhoneNumber Reason: input incorrectly formatted");
+}
+
