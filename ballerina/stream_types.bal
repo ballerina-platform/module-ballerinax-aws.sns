@@ -397,3 +397,75 @@ public class SMSSandboxPhoneNumberStream {
         return ();
     }
 }
+
+public class OriginationPhoneNumberStream {
+
+    private final http:Client amazonSNSClient;
+    private final (isolated function (map<string>) returns http:Request|Error) & readonly generateRequest;
+
+    private OriginationPhoneNumber[] phoneNumbers = [];
+    private string? nextToken = ();
+    private boolean initialized = false;
+
+    public isolated function init(http:Client amazonSNSClient,
+            isolated function (map<string>) returns http:Request|Error generateRequest) {
+        self.amazonSNSClient = amazonSNSClient;
+        self.generateRequest = generateRequest;
+    }
+
+    private isolated function fetchOriginationPhoneNumbers() returns Error? {
+        map<string> parameters = initiateRequest("ListOriginationNumbers");
+
+        if self.nextToken is string {
+            parameters["NextToken"] = <string>self.nextToken;
+        }
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+
+        json|error nextToken = response.ListOriginationNumbersResponse.ListOriginationNumbersResult.NextToken;
+
+        if nextToken is json && nextToken != () {
+            self.nextToken = nextToken.toString();
+        } else {
+            self.nextToken = ();
+        }
+
+        do {
+            json[] phoneNumbers = <json[]>(check response.ListOriginationNumbersResponse
+                .ListOriginationNumbersResult.PhoneNumbers);
+
+            foreach json phoneNumber in phoneNumbers {
+                OriginationPhoneNumber originationPhoneNumber = check mapJsonToOriginationNumber(phoneNumber);
+                self.phoneNumbers.push(originationPhoneNumber);
+
+            }
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
+    }
+
+    public isolated function next() returns record {|OriginationPhoneNumber value;|}|Error? {
+        if self.phoneNumbers.length() == 0 {
+            if self.initialized && self.nextToken is () {
+                return ();
+            }
+
+            Error? e = self.fetchOriginationPhoneNumbers();
+            self.initialized = true;
+            if e is error {
+                return e;
+            }
+        }
+
+        if self.phoneNumbers.length() == 0 {
+            return ();
+        }
+
+        return {value: self.phoneNumbers.remove(0)};
+    }
+
+    public isolated function close() returns Error? {
+        return ();
+    }
+}

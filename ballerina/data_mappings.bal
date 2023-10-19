@@ -265,20 +265,25 @@ isolated function mapJsonToPlatformApplicationAttributes(json jsonResponse)
     return mapped.cloneWithType();
 }
 
-isolated function mapJsonToEndpointAttributes(json jsonResponse)
-    returns EndpointAttributes|error {
+isolated function mapJsonToEndpointAttributes(json jsonResponse) returns EndpointAttributes|error {
     string[] booleanFields = ["Enabled"];
 
     record {} mapped = check mapJsonToRecord(jsonResponse, booleanFields = booleanFields);
     return mapped.cloneWithType();
 }
 
+isolated function mapJsonToOriginationNumber(json jsonResponse) returns OriginationPhoneNumber|error {
+    string[] timestampFields = ["CreatedAt"];
+
+    record {} mapped = check mapJsonToRecord(jsonResponse, timestampFields = timestampFields);
+    return mapped.cloneWithType();
+}
 
 
 isolated function mapJsonToRecord(json jsonResponse, string[] intFields = [], string[] booleanFields = [], 
-    string[] jsonFields = [], string[] skipFields = []) returns record {}|error {
+    string[] jsonFields = [], string[] timestampFields = [], string[] skipFields = []) returns record {}|error {
     record {} response = check jsonResponse.cloneWithType();
-    record {} attributes = {};
+    record {} r = {};
 
     foreach [string, anydata] [key, value] in response.entries() {
         if (skipFields.indexOf(key) is int) {
@@ -292,9 +297,11 @@ isolated function mapJsonToRecord(json jsonResponse, string[] intFields = [], st
             val = check stringToBoolean(value.toString());
         } else if jsonFields.indexOf(key) is int {
             val = check value.toString().fromJsonString();
+        } else if timestampFields.indexOf(key) is int {
+            val = check stringToTimestamp(value.toString());
         }
-        attributes[lowercaseFirstLetter(key)] = val;
+        r[lowercaseFirstLetter(key)] = val;
     }
 
-    return attributes;
+    return r;
 }

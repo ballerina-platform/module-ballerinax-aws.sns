@@ -116,7 +116,7 @@ public enum Status {
 
 # The types of capabilities supported by an origination phone number.
 public enum NumberCapabilities {
-    _SMS,
+    _SMS = "SMS",
     MMS,
     VOICE
 };

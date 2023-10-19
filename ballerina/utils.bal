@@ -107,3 +107,8 @@ isolated function stringToInt(string str) returns int|error {
 isolated function stringToBoolean(string str) returns boolean|error {
     return check langboolean:fromString(str.toString());
 }
+
+isolated function stringToTimestamp(string str) returns time:Civil|error {
+    time:Utc utc = [check stringToInt(str), 0];
+    return time:utcToCivil(utc);
+}

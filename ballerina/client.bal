@@ -719,13 +719,12 @@ public isolated client class Client {
 
     # Retrieves the calling AWS account's dedicated origination numbers and their metadata. 
     # 
-    # + maxResults - The maximum number (between 1 and 30 inclusive) of phone numbers to return
     # + return - A stream of `OriginationPhoneNumber` records
     isolated remote function listOriginationNumbers() returns stream<OriginationPhoneNumber, Error?> {
         OriginationPhoneNumberStream originationPhoneNumberStreamObject =
             new (self.amazonSNSClient, self.generateRequest);
         stream<OriginationPhoneNumber, Error?> orignationPhoneNumberStream = new (originationPhoneNumberStreamObject);
-        return SMSSandboxPhoneNumberStream;
+        return orignationPhoneNumberStream;
     }
 
     # Retrieves a list of phone numbers that are opted out, meaning you cannot send SMS messages to them.
