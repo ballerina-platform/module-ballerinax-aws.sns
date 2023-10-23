@@ -56,14 +56,14 @@ function checkIfPhoneNumberisOptedOutWithInvalidTest() returns error? {
 }
 
 @test:Config {
-    groups: ["phone-numberx"]
+    groups: ["phone-number"]
 }
 function optInPhoneNumberTest() returns error? {
     check amazonSNSClient->optInPhoneNumber(testPhoneNumber);
 }
 
 @test:Config {
-    groups: ["phone-numberx"]
+    groups: ["phone-number"]
 }
 function optInPhoneNumberInvalidTest() returns error? {
     Error? e = amazonSNSClient->optInPhoneNumber(testPhoneNumber + "x");

@@ -775,9 +775,17 @@ public isolated client class Client {
     # + topicArn - The ARN of the topic to which to add tags
     # + tags - The tags to add to the specified topic
     # + return - `()` or `sns:Error` in case of failure
-    // TODO: Can we do similar to the log module
-    isolated remote function tagResource(string topicArn, map<string> tags) returns Error? {
-        return <Error>error ("Not implemented");
+    isolated remote function tagResource(string topicArn, *Tags tags) returns Error? {
+        map<string> parameters = initiateRequest("TagResource");
+        parameters["ResourceArn"] = topicArn;
+        
+        if tags.length() is 0 {
+            return error Error("At least one tag must be specified.");
+        }
+        setTags(parameters, tags);
+
+        http:Request request = check self.generateRequest(parameters);
+        _ = check sendRequest(self.amazonSNSClient, request);
     };
 
     # Lists the tags for the specified Amazon SNS topic.

@@ -516,3 +516,9 @@ public type SMSAttributes record {|
     // SMSMessageType defaultSMSType?;
     string usageReportS3Bucket?;
 |};
+
+# Represents the tags associated with an Amazon SNS topic.
+public type Tags record {|
+    never topicArn?;
+    string...;
+|};
