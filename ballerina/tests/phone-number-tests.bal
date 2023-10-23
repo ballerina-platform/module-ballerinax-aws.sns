@@ -47,7 +47,7 @@ function checkIfPhoneNumberisOptedOutTest() returns error? {
 }
 
 @test:Config {
-    groups: ["phone-numberx"]
+    groups: ["phone-number"]
 }
 function checkIfPhoneNumberisOptedOutWithInvalidTest() returns error? {
     boolean|Error optedOut = amazonSNSClient->checkIfPhoneNumberIsOptedOut(testPhoneNumber + "x");
@@ -55,3 +55,18 @@ function checkIfPhoneNumberisOptedOutWithInvalidTest() returns error? {
     test:assertEquals((<OperationError>optedOut).message(), "Invalid parameter: PhoneNumber Reason: input incorrectly formatted");
 }
 
+@test:Config {
+    groups: ["phone-numberx"]
+}
+function optInPhoneNumberTest() returns error? {
+    check amazonSNSClient->optInPhoneNumber(testPhoneNumber);
+}
+
+@test:Config {
+    groups: ["phone-numberx"]
+}
+function optInPhoneNumberInvalidTest() returns error? {
+    Error? e = amazonSNSClient->optInPhoneNumber(testPhoneNumber + "x");
+    test:assertTrue(e is OperationError, "Operation Error expected");
+    test:assertEquals((<OperationError>e).message(), "Invalid parameter: PhoneNumber Reason: input incorrectly formatted");
+}

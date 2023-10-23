@@ -762,7 +762,11 @@ public isolated client class Client {
     # + phoneNumber - The destination phone number to opt in (in E.164 format)
     # + return - `()` or `sns:Error` in case of failure
     isolated remote function optInPhoneNumber(string phoneNumber) returns Error? {
-        return <Error>error ("Not implemented");
+        map<string> parameters = initiateRequest("OptInPhoneNumber");
+        parameters["phoneNumber"] = phoneNumber;
+
+        http:Request request = check self.generateRequest(parameters);
+        _ = check sendRequest(self.amazonSNSClient, request);
     };
 
     # Adds tags to the specified Amazon SNS topic. A new tag with a key identical to that of an existing tag overwrites 
