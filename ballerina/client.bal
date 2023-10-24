@@ -838,9 +838,9 @@ public isolated client class Client {
     # + return - `()` or `sns:Error` in case of failure
     isolated remote function addPermission(string topicArn, Action[] actions, string[] awsAccountIds, string label) 
         returns Error? {
-        map<string> parameters = initiateRequest("UntagResource");
+        map<string> parameters = initiateRequest("AddPermission");
         parameters["TopicArn"] = topicArn;
-        parameters["Label"] = topicArn;
+        parameters["Label"] = label;
 
         if actions.length() is 0 {
             return error Error("At least one action must be specified.");
