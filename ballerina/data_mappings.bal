@@ -279,6 +279,14 @@ isolated function mapJsonToOriginationNumber(json jsonResponse) returns Originat
     return mapped.cloneWithType();
 }
 
+isolated function mapJsonToTags(json[] jsonResponse) returns Tags|error {
+    Tags tags = {};
+    foreach json tag in jsonResponse {
+        tags[check tag.Key] = check tag.Value;
+    }
+    return tags;
+}
+
 
 isolated function mapJsonToRecord(json jsonResponse, string[] intFields = [], string[] booleanFields = [], 
     string[] jsonFields = [], string[] timestampFields = [], string[] skipFields = []) returns record {}|error {

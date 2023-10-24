@@ -791,9 +791,21 @@ public isolated client class Client {
     # Lists the tags for the specified Amazon SNS topic.
     # 
     # + topicArn - The ARN of the topic for which to list tags
-    # + return - A map of tag keys to tag values or `sns:Error` in case of failure
-    isolated remote function listTags(string topicArn) returns map<string>|Error {
-        return <Error>error ("Not implemented");
+    # + return - A `Tags` record consisting of the tags or an `sns:Error` in case of failure
+    isolated remote function listTags(string topicArn) returns Tags|Error {
+        map<string> parameters = initiateRequest("ListTagsForResource");
+        parameters["ResourceArn"] = topicArn;
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+
+        do {
+            json[] tags =
+                check response.ListTagsForResourceResponse.ListTagsForResourceResult.Tags.ensureType();
+            return check mapJsonToTags(tags);
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
     };
 
     # Removes tags from the specified Amazon SNS topic.
@@ -802,8 +814,19 @@ public isolated client class Client {
     # + tagKeys - The list of tag keys to remove from the specified topic
     # + return - `()` or `sns:Error` in case of failure
     isolated remote function untagResource(string topicArn, string[] tagKeys) returns Error? {
-        return <Error>error ("Not implemented");
-    };
+        map<string> parameters = initiateRequest("UntagResource");
+        parameters["ResourceArn"] = topicArn;
+
+        if tagKeys.length() is 0 {
+            return error Error("At least one tag key must be specified.");
+        }
+        foreach [int, string] [i, tagKey] in tagKeys.enumerate() {
+            parameters["TagKeys.member." + (i + 1).toString()] = tagKey;
+        }
+
+        http:Request request = check self.generateRequest(parameters);
+        _ = check sendRequest(self.amazonSNSClient, request);
+};
 
     # Adds a statement to a topic's access control policy, granting access for the specified AWS accounts to the \
     # specified actions.
@@ -815,7 +838,26 @@ public isolated client class Client {
     # + return - `()` or `sns:Error` in case of failure
     isolated remote function addPermission(string topicArn, Action[] actions, string[] awsAccountIds, string label) 
         returns Error? {
-        return <Error>error ("Not implemented");
+        map<string> parameters = initiateRequest("UntagResource");
+        parameters["TopicArn"] = topicArn;
+        parameters["Label"] = topicArn;
+
+        if actions.length() is 0 {
+            return error Error("At least one action must be specified.");
+        }
+        foreach [int, Action] [i, action] in actions.enumerate() {
+            parameters["ActionName.member." + (i + 1).toString()] = action.toString();
+        }
+
+        if awsAccountIds.length() is 0 {
+            return error Error("At least one AWS account ID must be specified.");
+        }
+        foreach [int, string] [i, awsAccountId] in awsAccountIds.enumerate() {
+            parameters["AWSAccountId.member." + (i + 1).toString()] = awsAccountId;
+        }
+
+        http:Request request = check self.generateRequest(parameters);
+        _ = check sendRequest(self.amazonSNSClient, request);
     };
 
     # Removes a statement from a topic's access control policy.
