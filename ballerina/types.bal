@@ -77,6 +77,7 @@ public enum Platform {
 };
 
 # The types of actions that can be performed on a topic.
+# https://docs.aws.amazon.com/sns/latest/dg/sns-access-policy-language-api-permissions-reference.html
 public enum Action {
     ADD_PERMISSION = "AddPermission",
     DELETE_TOPIC = "DeleteTopic",

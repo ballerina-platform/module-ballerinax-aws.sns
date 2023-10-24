@@ -879,16 +879,31 @@ public isolated client class Client {
     # + topicArn - The ARN of the topic to which to add the policy
     # + dataProtectionPolicy - The policy document to add to the specified topic
     # + return - `()` or `sns:Error` in case of failure
-    isolated function putDataProtectionPolicy(string topicArn, json dataProtectionPolicy) returns Error? {
-        return <Error>error ("Not implemented");
+    isolated remote function putDataProtectionPolicy(string topicArn, json dataProtectionPolicy) returns Error? {
+        map<string> parameters = initiateRequest("PutDataProtectionPolicy");
+        parameters["ResourceArn"] = topicArn;
+        parameters["DataProtectionPolicy"] = dataProtectionPolicy.toJsonString();
+
+        http:Request request = check self.generateRequest(parameters);
+        _ = check sendRequest(self.amazonSNSClient, request);
     };
 
     # Retrieves the data protection policy for the specified Amazon SNS topic.
     # 
     # + topicArn - The ARN of the topic for which to retrieve the policy
     # + return - The data protection policy for the specified topic or `sns:Error` in case of failure
-    isolated function getDataProtectionPolicy(string topicArn) returns json|Error {
-        return <Error>error ("Not implemented");
+    isolated remote function getDataProtectionPolicy(string topicArn) returns json|Error {
+        map<string> parameters = initiateRequest("GetDataProtectionPolicy");
+        parameters["ResourceArn"] = topicArn;
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+
+        do {
+            return check response.GetDataProtectionPolicyResponse.GetDataProtectionPolicyResult.DataProtectionPolicy;
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
     };
 
     # Sets the default settings for sending SMS messages and receiving daily SMS usage reports.
