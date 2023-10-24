@@ -866,15 +866,19 @@ public isolated client class Client {
     # + label - The unique identifier for the policy statement to be removed
     # + return - `()` or `sns:Error` in case of failure
     isolated remote function removePermission(string topicArn, string label) returns Error? {
-        return <Error>error ("Not implemented");
+        map<string> parameters = initiateRequest("RemovePermission");
+        parameters["TopicArn"] = topicArn;
+        parameters["Label"] = label;
+
+        http:Request request = check self.generateRequest(parameters);
+        _ = check sendRequest(self.amazonSNSClient, request);
     };
 
     # Adds or updates the data protection policy of the specified Amazon SNS topic.
     # 
     # + topicArn - The ARN of the topic to which to add the policy
-    # + policy - The policy document to add to the specified topic
+    # + dataProtectionPolicy - The policy document to add to the specified topic
     # + return - `()` or `sns:Error` in case of failure
-    # // TODO: Check if in mulesoft and remove if not
     isolated function putDataProtectionPolicy(string topicArn, json dataProtectionPolicy) returns Error? {
         return <Error>error ("Not implemented");
     };

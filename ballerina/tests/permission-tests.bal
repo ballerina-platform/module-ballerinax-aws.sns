@@ -80,10 +80,49 @@ function addPermissionInvalidAccountIdTest() returns error? {
 }
 
 @test:Config {
-    groups: ["permissionx"]
+    groups: ["permission"]
 }
 // SNS allows duplicate permissions to be added.
 function addPermissionWithDuplicatesTest() returns error? {
-    string topic = check amazonSNSClient->createTopic(testRunId + "testPermissionsTopic4");
+    string topic = check amazonSNSClient->createTopic(testRunId + "testPermissionsTopic5");
     check amazonSNSClient->addPermission(topic, [PUBLISH, PUBLISH], [testAwsAccountId], "testLabel");
+}
+
+@test:Config {
+    groups: ["permission"]
+}
+function removePermissionTest() returns error? {
+    string topic = check amazonSNSClient->createTopic(testRunId + "testPermissionsTopic6");
+    check amazonSNSClient->addPermission(topic, [PUBLISH], [testAwsAccountId], "testLabel");
+    check amazonSNSClient->removePermission(topic, "testLabel");
+}
+
+@test:Config {
+    groups: ["permission"]
+}
+function removePermissionTest2() returns error? {
+    string topic = check amazonSNSClient->createTopic(testRunId + "testPermissionsTopic7");
+    check amazonSNSClient->addPermission(topic, [PUBLISH], [testAwsAccountId], "testLabel");
+    check amazonSNSClient->addPermission(topic, [PUBLISH], [testAwsAccountId], "testLabel2");
+    check amazonSNSClient->removePermission(topic, "testLabel");
+}
+
+@test:Config {
+    groups: ["permission"]
+}
+// SNS allows removing a permission label that does not exist.
+function removePermissionDoesNotExistTest() returns error? {
+    string topic = check amazonSNSClient->createTopic(testRunId + "testPermissionsTopic8");
+    check amazonSNSClient->removePermission(topic, "ThisLabelDoesNotExist");
+}
+
+@test:Config {
+    groups: ["permission"]
+}
+function removePermissionTopicDoesNotExistTest() returns error? {
+    string topic = check amazonSNSClient->createTopic(testRunId + "testPermissionsTopic9");
+    check amazonSNSClient->addPermission(topic, [PUBLISH], [testAwsAccountId], "testLabel");
+    Error? e = amazonSNSClient->removePermission(topic + "invalid", "testLabel");
+    test:assertTrue(e is OperationError, "OperationError expected.");
+    test:assertEquals((<OperationError>e).message(), "Topic does not exist");
 }
