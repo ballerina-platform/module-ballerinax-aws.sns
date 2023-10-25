@@ -368,7 +368,7 @@ function getSubscriptionAttributesTest2() returns error? {
     test:assertEquals(attributes.pendingConfirmation, true);
     test:assertEquals(attributes.rawMessageDelivery, false);
     test:assertEquals(attributes.owner.length(), 12);
-    test:assertTrue(attributes?.deliveryPolicy is json);
+    test:assertFalse(attributes?.deliveryPolicy is ());
     test:assertEquals(attributes?.filterPolicy, setAttributes?.filterPolicy);
     test:assertEquals(attributes.filterPolicyScope, setAttributes.filterPolicyScope);
 }
@@ -399,7 +399,7 @@ function setSubscriptionAttributesTest() returns error? {
     test:assertEquals(attributes.pendingConfirmation, true);
     test:assertEquals(attributes.rawMessageDelivery, true);
     test:assertEquals(attributes.owner.length(), 12);
-    test:assertTrue(attributes?.deliveryPolicy is json);
+    test:assertFalse(attributes?.deliveryPolicy is ());
     test:assertEquals(attributes?.filterPolicy, setAttributes?.filterPolicy);
     test:assertEquals(attributes.filterPolicyScope, setAttributes.filterPolicyScope);
 };

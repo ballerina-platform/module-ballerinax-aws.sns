@@ -911,7 +911,13 @@ public isolated client class Client {
     # + attributes - The settings for sending SMS messages and receiving daily SMS usage reports
     # + return - `()` or `sns:Error` in case of failure
     isolated remote function setSMSAttributes(SMSAttributes attributes) returns Error? {
-        return <Error>error ("Not implemented");
+        map<string> parameters = initiateRequest("SetSMSAttributes");
+
+        record {} formattedSMSAttributes = check formatAttributes(attributes);
+        setAttributes(parameters, formattedSMSAttributes, true);
+
+        http:Request request = check self.generateRequest(parameters);
+        _ = check sendRequest(self.amazonSNSClient, request);
     };
 
     # Retrieves the default settings for sending SMS messages and receiving daily SMS usage reports.
@@ -919,7 +925,17 @@ public isolated client class Client {
     # + return - The default settings for sending SMS messages and receiving daily SMS usage reports or `sns:Error` in
     #            case of failure
     isolated remote function getSMSAttributes() returns SMSAttributes|Error {
-        return <Error>error ("Not implemented");
+        map<string> parameters = initiateRequest("GetSMSAttributes");
+
+        http:Request request = check self.generateRequest(parameters);
+        json response = check sendRequest(self.amazonSNSClient, request);
+
+        do {
+            json attributes = check response.GetSMSAttributesResponse.GetSMSAttributesResult.attributes;
+            return check mapJsonToSMSAttributes(attributes);
+        } on fail error e {
+            return error ResponseHandleFailedError(e.message(), e);
+        }
     };
 
 
@@ -1022,6 +1038,7 @@ public isolated client class Client {
 
 # Represents the AWS SNS client connection configuration.
 #
+# + auth - Do not provide authentication credentials here
 # + accessKeyId - AWS access key ID
 # + secretAccessKey - AWS secret access key
 # + securityToken - AWS security token

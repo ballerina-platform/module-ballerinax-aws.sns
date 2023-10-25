@@ -129,6 +129,12 @@ public enum RouteType {
     PREMIUM = "Premium"
 };
 
+# The types of SMS messages that may be sent.
+public enum SMSMessageType {
+    PROMOTIONAL = "Promotional",
+    TRANSACTIONAL = "Transactional"
+};
+
 # Represents the attributes of an Amazon SNS topic.
 #
 # + deliveryPolicy - The policy that defines how Amazon SNS retries failed deliveries to HTTP/S endpoints
@@ -508,17 +514,29 @@ public type OriginationPhoneNumber record {|
 |};
 
 # Represents the attributes for sending SMS messages with Amazon SNS.
+# 
+# + monthlySpendLimit - The maximum amount in USD that you are willing to spend each month to send SMS messages. When
+#                       Amazon SNS determines that sending an SMS message would incur a cost that exceeds this limit,
+#                       it stops sending SMS messages within minutes
+# + deliveryStatusIAMRole - The ARN of the IAM role that allows Amazon SNS to write logs about SMS deliveries in
+#                           CloudWatch logs
+# + deliveryStatusSuccessSamplingRate - The percentage of successful SMS deliveries for which Amazon SNS will write
+#                                       logs in CloudWatch Logs
+# + defaultSenderID - A string that is displayed as the sender on the receiving device
+# + defaultSMSType - The type of SMS message that you will send by default
+# + usageReportS3Bucket - The name of the Amazon S3 bucket to receive daily SMS usage reports from Amazon SNS
 public type SMSAttributes record {|
-    float monthlySpendLimit?;
+    int monthlySpendLimit?;
     string deliveryStatusIAMRole?;
     int deliveryStatusSuccessSamplingRate?;
     string defaultSenderID?;
-    // TODO: fix
-    // SMSMessageType defaultSMSType?;
+    SMSMessageType defaultSMSType?;
     string usageReportS3Bucket?;
 |};
 
 # Represents the tags associated with an Amazon SNS topic.
+# 
+# + topicArn - The ARN of the topic to which the tags are added
 public type Tags record {|
     never topicArn?;
     string...;

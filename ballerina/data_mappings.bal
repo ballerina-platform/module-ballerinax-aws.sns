@@ -1,14 +1,19 @@
 import ballerina/mime;
 
-isolated function setAttributes(map<string> parameters, map<anydata> attributes) {
+isolated function setAttributes(map<string> parameters, map<anydata> attributes, boolean lowercaseA = false) {
     int attributeNumber = 1;
+    string prefix = "Attributes.entry.";
+    if lowercaseA {
+        prefix = "attributes.entry.";
+    }
+
     foreach [string, anydata] [key, value] in attributes.entries() {
-        parameters["Attributes.entry." + attributeNumber.toString() + ".key"] = key;
+        parameters[prefix + attributeNumber.toString() + ".key"] = key;
 
         if value is record {} {
-            parameters["Attributes.entry." + attributeNumber.toString() + ".value"] = value.toJsonString();
+            parameters[prefix + attributeNumber.toString() + ".value"] = value.toJsonString();
         } else {
-            parameters["Attributes.entry." + attributeNumber.toString() + ".value"] = value.toString();
+            parameters[prefix + attributeNumber.toString() + ".value"] = value.toString();
         }
 
         attributeNumber = attributeNumber + 1;
@@ -25,7 +30,7 @@ isolated function setTags(map<string> parameters, map<string> tags) {
 }
 
 isolated function setMessageAttributes(map<string> parameters, map<MessageAttributeValue> attributes,
-        string prefix = "") returns Error? {
+    string prefix = "") returns Error? {
     int i = 1;
     foreach [string, MessageAttributeValue] [key, value] in attributes.entries() {
         parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Name"] = key;
@@ -269,6 +274,13 @@ isolated function mapJsonToEndpointAttributes(json jsonResponse) returns Endpoin
     string[] booleanFields = ["Enabled"];
 
     record {} mapped = check mapJsonToRecord(jsonResponse, booleanFields = booleanFields);
+    return mapped.cloneWithType();
+}
+
+isolated function mapJsonToSMSAttributes(json jsonResponse) returns SMSAttributes|error {
+    string[] intFields = ["MonthlySpendLimit", "DeliveryStatusSuccessSamplingRate"];
+
+    record {} mapped = check mapJsonToRecord(jsonResponse, intFields = intFields);
     return mapped.cloneWithType();
 }
 
