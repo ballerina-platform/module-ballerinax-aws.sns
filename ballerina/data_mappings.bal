@@ -3,6 +3,8 @@ import ballerina/mime;
 isolated function setAttributes(map<string> parameters, map<anydata> attributes, boolean lowercaseA = false) {
     int attributeNumber = 1;
     string prefix = "Attributes.entry.";
+    
+    // Lowercase "A" is needed in the case of the "SetSMSAttributes" action
     if lowercaseA {
         prefix = "attributes.entry.";
     }
@@ -320,6 +322,7 @@ isolated function mapJsonToRecord(json jsonResponse, string[] intFields = [], st
         } else if timestampFields.indexOf(key) is int {
             val = check stringToTimestamp(value.toString());
         }
+        
         r[lowercaseFirstLetter(key)] = val;
     }
 

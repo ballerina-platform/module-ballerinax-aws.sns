@@ -318,9 +318,11 @@ function createTopicWithTagsNegative2() returns error? {
 }
 function listTopicsTest() returns error? {
     string topicArn = check amazonSNSClient->createTopic(testRunId + "ListTopicsTest");
+
     stream<string, Error?> topicsStream = amazonSNSClient->listTopics();
     string[] topics = check from string topic in topicsStream
         select topic;
+        
     test:assertTrue(topics.indexOf(topicArn) is int, topicArn + " not found in the list.");
     test:assertTrue(topics.length() > 100, "There should be over 100 topics.");
 
@@ -427,7 +429,7 @@ function setTopicAttributesTest1() returns error? {
     test:assertEquals(attributes.fifoTopic, true);
     test:assertEquals(attributes.contentBasedDeduplication, true);
 
-    _ = check amazonSNSClient->setTopicAttributes(topicArn, {contentBasedDeduplication: false});
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, CONTENT_BASED_DEDUPLICATION, false);
     attributes = check amazonSNSClient->getTopicAttributes(topicArn);
     test:assertEquals(attributes.topicArn, topicArn);
     test:assertEquals(attributes.displayName, "");
@@ -447,53 +449,41 @@ function setTopicAttributesTest1() returns error? {
 function setTopicAttributesTest2() returns error? {
     string topicArn = check amazonSNSClient->createTopic(testRunId + "SetTopicAttributes2");
 
-    SettableTopicAttributes setAttributes = {
-        deliveryPolicy: validDeliveryPolicy.toJson(),
-        displayName: "Test4",
-        signatureVersion: SignatureVersion1,
-        policy: validPolicy,
-        tracingConfig: ACTIVE,
-        kmsMasterKeyId: "testxyz",
-        httpMessageDeliveryLogging: {
-            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
-            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
-            successFeedbackSampleRate: 5
-        },
-        lambdaMessageDeliveryLogging: {
-            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
-            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
-            successFeedbackSampleRate: 5
-        },
-        firehoseMessageDeliveryLogging: {
-            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
-            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
-            successFeedbackSampleRate: 5
-        },
-        applicationMessageDeliveryLogging: {
-            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
-            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
-            successFeedbackSampleRate: 5
-        },
-        sqsMessageDeliveryLogging: {
-            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
-            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
-            successFeedbackSampleRate: 5
-        }
-    };
-    _ = check amazonSNSClient->setTopicAttributes(topicArn, setAttributes);
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, DELIVERY_POLICY, validDeliveryPolicy.toJson());
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, DISPLAY_NAME, "Test4");
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, SIGNATURE_VERSION, SignatureVersion1);
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, POLICY, validPolicy);
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, TRACING_CONFIG, ACTIVE);
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, KMS_MASTER_KEY_ID, "testxyz");
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, HTTP_SUCCESS_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSSuccessFeedback");
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, HTTP_FAILURE_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSFailureFeedback");
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, HTTP_SUCCESS_FEEDBACK_SAMPLE_RATE, 5);
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, LAMBDA_SUCCESS_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSSuccessFeedback");
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, LAMBDA_FAILURE_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSFailureFeedback");
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, LAMBDA_SUCCESS_FEEDBACK_SAMPLE_RATE, 5);
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, FIREHOSE_SUCCESS_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSSuccessFeedback");
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, FIREHOSE_FAILURE_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSFailureFeedback");
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, FIREHOSE_SUCCESS_FEEDBACK_SAMPLE_RATE, 5);
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, APPLICATION_SUCCESS_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSSuccessFeedback");
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, APPLICATION_FAILURE_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSFailureFeedback");
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, APPLICATION_SUCCESS_FEEDBACK_SAMPLE_RATE, 5);
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, SQS_SUCCESS_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSSuccessFeedback");
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, SQS_FAILURE_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSFailureFeedback");
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, SQS_SUCCESS_FEEDBACK_SAMPLE_RATE, 5);
+
     GettableTopicAttributes attributes = check amazonSNSClient->getTopicAttributes(topicArn);
     test:assertEquals(attributes.topicArn, topicArn);
-    test:assertEquals(attributes?.deliveryPolicy, setAttributes?.deliveryPolicy);
-    test:assertEquals(attributes.displayName, setAttributes.displayName);
-    test:assertEquals(attributes.signatureVersion, setAttributes.signatureVersion);
-    test:assertEquals(attributes.policy, setAttributes?.policy);
-    test:assertEquals(attributes.tracingConfig, setAttributes?.tracingConfig);
-    test:assertEquals(attributes.kmsMasterKeyId, setAttributes?.kmsMasterKeyId);
-    test:assertEquals(attributes.httpMessageDeliveryLogging, setAttributes?.httpMessageDeliveryLogging);
-    test:assertEquals(attributes.lambdaMessageDeliveryLogging, setAttributes?.lambdaMessageDeliveryLogging);
-    test:assertEquals(attributes.firehoseMessageDeliveryLogging, setAttributes?.firehoseMessageDeliveryLogging);
-    test:assertEquals(attributes.applicationMessageDeliveryLogging, setAttributes?.applicationMessageDeliveryLogging);
-    test:assertEquals(attributes.sqsMessageDeliveryLogging, setAttributes?.sqsMessageDeliveryLogging);
+    test:assertEquals(attributes?.deliveryPolicy, validDeliveryPolicy.toJson());
+    test:assertEquals(attributes.displayName, "Test4");
+    test:assertEquals(attributes.signatureVersion, SignatureVersion1);
+    test:assertEquals(attributes.policy, validPolicy);
+    test:assertEquals(attributes.tracingConfig, ACTIVE);
+    test:assertEquals(attributes.kmsMasterKeyId, "testxyz");
+    test:assertEquals(attributes.httpMessageDeliveryLogging, {successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback", failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback", successFeedbackSampleRate: 5});
+    test:assertEquals(attributes.lambdaMessageDeliveryLogging, {successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback", failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback", successFeedbackSampleRate: 5});
+    test:assertEquals(attributes.firehoseMessageDeliveryLogging, {successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback", failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback", successFeedbackSampleRate: 5});
+    test:assertEquals(attributes.applicationMessageDeliveryLogging, {successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback", failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback", successFeedbackSampleRate: 5});
+    test:assertEquals(attributes.sqsMessageDeliveryLogging, {successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback", failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback", successFeedbackSampleRate: 5});
 }
 
 @test:Config {
@@ -511,15 +501,107 @@ function setTopicAttributesNegativeTest() returns error? {
     test:assertEquals(attributes.subscriptionsDeleted, 0);
     test:assertEquals(attributes.subscriptionsPending, 0);
 
-    SettableTopicAttributes updateAttributes = {
-        deliveryPolicy: invalidDeliveryPolicy.toJson(),
-        displayName: "Test4",
-        signatureVersion: SignatureVersion1,
-        policy: validPolicy,
-        tracingConfig: ACTIVE,
-        kmsMasterKeyId: "testxyz"
-    };
-    Error? e = amazonSNSClient->setTopicAttributes(topicArn, updateAttributes);
+    Error? e = amazonSNSClient->setTopicAttributes(topicArn, DELIVERY_POLICY, invalidDeliveryPolicy.toJson());
     test:assertTrue(e is OperationError, "Error expected.");
     test:assertEquals((<OperationError>e).message(), "Invalid parameter: DeliveryPolicy: http.defaultHealthyRetryPolicy.numRetries must be less than or equal to 100");
+}
+
+@test:Config {
+    groups: ["topics"]
+}
+function setTopicAttributesInvalidTest() returns error? {
+    string topicArn = check amazonSNSClient->createTopic(testRunId + "SetTopicAttributesInvalid");
+    GettableTopicAttributes attributes = check amazonSNSClient->getTopicAttributes(topicArn);
+    test:assertEquals(attributes.topicArn, topicArn);
+    test:assertEquals(attributes.displayName, "");
+    test:assertNotEquals(attributes.effectiveDeliveryPolicy, {});
+    test:assertNotEquals(attributes.owner, "");
+    test:assertNotEquals(attributes.policy, {});
+    test:assertEquals(attributes.subscriptionsConfirmed, 0);
+    test:assertEquals(attributes.subscriptionsDeleted, 0);
+    test:assertEquals(attributes.subscriptionsPending, 0);
+
+    Error? e = amazonSNSClient->setTopicAttributes(topicArn, DISPLAY_NAME, 1);
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The display name must be of type string.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, SIGNATURE_VERSION, "v1");
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The signature version must be of type SignatureVersion.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, POLICY, "policy");
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The policy must be of type json.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, TRACING_CONFIG, "invalid");
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The tracing config must be of type TracingConfig.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, KMS_MASTER_KEY_ID, 1);
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The KMS master key ID must be of type string.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, CONTENT_BASED_DEDUPLICATION, 1);
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The KMS master key ID must be of type boolean.");
+    
+    e = amazonSNSClient->setTopicAttributes(topicArn, HTTP_SUCCESS_FEEDBACK_ROLE_ARN, 1);
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The HTTP success feedback role ARN must be of type string.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, HTTP_FAILURE_FEEDBACK_ROLE_ARN, 1);
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The HTTP failure feedback role ARN must be of type string.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, HTTP_SUCCESS_FEEDBACK_SAMPLE_RATE, "1");
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The HTTP success feedback sample rate must be of type int.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, LAMBDA_SUCCESS_FEEDBACK_ROLE_ARN, 1);
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The Lambda success feedback role ARN must be of type string.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, LAMBDA_FAILURE_FEEDBACK_ROLE_ARN, 1);
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The Lambda failure feedback role ARN must be of type string.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, LAMBDA_SUCCESS_FEEDBACK_SAMPLE_RATE, "1");
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The Lambda success feedback sample rate must be of type int.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, FIREHOSE_SUCCESS_FEEDBACK_ROLE_ARN, 1);
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The Firehose success feedback role ARN must be of type string.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, FIREHOSE_FAILURE_FEEDBACK_ROLE_ARN, 1);
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The Firehose failure feedback role ARN must be of type string.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, FIREHOSE_SUCCESS_FEEDBACK_SAMPLE_RATE, "1");
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The Firehose success feedback sample rate must be of type int.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, APPLICATION_SUCCESS_FEEDBACK_ROLE_ARN, 1);
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The Application success feedback role ARN must be of type string.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, APPLICATION_FAILURE_FEEDBACK_ROLE_ARN, 1);
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The Application failure feedback role ARN must be of type string.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, APPLICATION_SUCCESS_FEEDBACK_SAMPLE_RATE, "1");
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The Application success feedback sample rate must be of type int.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, SQS_SUCCESS_FEEDBACK_ROLE_ARN, 1);
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The SQS success feedback role ARN must be of type string.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, SQS_FAILURE_FEEDBACK_ROLE_ARN, 1);
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The SQS failure feedback role ARN must be of type string.");
+
+    e = amazonSNSClient->setTopicAttributes(topicArn, SQS_SUCCESS_FEEDBACK_SAMPLE_RATE, "1");
+    test:assertTrue(e is Error, "Error expected.");
+    test:assertEquals((<Error>e).message(), "The SQS success feedback sample rate must be of type int.");
 }

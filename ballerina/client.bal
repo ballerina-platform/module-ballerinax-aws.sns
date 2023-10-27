@@ -102,7 +102,6 @@ public isolated client class Client {
         }
     }
 
-
     # Deletes a topic and all its subscriptions. Deleting a topic might prevent some messages previously sent to the
     # topic from being delivered to subscribers. This action is idempotent, so deleting a topic that does not exist
     # does not result in an error.
@@ -145,27 +144,23 @@ public isolated client class Client {
         }
     }
 
-    # Modifies the attributes of an Amazon SNS topic.
+    # Modifies the a single attribute of an Amazon SNS topic.
     #   
     # + topicArn - The Amazon Resource Name (ARN) of the topic
-    # + attributes - The attributes to modify
+    # + attributeName - The name of the attribute you want to set
+    # + value - The new value for the attribute
     # + return - `()` or `sns:Error` in case of failure
-    isolated remote function setTopicAttributes(string topicArn, SettableTopicAttributes attributes) returns Error? {
+    isolated remote function setTopicAttributes(string topicArn, TopicAttributeName attributeName, 
+        json|string|int|boolean value) returns Error? {
+        check validateTopicAttribute(attributeName, value);
+
         map<string> parameters = initiateRequest("SetTopicAttributes");
         parameters["TopicArn"] = topicArn;
+        parameters["AttributeName"] = attributeName;
+        parameters["AttributeValue"] = value.toString();
 
-        record {} formattedTopicAttributes = check formatAttributes(attributes, SPECIAL_TOPIC_ATTRIBUTES_MAP);
-        foreach [string, anydata] [key, value] in formattedTopicAttributes.entries() {
-            parameters["AttributeName"] = key;
-            if value is record {} {
-                parameters["AttributeValue"] = value.toJsonString();
-            } else {
-                parameters["AttributeValue"] = value.toString();
-            }
-
-            http:Request request = check self.generateRequest(parameters);
-            _ = check sendRequest(self.amazonSNSClient, request);
-        }
+        http:Request request = check self.generateRequest(parameters);
+        _ = check sendRequest(self.amazonSNSClient, request);
     }
 
     # Publishes a message to an SNS topic, a phone number, or a mobile platform endpoint.
@@ -244,7 +239,6 @@ public isolated client class Client {
         } on fail error e {
             return error ResponseHandleFailedError(e.message(), e);
         }
-
     };
 
     # Publishes up to ten messages to the specified topic.
@@ -378,7 +372,6 @@ public isolated client class Client {
         SubscriptionStream subscriptionsStreamObject = new (self.amazonSNSClient, self.generateRequest, topicArn);
         stream<Subscription, Error?> subscriptionsStream = new (subscriptionsStreamObject);
         return subscriptionsStream;
-
     } 
 
     # Retrieves the attributes of the requested subscription.
@@ -401,28 +394,23 @@ public isolated client class Client {
         }
     };
 
-    # Modifies the attributes of a subscription.
+    # Modifies a single of a subscription.
     # 
     # + subscriptionArn - The ARN of the subscription to modify
-    # + attributes - The attributes to modify
+    # + attributeName - The name of the attribute you want to set
+    # + value - The new value for the attribute
     # + return - `()` or `sns:Error` in case of failure
-    isolated remote function setSubscriptionAttributes(string subscriptionArn, SubscriptionAttributes attributes)
-        returns Error? {
+    isolated remote function setSubscriptionAttributes(string subscriptionArn, SubscriptionAttributeName attributeName, 
+        json|FilterPolicyScope|boolean|string value) returns Error? {
+        check validateSubscriptionAttribute(attributeName, value);
+
         map<string> parameters = initiateRequest("SetSubscriptionAttributes");
         parameters["SubscriptionArn"] = subscriptionArn;
+        parameters["AttributeName"] = attributeName.toString();
+        parameters["AttributeValue"] = value.toString();
 
-        record {} formattedTopicAttributes = check formatAttributes(attributes);
-        foreach [string, anydata] [key, value] in formattedTopicAttributes.entries() {
-            parameters["AttributeName"] = key;
-            if value is record {} {
-                parameters["AttributeValue"] = value.toJsonString();
-            } else {
-                parameters["AttributeValue"] = value.toString();
-            }
-
-            http:Request request = check self.generateRequest(parameters);
-            _ = check sendRequest(self.amazonSNSClient, request);
-        }
+        http:Request request = check self.generateRequest(parameters);
+        _ = check sendRequest(self.amazonSNSClient, request);
     };
 
     # Deletes a subscription. If the subscription requires authentication for deletion, only the owner of the 
@@ -1042,7 +1030,7 @@ public isolated client class Client {
 # + accessKeyId - AWS access key ID
 # + secretAccessKey - AWS secret access key
 # + securityToken - AWS security token
-# + region - AWS SNS region
+# + region - AWS SNS region. Default value is "us-east-1"
 public type ConnectionConfig record {|
     *config:ConnectionConfig;
     never auth?;

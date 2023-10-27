@@ -39,6 +39,31 @@ public enum TracingConfig {
     ACTIVE = "Active"
 }
 
+public enum TopicAttributeName {
+    DELIVERY_POLICY = "DeliveryPolicy",
+    DISPLAY_NAME = "DisplayName",
+    POLICY = "Policy",
+    SIGNATURE_VERSION = "SignatureVersion",
+    TRACING_CONFIG = "TracingConfig",
+    KMS_MASTER_KEY_ID = "KmsMasterKeyId",
+    CONTENT_BASED_DEDUPLICATION = "ContentBasedDeduplication",
+    HTTP_SUCCESS_FEEDBACK_ROLE_ARN = "HTTPSuccessFeedbackRoleArn",
+    HTTP_SUCCESS_FEEDBACK_SAMPLE_RATE = "HTTPSuccessFeedbackSampleRate",
+    HTTP_FAILURE_FEEDBACK_ROLE_ARN = "HTTPFailureFeedbackRoleArn",
+    FIREHOSE_SUCCESS_FEEDBACK_ROLE_ARN = "FirehoseSuccessFeedbackRoleArn",
+    FIREHOSE_SUCCESS_FEEDBACK_SAMPLE_RATE = "FirehoseSuccessFeedbackSampleRate",
+    FIREHOSE_FAILURE_FEEDBACK_ROLE_ARN = "FirehoseFailureFeedbackRoleArn",
+    LAMBDA_SUCCESS_FEEDBACK_ROLE_ARN = "LambdaSuccessFeedbackRoleArn",
+    LAMBDA_SUCCESS_FEEDBACK_SAMPLE_RATE = "LambdaSuccessFeedbackSampleRate",
+    LAMBDA_FAILURE_FEEDBACK_ROLE_ARN = "LambdaFailureFeedbackRoleArn",
+    APPLICATION_SUCCESS_FEEDBACK_ROLE_ARN = "ApplicationSuccessFeedbackRoleArn",
+    APPLICATION_SUCCESS_FEEDBACK_SAMPLE_RATE = "ApplicationSuccessFeedbackSampleRate",
+    APPLICATION_FAILURE_FEEDBACK_ROLE_ARN = "ApplicationFailureFeedbackRoleArn",
+    SQS_SUCCESS_FEEDBACK_ROLE_ARN = "SQSSuccessFeedbackRoleArn",
+    SQS_SUCCESS_FEEDBACK_SAMPLE_RATE = "SQSSuccessFeedbackSampleRate",
+    SQS_FAILURE_FEEDBACK_ROLE_ARN = "SQSFailureFeedbackRoleArn"
+}
+
 # The types of targets to which a message can be published.
 public enum TargetType {
     TOPIC,
@@ -63,6 +88,15 @@ public enum SubscriptionProtocol {
     APPLICATION = "application",
     LAMBDA = "lambda",
     FIREHOSE = "firehose"
+}
+
+public enum SubscriptionAttributeName {
+    DELIVERY_POLICY = "DeliveryPolicy",
+    FILTER_POLICY = "FilterPolicy",
+    FILTER_POLICY_SCOPE = "FilterPolicyScope",
+    RAW_MESSAGE_DELIVERY = "RawMessageDelivery",
+    REDRIVE_POLICY = "RedrivePolicy",
+    SUBSCRIPTION_ROLE_ARN = "SubscriptionRoleArn"
 }
 
 # The types of application platforms supported.
@@ -153,8 +187,6 @@ public enum SMSMessageType {
 # + lambdaMessageDeliveryLogging - The configurations for message delivery logging for the Lambda delivery protocol
 # + applicationMessageDeliveryLogging - The configurations for message delivery logging for the application delivery
 # + sqsMessageDeliveryLogging - The configurations for message delivery logging for the Amazon SQS delivery protocol
-
-// TODO: convert fifo to ENUM (Standard/FIFO)
 public type InitializableTopicAttributes record {|
     json deliveryPolicy?;
     string displayName?;
@@ -171,51 +203,20 @@ public type InitializableTopicAttributes record {|
     MessageDeliveryLoggingConfig sqsMessageDeliveryLogging?;
 |};
 
+# Represents the configurations to be used for message delivery logging for a particular protocol.
+# 
+# + successFeedbackRoleArn - Indicates successful message delivery status for an Amazon SNS topic that is subscribed to 
+#                            an endpoint
+# + failureFeedbackRoleArn - Indicates failed message delivery status for an Amazon SNS topic that is subscribed to an
+#                            endpoint
+# + successFeedbackSampleRate - Indicates percentage of successful messages to sample for an Amazon SNS topic that is 
+#                               subscribed to an endpoint
+# 
 public type MessageDeliveryLoggingConfig record {|
     string successFeedbackRoleArn?;
     string failureFeedbackRoleArn?;
     int successFeedbackSampleRate?;
 |};
-
-# Represents the attributes of an Amazon SNS topic.
-#
-# + fifoTopic - not settable
-public type SettableTopicAttributes record {|
-    *InitializableTopicAttributes;
-    never fifoTopic?;
-|};
-
-
-// # Represents the message delivery retry policies which defines how Amazon SNS retries the delivery of messages when
-// # server-side errors occur for HTTP/S endpoints. When the delivery policy is exhausted, Amazon SNS stops retrying the 
-// # delivery and discards the message—unless a dead-letter queue is attached to the subscription
-// # 
-// # + minDelayTarget - The minimum delay for a retry (in seconds)
-// # + maxDelayTarget - The maximum delay for a retry (in seconds)
-// # + numRetries - The total number of retries, including immediate, pre-backoff, backoff, and post-backoff
-// # + numNoDelayRetries - The number of retries to be done immediately, with no delay between them
-// # + numMinDelayRetries - The number of retries in the pre-backoff phase, with the specified minimum delay between them
-// # + numMaxDelayRetries - The number of retries in the post-backoff phase, with the maximum delay between them
-// # + backoffFunction - The model for backoff between retries
-// # + maxReceivesPerSecond - The maximum number of deliveries per second, per subscription
-// # + headerContentType - The content type of the notification being sent to HTTP/S endpoints	
-// public type DeliveryPolicy record {|
-//     record {|
-//         record {|
-//             int minDelayTarget?;
-//             int maxDelayTarget?;
-//             int numRetries?;
-//             int numNoDelayRetries?;
-//             int numMinDelayRetries?;
-//             int numMaxDelayRetries?;
-//             BackoffFunction backoffFunction?;
-//         |} defaultHealthyRetryPolicy?;
-//         boolean disableSubscriptionOverrides?;
-//         record {|
-//             string headerContentType?;
-//         |} defaultRequestPolicy?;
-//     |} http;
-// |};
 
 # Represents an Amazon SNS topic.
 #
@@ -332,7 +333,7 @@ public type PublishBatchRequestEntry record {|
 #                         Firehose delivery stream subscriptions.
 public type SubscriptionAttributes record {|
     json deliveryPolicy?;
-    json filterPolicy?; // TODO: change to open record
+    json filterPolicy?;
     FilterPolicyScope filterPolicyScope?;
     boolean rawMessageDelivery?;
     json redrivePolicy?;

@@ -374,20 +374,17 @@ function getSubscriptionAttributesTest2() returns error? {
 }
 
 @test:Config {
-    groups: ["subscribe"]
+    groups: ["subscribex"]
 }
 function setSubscriptionAttributesTest() returns error? {
     string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic10");
     string subscription = check amazonSNSClient->subscribe(topic, testHttp, HTTP, returnSubscriptionArn = true);
 
-    SubscriptionAttributes setAttributes = {
-        deliveryPolicy: {healthyRetryPolicy: {numRetries: 3, minDelayTarget: 5, maxDelayTarget: 10}},
-        filterPolicy: {store: ["example_corp"]},
-        filterPolicyScope: MESSAGE_BODY,
-        //TODO: test redrive policy and subscription role ARN
-        rawMessageDelivery: true
-    };
-    _ = check amazonSNSClient->setSubscriptionAttributes(subscription, setAttributes);
+    _ = check amazonSNSClient->setSubscriptionAttributes(subscription, DELIVERY_POLICY, 
+        {healthyRetryPolicy: {numRetries: 3, minDelayTarget: 5, maxDelayTarget: 10}});
+    _ = check amazonSNSClient->setSubscriptionAttributes(subscription, FILTER_POLICY, {store: ["example_corp"]});
+    _ = check amazonSNSClient->setSubscriptionAttributes(subscription, FILTER_POLICY_SCOPE, MESSAGE_BODY);
+    _ = check amazonSNSClient->setSubscriptionAttributes(subscription, RAW_MESSAGE_DELIVERY, true);
 
     GettableSubscriptionAttributes attributes = check amazonSNSClient->getSubscriptionAttributes(subscription);
     test:assertEquals(attributes.subscriptionArn, subscription);
@@ -400,26 +397,38 @@ function setSubscriptionAttributesTest() returns error? {
     test:assertEquals(attributes.rawMessageDelivery, true);
     test:assertEquals(attributes.owner.length(), 12);
     test:assertFalse(attributes?.deliveryPolicy is ());
-    test:assertEquals(attributes?.filterPolicy, setAttributes?.filterPolicy);
-    test:assertEquals(attributes.filterPolicyScope, setAttributes.filterPolicyScope);
+    test:assertEquals(attributes?.filterPolicy, {store: ["example_corp"]});
+    test:assertEquals(attributes.filterPolicyScope, MESSAGE_BODY);
 };
 
 @test:Config {
-    groups: ["subscribe"]
+    groups: ["subscribex"]
+}
+function setSubscriptionAttributesWithInvalidTypes() returns error? {
+    string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic10");
+    string subscription = check amazonSNSClient->subscribe(topic, testHttp, HTTP, returnSubscriptionArn = true);
+
+    Error? e = amazonSNSClient->setSubscriptionAttributes(subscription, RAW_MESSAGE_DELIVERY, "invalid");
+    test:assertTrue(e is Error, "Expected error.");
+    test:assertEquals((<Error>e).message(), "The raw message delivery must be of type boolean.");
+
+    e = amazonSNSClient->setSubscriptionAttributes(subscription, FILTER_POLICY_SCOPE, "invalid");
+    test:assertTrue(e is Error, "Expected error.");
+    test:assertEquals((<Error>e).message(), "The filter policy scope must be of type FilterPolicyScope.");
+
+    e = amazonSNSClient->setSubscriptionAttributes(subscription, SUBSCRIPTION_ROLE_ARN, false);
+    test:assertTrue(e is Error, "Expected error.");
+    test:assertEquals((<Error>e).message(), "The subscription role ARN must be of type string.");
+};
+
+@test:Config {
+    groups: ["subscribex"]
 }
 function setSubscriptionAttributesTestNegative() returns error? {
     string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic10");
     string subscription = check amazonSNSClient->subscribe(topic, testPhoneNumber, SMS, returnSubscriptionArn = true);
 
-    SubscriptionAttributes setAttributes = {
-        deliveryPolicy: {healthyRetryPolicy: {numRetries: 3, minDelayTarget: 5, maxDelayTarget: 10}},
-        filterPolicy: {store: ["example_corp"]},
-        filterPolicyScope: MESSAGE_BODY,
-        //TODO: test redrive policy and subscription role ARN
-        rawMessageDelivery: true
-    };
-    Error? e = amazonSNSClient->setSubscriptionAttributes(subscription, setAttributes);
-    
+    Error? e = amazonSNSClient->setSubscriptionAttributes(subscription, RAW_MESSAGE_DELIVERY, true);
     test:assertTrue(e is OperationError, "Expected error.");
     test:assertEquals((<OperationError>e).message(), "Invalid parameter: Delivery protocol [sms] does not support raw message delivery.");
 };
