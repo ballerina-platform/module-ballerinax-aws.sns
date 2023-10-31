@@ -15,13 +15,10 @@
 // under the License.
 
 public type Error distinct error;
+
 public type GenerateRequestFailed distinct Error;
 
 public type OperationError distinct Error;
-
-public type DataMappingError distinct Error;
-
-public type FileReadFailed distinct Error;
 
 public type ResponseHandleFailedError distinct Error;
 
@@ -29,16 +26,6 @@ public type CalculateSignatureFailedError distinct Error;
 
 public type InternalError distinct Error;
 
-const string CONVERT_XML_TO_INBOUND_MESSAGES_FAILED_MSG = "Error while converting XML to Inbound Messages.";
-const string CONVERT_XML_TO_INBOUND_MESSAGE_FAILED_MSG = "Error while converting XML to an Inbound Message.";
-const string CONVERT_XML_TO_INBOUND_MESSAGE_MESSAGE_ATTRIBUTES_FAILED_MSG = "Error while converting XML to an Inbound Message's Message Attributes.";
-const string CONVERT_XML_TO_INBOUND_MESSAGE_MESSAGE_ATTRIBUTE_FAILED_MSG = "Error while converting XML to an Inbound Message's Message Attribute.";
-const string FILE_READ_FAILED_MSG = "Error while reading a file.";
-const string CLOSE_CHARACTER_STREAM_FAILED_MSG = "Error occurred while closing character stream.";
 const string GENERATE_REQUEST_FAILED_MSG = "Error occurred while generating POST request.";
 const string NO_CONTENT_SET_WITH_RESPONSE_MSG = "No Content was sent with the response.";
-const string RESPONSE_PAYLOAD_IS_NOT_XML_MSG = "Response payload is not XML.";
 const string ERROR_OCCURRED_WHILE_INVOKING_REST_API_MSG = "Error occurred while invoking the REST API.";
-const string OUTBOUND_MESSAGE_RESPONSE_EMPTY_MSG = "Outbound Message response is empty.";
-const string OPERATION_ERROR_MSG = "Error has occurred during an operation.";
-const string UNREACHABLE_STATE = "Response type cannot be http payload";

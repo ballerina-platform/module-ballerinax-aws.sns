@@ -16,7 +16,6 @@
 
 import ballerina/test;
 
-
 @test:Config {
     groups: ["sms-attributes"]
 }

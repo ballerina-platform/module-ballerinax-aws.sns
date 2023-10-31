@@ -29,10 +29,6 @@ isolated function sendRequest(http:Client amazonSNSClient, http:Request request)
     }
 }
 
-# Handles the HTTP response.
-#
-# + httpResponse - Http response or error
-# + return - If successful returns `json` response. Else returns error
 isolated function handleResponse(http:Response httpResponse) returns json|Error {
     if httpResponse.statusCode == http:STATUS_NO_CONTENT {
         return error ResponseHandleFailedError(NO_CONTENT_SET_WITH_RESPONSE_MSG);
@@ -76,7 +72,6 @@ isolated function validateCredentails(string accessKeyId, string secretAccessKey
     }
 }
 
-// TODO: see if function can be improved
 isolated function utcToString(time:Utc utc, string pattern) returns string|error {
     [int, decimal] [epochSeconds, lastSecondFraction] = utc;
     int nanoAdjustments = (<int>lastSecondFraction * 1000000000);

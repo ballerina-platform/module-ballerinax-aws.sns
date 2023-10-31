@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/io;
 import ballerina/test;
 
 @test:Config {
@@ -24,7 +23,6 @@ function listOrignationPhoneNumbersTest() returns error? {
     stream<OriginationPhoneNumber, Error?> phoneNumberStream = amazonSNSClient->listOriginationNumbers();
     OriginationPhoneNumber[] phoneNumbers = check from OriginationPhoneNumber phoneNumber in phoneNumberStream 
                                                   select phoneNumber;
-    io:println(phoneNumbers);
     test:assertEquals(phoneNumbers.length(), 1, "Invalid number of origination phone numbers");
 }
 
@@ -35,7 +33,6 @@ function listOptedOutPhoneNumbersTest() returns error? {
     stream<string, Error?> phoneNumberStream = amazonSNSClient->listPhoneNumbersOptedOut();
     string[] phoneNumbers = check from string phoneNumber in phoneNumberStream
         select phoneNumber;
-    io:println(phoneNumbers);
     test:assertEquals(phoneNumbers.length(), 0, "Invalid number of opted out phone numbers");
 }
 

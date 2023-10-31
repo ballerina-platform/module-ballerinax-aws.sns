@@ -1,6 +1,6 @@
-// Copyright (c) 2021 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2023 WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
 //
-// WSO2 Inc. licenses this file to you under the Apache License,
+// WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License.
 // You may obtain a copy of the License at
@@ -14,14 +14,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-const string AMAZON_AWS_HOST = "sns.amazonaws.com";
 const string DEFAULT_REGION = "us-east-1";
 const string EMPTY_STRING = "";
 const string ACTION = "Action";
 const string VERSION = "Version";
 const string VERSION_NUMBER = "2010-03-31";
-const string OPERATION_ERROR = "Error has occurred during an operation";
-const string REQUEST_ERROR = "Error has occurred during request";
 
 const map<string> SPECIAL_TOPIC_ATTRIBUTES_MAP = {
     "httpMessageDeliveryLogging": "HTTP",
