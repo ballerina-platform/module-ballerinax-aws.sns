@@ -17,13 +17,9 @@
 import ballerinax/aws.sns;
 import ballerina/log;
 
-sns:AwsCredentials longTermCredentials = {
+sns:ConnectionConfig config = {
     accessKeyId: "<ACCESS_KEY_ID>",
     secretAccessKey: "<SECRET_ACCESS_KEY>"
-};
-
-sns:ConnectionConfig config = {
-    credentials: longTermCredentials,
     region: "<REGION>"
 };
 

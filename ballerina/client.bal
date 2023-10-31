@@ -30,14 +30,13 @@ import ballerina/url;
 # + securityToken - Security token
 # + region - Amazon API Region
 # + amazonHost - Amazon host name
-@display {label: "Amazon SNS Client", iconPath: "icon.png"}
 public isolated client class Client {
-        final string accessKeyId;
-        final string secretAccessKey;
-        final string? securityToken;
-        final string region;
-        final string amazonHost;
-        final http:Client amazonSNSClient;
+    final string accessKeyId;
+    final string secretAccessKey;
+    final string? securityToken;
+    final string region;
+    final string amazonHost;
+    final http:Client amazonSNSClient;
 
     # Initializes the connector.
     #
@@ -51,7 +50,7 @@ public isolated client class Client {
         self.region = config.region;
         self.amazonHost = "sns." + self.region + ".amazonaws.com";
         string baseURL = "https://" + self.amazonHost;
-        check validateCredentails(self.accessKeyId,  self.secretAccessKey);
+        check validateCredentails(self.accessKeyId, self.secretAccessKey);
 
         http:ClientConfiguration httpClientConfig = check config:constructHTTPClientConfig(config);
         self.amazonSNSClient = check new (baseURL, httpClientConfig);
@@ -180,8 +179,6 @@ public isolated client class Client {
     #             group are processed in a FIFO manner (however, messages in different message groups might be processed
     #             out of order). Every message must include a `groupId`. Applies to FIFO topics only
     # + return - `PublishMessageResponse` or `sns:Error` in case of failure
-    // TODO: can we move subject into Message? - DONE
-    // TODO: can we use soemthing like spread operator - unsure
     isolated remote function publish(string target, Message message, TargetType targetType = TOPIC, 
     map<MessageAttributeValue>? attributes = (), string? deduplicationId = (), string? groupId = ())
         returns PublishMessageResponse|Error {
@@ -294,7 +291,6 @@ public isolated client class Client {
         } on fail error e {
             return error ResponseHandleFailedError(e.message(), e);
         }
-
     };
 
     # Creates a subscription to a topic. If the endpoint type is HTTP/S or email, or if the endpoint and the topic are
@@ -812,7 +808,7 @@ public isolated client class Client {
 
         http:Request request = check self.generateRequest(parameters);
         _ = check sendRequest(self.amazonSNSClient, request);
-};
+    };
 
     # Adds a statement to a topic's access control policy, granting access for the specified AWS accounts to the \
     # specified actions.
@@ -923,7 +919,6 @@ public isolated client class Client {
             return error ResponseHandleFailedError(e.message(), e);
         }
     };
-
 
     private isolated function generateRequest(map<string> parameters)
     returns http:Request|Error {
