@@ -42,7 +42,7 @@ isolated function validateTopicAttribute(TopicAttributeName attributeName,
     }
 
     if attributeName is CONTENT_BASED_DEDUPLICATION && !(value is boolean) {
-        return error Error("The content-based deduplication must be of type MessageDeliveryLoggingConfig.");
+        return error Error("The content-based deduplication must be of type boolean.");
     }
 
     if attributeName is HTTP_SUCCESS_FEEDBACK_ROLE_ARN && !(value is string) {

@@ -531,7 +531,7 @@ function setTopicAttributesInvalidTest() returns error? {
 
     e = amazonSNSClient->setTopicAttributes(topicArn, POLICY, "policy");
     test:assertTrue(e is Error, "Error expected.");
-    test:assertEquals((<Error>e).message(), "The policy must be of type json.");
+    test:assertEquals((<Error>e).message(), "Invalid parameter: Policy Error: null");
 
     e = amazonSNSClient->setTopicAttributes(topicArn, TRACING_CONFIG, "invalid");
     test:assertTrue(e is Error, "Error expected.");
@@ -543,7 +543,7 @@ function setTopicAttributesInvalidTest() returns error? {
 
     e = amazonSNSClient->setTopicAttributes(topicArn, CONTENT_BASED_DEDUPLICATION, 1);
     test:assertTrue(e is Error, "Error expected.");
-    test:assertEquals((<Error>e).message(), "The KMS master key ID must be of type boolean.");
+    test:assertEquals((<Error>e).message(), "The content-based deduplication must be of type boolean.");
     
     e = amazonSNSClient->setTopicAttributes(topicArn, HTTP_SUCCESS_FEEDBACK_ROLE_ARN, 1);
     test:assertTrue(e is Error, "Error expected.");
@@ -583,15 +583,15 @@ function setTopicAttributesInvalidTest() returns error? {
 
     e = amazonSNSClient->setTopicAttributes(topicArn, APPLICATION_SUCCESS_FEEDBACK_ROLE_ARN, 1);
     test:assertTrue(e is Error, "Error expected.");
-    test:assertEquals((<Error>e).message(), "The Application success feedback role ARN must be of type string.");
+    test:assertEquals((<Error>e).message(), "The application success feedback role ARN must be of type string.");
 
     e = amazonSNSClient->setTopicAttributes(topicArn, APPLICATION_FAILURE_FEEDBACK_ROLE_ARN, 1);
     test:assertTrue(e is Error, "Error expected.");
-    test:assertEquals((<Error>e).message(), "The Application failure feedback role ARN must be of type string.");
+    test:assertEquals((<Error>e).message(), "The application failure feedback role ARN must be of type string.");
 
     e = amazonSNSClient->setTopicAttributes(topicArn, APPLICATION_SUCCESS_FEEDBACK_SAMPLE_RATE, "1");
     test:assertTrue(e is Error, "Error expected.");
-    test:assertEquals((<Error>e).message(), "The Application success feedback sample rate must be of type int.");
+    test:assertEquals((<Error>e).message(), "The application success feedback sample rate must be of type int.");
 
     e = amazonSNSClient->setTopicAttributes(topicArn, SQS_SUCCESS_FEEDBACK_ROLE_ARN, 1);
     test:assertTrue(e is Error, "Error expected.");

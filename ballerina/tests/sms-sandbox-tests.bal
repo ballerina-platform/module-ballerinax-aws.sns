@@ -75,57 +75,57 @@ function creatSMSSandboxPhoneNumberInvalidTest3() returns error? {
     groups: ["sms-sandbox"]
 }
 function createSMSSandboxPhoneNumberWithLanugageCodeTest() returns error? {
-    check amazonSNSClient->createSMSSandboxPhoneNumber("+9477195222201", EN_US);
+    check amazonSNSClient->createSMSSandboxPhoneNumber("+9477123456701", EN_US);
     runtime:sleep(2);
-    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9477195222201");
+    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+941234401");
 
-    check amazonSNSClient->createSMSSandboxPhoneNumber("+9477195222202", EN_GB);
+    check amazonSNSClient->createSMSSandboxPhoneNumber("+9412344502", EN_GB);
     runtime:sleep(2);
-    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9477195222202");
+    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9412344502");
 
-    check amazonSNSClient->createSMSSandboxPhoneNumber("+9477195222203", ES_419);
+    check amazonSNSClient->createSMSSandboxPhoneNumber("+9412344503", ES_419);
     runtime:sleep(2);
-    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9477195222203");
+    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9412345678903");
 
-    check amazonSNSClient->createSMSSandboxPhoneNumber("+9477195222204", ES_ES);
+    check amazonSNSClient->createSMSSandboxPhoneNumber("+9412345678904", ES_ES);
     runtime:sleep(2);
-    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9477195222204");
+    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9412345678904");
 
-    check amazonSNSClient->createSMSSandboxPhoneNumber("+9477195222205", DE_DE);
+    check amazonSNSClient->createSMSSandboxPhoneNumber("+9412345678905", DE_DE);
     runtime:sleep(2);
-    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9477195222205");
+    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9412345678905");
 
-    check amazonSNSClient->createSMSSandboxPhoneNumber("+9477195222206", FR_FR);
+    check amazonSNSClient->createSMSSandboxPhoneNumber("+9412345678906", FR_FR);
     runtime:sleep(2);
-    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9477195222206");
+    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9412345678906");
 
-    check amazonSNSClient->createSMSSandboxPhoneNumber("+9477195222207", FR_CA);
+    check amazonSNSClient->createSMSSandboxPhoneNumber("+9412345678907", FR_CA);
     runtime:sleep(2);
-    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9477195222207");
+    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9412345678907");
 
-    check amazonSNSClient->createSMSSandboxPhoneNumber("+9477195222208", IT_IT);
+    check amazonSNSClient->createSMSSandboxPhoneNumber("+9412345678908", IT_IT);
     runtime:sleep(2);
-    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9477195222208");
+    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9412345678908");
 
-    check amazonSNSClient->createSMSSandboxPhoneNumber("+9477195222209", JA_JP);
+    check amazonSNSClient->createSMSSandboxPhoneNumber("+9412345678909", JA_JP);
     runtime:sleep(2);
-    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9477195222209");
+    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9412345678909");
 
-    check amazonSNSClient->createSMSSandboxPhoneNumber("+9477195222210", PT_BR);
+    check amazonSNSClient->createSMSSandboxPhoneNumber("+9412345678910", PT_BR);
     runtime:sleep(2);
-    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9477195222210");
+    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9412345678910");
 
-    check amazonSNSClient->createSMSSandboxPhoneNumber("+9477195222211", KR_KR);
+    check amazonSNSClient->createSMSSandboxPhoneNumber("+9412345678911", KR_KR);
     runtime:sleep(2);
-    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9477195222211");
+    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9412345678911");
 
-    check amazonSNSClient->createSMSSandboxPhoneNumber("+9477195222212", ZH_CN);
+    check amazonSNSClient->createSMSSandboxPhoneNumber("+9412345678912", ZH_CN);
     runtime:sleep(2);
-    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9477195222212");
+    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9412345678912");
 
-    check amazonSNSClient->createSMSSandboxPhoneNumber("+9477195222213", ZH_TW);
+    check amazonSNSClient->createSMSSandboxPhoneNumber("+9412345678913", ZH_TW);
     runtime:sleep(2);
-    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9477195222213");
+    check amazonSNSClient->deleteSMSSandboxPhoneNumber("+9412345678913");
 }
 
 @test:Config {

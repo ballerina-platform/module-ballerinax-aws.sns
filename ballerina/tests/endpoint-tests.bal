@@ -15,7 +15,15 @@
 // under the License.
 
 import ballerina/test;
-   
+
+string applicationArn = "";
+
+@test:BeforeGroups {value: ["endpoint"]}
+function beforeEndpointTests() returns error? {
+    applicationArn = check amazonSNSClient->createPlatformApplication(testRunId + "FirebasePlatformApplication",
+        FIREBASE_CLOUD_MESSAGING, auth = {platformCredential: firebaseServerKey});
+}
+
 @test:Config {
     groups: ["endpoint"]
 }
@@ -77,6 +85,10 @@ function listPlatformApplicationEndpointsTest() returns error? {
     EndpointAttributes attributes = {enabled: false};
     string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceTokenNew", attributes,
         "CustomDataNew");
+
+    foreach int i in 0...100 {
+        _ = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken0" + i.toString());
+    }
 
     stream<Endpoint, Error?> endpointStream = 
         amazonSNSClient->listEndpoints(applicationArn);

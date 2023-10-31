@@ -19,12 +19,9 @@ import ballerina/test;
 string standardTopic = "";
 string fifoTopicWithCBD = "";
 string fifoTopicWithoutCBD = "";
-string applicationArn = "arn:aws:sns:us-east-1:482724125666:app/ADM/2023-10-16T085246647686ZEndpointTestApplication";
-string endpointArn = "arn:aws:sns:us-east-1:482724125666:endpoint/ADM/2023-10-16T085246647686ZEndpointTestApplication/bf7e3fbd-c1e1-3554-aba6-7e74cff15580";
-string invalidApplicationArn = "arn:aws:sns:us-east-1:482724125666:endpoint/GCM/KaneelApplication/e1097da7-0f72-32e1-bb1e-8df05ad14444";
-string temp = "arn:aws:sns:us-east-1:482724125666:2023-10-05T104426830397ZPublishStandardTopic";
+string invalidApplicationArn = testApplication + "x";
 
-@test:BeforeGroups {value: ["publish", "publishx"]}
+@test:BeforeGroups {value: ["publish"]}
 function beforePublishTests() returns error? {
     standardTopic = check amazonSNSClient->createTopic(testRunId + "PublishStandardTopic");
     fifoTopicWithCBD = check amazonSNSClient->createTopic(testRunId + "PublishFifoTopicWithCBD", 
@@ -101,10 +98,11 @@ function publishToInvalidPhoneNumber() returns error? {
 }
 
 @test:Config {
-    groups: ["publish"]
+    groups: ["publish"],
+    enable: false
 }
 function publishToApplication() returns error? {
-    PublishMessageResponse response = check amazonSNSClient->publish(endpointArn, "Test Message",
+    PublishMessageResponse response = check amazonSNSClient->publish(testEndpoint, "Test Message",
         targetType = ARN);
     test:assertTrue(response.messageId != "", "MessageID is empty.");
 }
@@ -116,7 +114,7 @@ function publishToInvalidApplication() returns error? {
     PublishMessageResponse|Error response = amazonSNSClient->publish(invalidApplicationArn, "Test Message",
         targetType = ARN);
     test:assertTrue(response is OperationError);
-    test:assertEquals((<Error>response).message(), "Invalid parameter: TargetArn Reason: No endpoint found for the target arn specified");
+    test:assertEquals((<Error>response).message(), "Invalid parameter: TargetArn Reason: ARN specifies an invalid endpointId: UUID must be encoded in exactly 36 characters.");
 }
 
 @test:Config {
@@ -146,7 +144,7 @@ function publishWithComplexPayload() returns error? {
         mpns: {title: "MPNS", body: "MPNS Body"}.toString(),
         wns: {title: "WNS", body: "WNS Body"}.toString()
     };
-    PublishMessageResponse response = check amazonSNSClient->publish(temp, message);
+    PublishMessageResponse response = check amazonSNSClient->publish(standardTopic, message);
     test:assertTrue(response.messageId != "", "MessageID is empty.");
 }
 

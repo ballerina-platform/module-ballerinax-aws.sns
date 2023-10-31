@@ -38,7 +38,8 @@ configurable string testPhoneNumber = ?;
 configurable string testApplication = ?;
 configurable string testIamRole = ?;
 configurable string testAwsAccountId = ?;
-
+configurable string testEndpoint = ?;
+ 
 function isArn(string arn) returns boolean {
     return arn.startsWith("arn:aws:");
 }
