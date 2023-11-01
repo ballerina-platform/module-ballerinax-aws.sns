@@ -13,10 +13,10 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-
 import ballerina/http;
 
-public class TopicStream {
+# Used to fetch and return a stream of SNS topics. The logic of fetching the topics is abstracted away from the user.
+class TopicStream {
 
     private final http:Client amazonSNSClient;
     private final (isolated function(map<string>) returns http:Request|Error) & readonly generateRequest;
@@ -82,7 +82,9 @@ public class TopicStream {
     }
 }
 
-public class SubscriptionStream {
+# Used to fetch and return a stream of SNS subscriptions. The logic of fetching the subscriptions is abstracted away 
+# from the user.
+class SubscriptionStream {
 
     private final http:Client amazonSNSClient;
     private final (isolated function (map<string>) returns http:Request|Error) & readonly generateRequest;
@@ -178,7 +180,9 @@ public class SubscriptionStream {
     }
 }
 
-public class PlatformApplicationStream {
+# Used to fetch and return a stream of SNS platform applications. The logic of fetching the platform applications is
+# abstracted away from the user.
+ class PlatformApplicationStream {
 
     private final http:Client amazonSNSClient;
     private final (isolated function (map<string>) returns http:Request|Error) & readonly generateRequest;
@@ -256,6 +260,8 @@ public class PlatformApplicationStream {
     }
 }
 
+# Used to fetch and return a stream of SNS endpoints. The logic of fetching the endpoints is abstracted away from the
+# user.
 public class EndpointStream {
 
     private final http:Client amazonSNSClient;
@@ -339,6 +345,8 @@ public class EndpointStream {
     }
 }
 
+# Used to fetch and return a stream of SNS sandbox phone numbers. The logic of fetching the phone numbers is abstracted
+# away from the user.
 public class SMSSandboxPhoneNumberStream {
 
     private final http:Client amazonSNSClient;
@@ -414,7 +422,9 @@ public class SMSSandboxPhoneNumberStream {
     }
 }
 
-public class OriginationPhoneNumberStream {
+# Used to fetch and return a stream of SNS origination phone numbers. The logic of fetching the phone numbers is
+# abstracted away from the user.
+class OriginationPhoneNumberStream {
 
     private final http:Client amazonSNSClient;
     private final (isolated function (map<string>) returns http:Request|Error) & readonly generateRequest;
@@ -486,7 +496,9 @@ public class OriginationPhoneNumberStream {
     }
 }
 
-public class OptedOutPhoneNumberStream {
+# Used to fetch and return a stream of SNS opted out phone numbers. The logic of fetching the phone numbers is
+# abstracted away from the user.
+class OptedOutPhoneNumberStream {
 
     private final http:Client amazonSNSClient;
     private final (isolated function (map<string>) returns http:Request|Error) & readonly generateRequest;
@@ -552,4 +564,3 @@ public class OptedOutPhoneNumberStream {
         return ();
     }
 }
-
