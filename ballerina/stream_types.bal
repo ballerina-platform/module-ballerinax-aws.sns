@@ -13,6 +13,7 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
+
 import ballerina/http;
 
 # Used to fetch and return a stream of SNS topics. The logic of fetching the topics is abstracted away from the user.
