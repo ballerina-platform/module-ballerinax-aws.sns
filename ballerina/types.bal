@@ -34,7 +34,7 @@ public enum BackoffFunction {
     LINEAR = "linear"
 }
 
-# The content type of the notification being sent to HTTP/S endpoints.
+# The content type of the notification being sent to HTTP/HTTPS endpoints.
 public enum HeaderContentType {
     TEXT_CSS = "text/css",
     TEXT_CSV = "text/csv",
@@ -50,7 +50,7 @@ public enum HeaderContentType {
     APPLICATION_XML = "application/xml"
 }
 
-# The possible values for TraingConfig attribute of a topic.
+# The possible values for the TracingConfig attribute of a topic.
 public enum TracingConfig {
     PASS_THROUGH = "PassThrough",
     ACTIVE = "Active"

@@ -30,6 +30,7 @@ import ballerina/url;
 # + securityToken - Security token
 # + region - Amazon API Region
 # + amazonHost - Amazon host name
+@display {label: "Amazon SNS Client", iconPath: "icon.png"}
 public isolated client class Client {
     final string accessKeyId;
     final string secretAccessKey;
@@ -194,7 +195,7 @@ public isolated client class Client {
         }
         
         if message is string {
-            parameters["Message"] = <string>message;
+            parameters["Message"] = message;
         } else {
             parameters["MessageStructure"] = "json";
 
