@@ -14,16 +14,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
+# Reperesents the generic error type for the `aws.sns` module.
 public type Error distinct error;
 
+# Represents an error that occurs when generating an API request.
 public type GenerateRequestFailed distinct Error;
 
+# Represents an error that occurs when the API action cannot be completed due to user error.
 public type OperationError distinct Error;
 
+# Represents an error that occurs when the API response is in an unexpected format.
 public type ResponseHandleFailedError distinct Error;
 
+# Represents an error that occurs when calculating the signature.
 public type CalculateSignatureFailedError distinct Error;
 
+# Represents an error that occurs when the API action cannot be completed due to an unknown server error.
 public type InternalError distinct Error;
 
 const string GENERATE_REQUEST_FAILED_MSG = "Error occurred while generating POST request.";
