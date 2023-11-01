@@ -263,7 +263,7 @@ class SubscriptionStream {
 
 # Used to fetch and return a stream of SNS endpoints. The logic of fetching the endpoints is abstracted away from the
 # user.
-public class EndpointStream {
+class EndpointStream {
 
     private final http:Client amazonSNSClient;
     private final (isolated function (map<string>) returns http:Request|Error) & readonly generateRequest;
@@ -348,7 +348,7 @@ public class EndpointStream {
 
 # Used to fetch and return a stream of SNS sandbox phone numbers. The logic of fetching the phone numbers is abstracted
 # away from the user.
-public class SMSSandboxPhoneNumberStream {
+class SMSSandboxPhoneNumberStream {
 
     private final http:Client amazonSNSClient;
     private final (isolated function (map<string>) returns http:Request|Error) & readonly generateRequest;
