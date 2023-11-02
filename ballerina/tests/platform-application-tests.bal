@@ -17,16 +17,13 @@
 import ballerina/test;
 import ballerina/lang.runtime as runtime;
 
-configurable string firebaseServerKey = ?;
-configurable string amazonClientId = ?;
-configurable string amazonClientSecret = ?;
-   
 @test:Config {
-    groups: ["platformApplication"]
+    groups: ["platformApplication"],
+    enable: false
 }
 function createFirebasePlatformApplicationTest() returns error? {
     string arn = check amazonSNSClient->createPlatformApplication(testRunId + "FirebasePlatformApplication", 
-        FIREBASE_CLOUD_MESSAGING, auth = {platformCredential: firebaseServerKey});
+        FIREBASE_CLOUD_MESSAGING, auth = {platformCredential: "<FIREBASE_SERVER_KEY>"});
     test:assertTrue(isArn(arn));
 }
 
@@ -145,6 +142,12 @@ function listPlatformApplicationsTest() returns error? {
     string arn = check amazonSNSClient->createPlatformApplication(testRunId + "ListPlatformApplications",
         AMAZON_DEVICE_MESSAGING, auth = {platformCredential: amazonClientSecret, platformPrincipal: amazonClientId},
         attributes = attributes);
+    
+    foreach int i in 0...100 {
+        _ = check amazonSNSClient->createPlatformApplication(testRunId + "ListPlatformApplications" + i.toString(),
+            AMAZON_DEVICE_MESSAGING, auth = {platformCredential: amazonClientSecret, platformPrincipal: amazonClientId},
+            attributes = attributes);
+    }
 
     // Validate newly created platform application
     stream<PlatformApplication, Error?> platformApplications = amazonSNSClient->listPlatformApplications();

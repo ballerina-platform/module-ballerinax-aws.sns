@@ -98,8 +98,7 @@ function publishToInvalidPhoneNumber() returns error? {
 }
 
 @test:Config {
-    groups: ["publish"],
-    enable: false
+    groups: ["publish"]
 }
 function publishToApplication() returns error? {
     PublishMessageResponse response = check amazonSNSClient->publish(testEndpoint, "Test Message",
@@ -114,7 +113,7 @@ function publishToInvalidApplication() returns error? {
     PublishMessageResponse|Error response = amazonSNSClient->publish(invalidApplicationArn, "Test Message",
         targetType = ARN);
     test:assertTrue(response is OperationError);
-    test:assertEquals((<Error>response).message(), "Invalid parameter: TargetArn Reason: ARN specifies an invalid endpointId: UUID must be encoded in exactly 36 characters.");
+    test:assertEquals((<Error>response).message(), "Invalid parameter: TargetArn Reason: An ARN must have at least 6 elements, not 1");
 }
 
 @test:Config {

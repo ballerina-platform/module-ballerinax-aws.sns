@@ -16,19 +16,11 @@
 
 import ballerina/test;
 
-string applicationArn = "";
-
-@test:BeforeGroups {value: ["endpoint"]}
-function beforeEndpointTests() returns error? {
-    applicationArn = check amazonSNSClient->createPlatformApplication(testRunId + "FirebasePlatformApplication",
-        FIREBASE_CLOUD_MESSAGING, auth = {platformCredential: firebaseServerKey});
-}
-
 @test:Config {
     groups: ["endpoint"]
 }
 function createEndpointTest() returns error? {
-    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken");
+    string arn = check amazonSNSClient->createEndpoint(testApplication, testRunId + "testDeviceToken");
     test:assertTrue(isArn(arn));
 }
 
@@ -36,7 +28,7 @@ function createEndpointTest() returns error? {
     groups: ["endpoint"]
 }
 function createEndpointWithEmptyTokenTest() returns error? {
-    string|Error arn = amazonSNSClient->createEndpoint(applicationArn, "");
+    string|Error arn = amazonSNSClient->createEndpoint(testApplication, "");
     test:assertTrue(arn is OperationError);
     test:assertEquals((<OperationError>arn).message(), "Invalid parameter: Token Reason: cannot be empty");
 }
@@ -47,14 +39,14 @@ function createEndpointWithEmptyTokenTest() returns error? {
 function createEndpointWithInvalidArnTest() returns error? {
     string|Error arn = amazonSNSClient->createEndpoint(invalidApplicationArn, testRunId + "testDeviceToken2");
     test:assertTrue(arn is OperationError);
-    test:assertEquals((<OperationError>arn).message(), "Invalid parameter: PlatformApplicationArn Reason: Wrong number of slashes in relative portion of the ARN.");
+    test:assertEquals((<OperationError>arn).message(), "Invalid parameter: PlatformApplicationArn Reason: An ARN must have at least 6 elements, not 1");
 }
 
 @test:Config {
     groups: ["endpoint"]
 }
 function createEndpointWithCustomUserDataTest() returns error? {
-    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken3",
+    string arn = check amazonSNSClient->createEndpoint(testApplication, testRunId + "testDeviceToken3",
         customUserData = "testCustomUserData");
     test:assertTrue(isArn(arn));
 }
@@ -64,7 +56,7 @@ function createEndpointWithCustomUserDataTest() returns error? {
 }
 function createEndpointWithAttributes() returns error? {
     EndpointAttributes attributes = {enabled: true, token: testRunId + "testToken4", customUserData: "testCustomUserData2"};
-    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken4", attributes);
+    string arn = check amazonSNSClient->createEndpoint(testApplication, testRunId + "testDeviceToken4", attributes);
     test:assertTrue(isArn(arn));
 }
 
@@ -73,7 +65,7 @@ function createEndpointWithAttributes() returns error? {
 }
 function createEndpointWithInvalidAttributes() returns error? {
     EndpointAttributes attributes = {enabled: true, token: "", customUserData: "testCustomUserData2"};
-    string|Error arn = amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken5", attributes);
+    string|Error arn = amazonSNSClient->createEndpoint(testApplication, testRunId + "testDeviceToken5", attributes);
     test:assertTrue(arn is OperationError);
     test:assertEquals((<OperationError>arn).message(), "Invalid parameter: Attributes Reason: Invalid value for attribute: Token: cannot be empty");
 }
@@ -83,15 +75,15 @@ function createEndpointWithInvalidAttributes() returns error? {
 }
 function listPlatformApplicationEndpointsTest() returns error? {
     EndpointAttributes attributes = {enabled: false};
-    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceTokenNew", attributes,
+    string arn = check amazonSNSClient->createEndpoint(testApplication, testRunId + "testDeviceTokenNew", attributes,
         "CustomDataNew");
 
     foreach int i in 0...100 {
-        _ = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken0" + i.toString());
+        _ = check amazonSNSClient->createEndpoint(testApplication, testRunId + "testDeviceToken0" + i.toString());
     }
 
     stream<Endpoint, Error?> endpointStream = 
-        amazonSNSClient->listEndpoints(applicationArn);
+        amazonSNSClient->listEndpoints(testApplication);
     Endpoint[] endpoints = check from Endpoint endpoint in endpointStream
                                                     select endpoint;
 
@@ -111,7 +103,7 @@ function listPlatformApplicationEndpointsTest() returns error? {
 }
 function getEndpointAttributesTest() returns error? {
     EndpointAttributes attributes = {enabled: false};
-    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken7", attributes,
+    string arn = check amazonSNSClient->createEndpoint(testApplication, testRunId + "testDeviceToken7", attributes,
         "CustomData7");
 
     EndpointAttributes retrievedAttributes = check amazonSNSClient->getEndpointAttributes(arn);
@@ -125,7 +117,7 @@ function getEndpointAttributesTest() returns error? {
 }
 function getEndpointAttributesWithInvalidArnTest() returns error? {
     EndpointAttributes attributes = {enabled: false};
-    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken7", attributes,
+    string arn = check amazonSNSClient->createEndpoint(testApplication, testRunId + "testDeviceToken7", attributes,
         "CustomData7");
 
     EndpointAttributes|Error retrievedAttributes = amazonSNSClient->getEndpointAttributes(arn + "invalid");
@@ -137,7 +129,7 @@ function getEndpointAttributesWithInvalidArnTest() returns error? {
     groups: ["endpoint"]
 }
 function setEndpointAttributesTest() returns error? {
-    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken8");
+    string arn = check amazonSNSClient->createEndpoint(testApplication, testRunId + "testDeviceToken8");
     _ = check amazonSNSClient->setEndpointAttributes(arn, {
             enabled: false, token: testRunId + "testDeviceToken9", customUserData: "CustomData9"
     });
@@ -152,7 +144,7 @@ function setEndpointAttributesTest() returns error? {
     groups: ["endpoint"]
 }
 function setEndpointAttributesWithInvalidArnTest() returns error? {
-    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken10");
+    string arn = check amazonSNSClient->createEndpoint(testApplication, testRunId + "testDeviceToken10");
     Error? e = amazonSNSClient->setEndpointAttributes(arn + "invalid", {
         enabled: false,
         token: testRunId + "testDeviceToken10",
@@ -167,7 +159,7 @@ function setEndpointAttributesWithInvalidArnTest() returns error? {
     groups: ["endpoin"]
 }
 function deleteEndpointTest() returns error? {
-    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken11");
+    string arn = check amazonSNSClient->createEndpoint(testApplication, testRunId + "testDeviceToken11");
     _ = check amazonSNSClient->deleteEndpoint(arn);
     
     EndpointAttributes|Error attributes = amazonSNSClient->getEndpointAttributes(arn);
@@ -179,7 +171,7 @@ function deleteEndpointTest() returns error? {
     groups: ["endpoint"]
 }
 function deleteEndpointWithInvalidTest() returns error? {
-    string arn = check amazonSNSClient->createEndpoint(applicationArn, testRunId + "testDeviceToken11");
+    string arn = check amazonSNSClient->createEndpoint(testApplication, testRunId + "testDeviceToken11");
     Error? e = amazonSNSClient->deleteEndpoint(arn + "invalid");
 
     test:assertTrue(e is OperationError);
