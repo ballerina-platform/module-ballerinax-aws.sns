@@ -45,16 +45,16 @@ string testPhoneNumber = "+94123456789";
 string testApplication = "";
 string testEndpoint = "";
 
-configurable string amazonClientId = os:getEnv("ADM_CLIENT_ID");
-configurable string amazonClientSecret = os:getEnv("ADM_CLIENT_SECRET");;
+configurable string admClientId = os:getEnv("ADM_CLIENT_ID");
+configurable string admClientSecret = os:getEnv("ADM_CLIENT_SECRET");
 configurable string testIamRole = os:getEnv("TEST_IAM_ROLE");
 configurable string testAwsAccountId = os:getEnv("AWS_ACCOUNT_ID");
 
 @test:BeforeSuite
 function resetEnvironment() returns error? {
-    //check deleteAllTopics();
-    //check deleteAllPlatformApplications();
-    //check deleteAllSubscriptions();
+    check deleteAllTopics();
+    check deleteAllPlatformApplications();
+    check deleteAllSubscriptions();
     check initializeTestVariables();
 }
 
@@ -96,7 +96,7 @@ function deleteAllSubscriptions() returns error? {
 
 function initializeTestVariables() returns error? {
     testApplication = check amazonSNSClient->createPlatformApplication(testRunId + "AmazonPlatformApplication",
-        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: amazonClientSecret, platformPrincipal: amazonClientId});
+        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: admClientSecret, platformPrincipal: admClientId});
     testEndpoint = check amazonSNSClient->createEndpoint(testApplication, testRunId + "testDeviceToken");
 }
 
