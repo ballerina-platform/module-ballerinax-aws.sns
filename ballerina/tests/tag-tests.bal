@@ -144,7 +144,7 @@ function untagResourceInvalidTest() returns error? {
 }
 
 @test:Config {
-    groups: ["tagx"]
+    groups: ["tag"]
 }
 function untagResourceEmptyTest() returns error? {
     string topic = check amazonSNSClient->createTopic(testRunId + "testTagsTopic11");

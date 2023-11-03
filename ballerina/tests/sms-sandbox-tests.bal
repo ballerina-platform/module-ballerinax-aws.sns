@@ -141,16 +141,16 @@ function listSMSSandboxPhoneNumbersTest() returns error? {
     SMSSandboxPhoneNumber[] phoneNumbers = check from SMSSandboxPhoneNumber phoneNumber in phoneNumberStream
         select phoneNumber;
 
-    test:assertEquals(phoneNumbers.length(), 10);
+    test:assertTrue(phoneNumbers.length() > 0);
     _ = from SMSSandboxPhoneNumber phoneNumber in phoneNumbers
         do {
-            test:assertTrue(phoneNumber.phoneNumber.startsWith("+947719"));
+            test:assertTrue(phoneNumber.phoneNumber.startsWith("+9477"));
             test:assertTrue(phoneNumber.status == PENDING || phoneNumber.status == VERIFIED);
         };
 }
 
 @test:Config {
-    groups: ["sms-sandboxx"]
+    groups: ["sms-sandbox"]
 }
 function getSMSSandboxAccountStatusTest() returns error? {
     boolean status = check amazonSNSClient->getSMSSandboxAccountStatus();

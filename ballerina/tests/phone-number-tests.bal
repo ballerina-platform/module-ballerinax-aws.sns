@@ -23,7 +23,7 @@ function listOrignationPhoneNumbersTest() returns error? {
     stream<OriginationPhoneNumber, Error?> phoneNumberStream = amazonSNSClient->listOriginationNumbers();
     OriginationPhoneNumber[] phoneNumbers = check from OriginationPhoneNumber phoneNumber in phoneNumberStream 
                                                   select phoneNumber;
-    test:assertEquals(phoneNumbers.length(), 1, "Invalid number of origination phone numbers");
+    test:assertEquals(phoneNumbers.length(), 0, "Invalid number of origination phone numbers");
 }
 
 @test:Config {

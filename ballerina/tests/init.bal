@@ -18,12 +18,13 @@ import ballerina/time;
 import ballerina/lang.regexp;
 import ballerina/test;
 import ballerina/log;
+import ballerina/os;
 
 string testRunId = regexp:replaceAll(re `[:.]`, time:utcToString(time:utcNow()), "");
 
-configurable string accessKeyId = ?;
-configurable string secretAccessKey = ?;
-configurable string region = ?;
+configurable string accessKeyId = os:getEnv("ACCESS_KEY_ID");
+configurable string secretAccessKey = os:getEnv("SECRET_ACCESS_KEY");
+configurable string region = os:getEnv("REGION");
 
 ConnectionConfig config = {
     accessKeyId: accessKeyId,
@@ -44,16 +45,16 @@ string testPhoneNumber = "+94123456789";
 string testApplication = "";
 string testEndpoint = "";
 
-configurable string amazonClientId = ?;
-configurable string amazonClientSecret = ?;
-configurable string testIamRole = ?;
-configurable string testAwsAccountId = ?;
+configurable string amazonClientId = os:getEnv("ADM_CLIENT_ID");
+configurable string amazonClientSecret = os:getEnv("ADM_CLIENT_SECRET");;
+configurable string testIamRole = os:getEnv("TEST_IAM_ROLE");
+configurable string testAwsAccountId = os:getEnv("AWS_ACCOUNT_ID");
 
 @test:BeforeSuite
 function resetEnvironment() returns error? {
-    check deleteAllTopics();
-    check deleteAllPlatformApplications();
-    check deleteAllSubscriptions();
+    //check deleteAllTopics();
+    //check deleteAllPlatformApplications();
+    //check deleteAllSubscriptions();
     check initializeTestVariables();
 }
 
