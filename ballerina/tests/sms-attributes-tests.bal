@@ -15,11 +15,15 @@
 // under the License.
 
 import ballerina/test;
+import ballerina/lang.runtime;
+
+// We need to wait 2s between each request because SMSAttributes APIs are throttled at 1 per second
 
 @test:Config {
     groups: ["sms-attributes"]
 }
 function setSMSAttributesTest() returns error? {
+    runtime:sleep(2);
     check amazonSNSClient->setSMSAttributes({
         monthlySpendLimit: 1,
         deliveryStatusIAMRole: testIamRole,
@@ -30,9 +34,11 @@ function setSMSAttributesTest() returns error? {
 }
 
 @test:Config {
-    groups: ["sms-attributes"]
+    groups: ["sms-attributes"],
+    dependsOn: [setSMSAttributesTest]
 }
 function setSMSAttributesWithInvalidSenderIDTest() returns error? {
+    runtime:sleep(2);
     Error? e = amazonSNSClient->setSMSAttributes({
         monthlySpendLimit: 1,
         deliveryStatusIAMRole: testIamRole,
@@ -45,9 +51,11 @@ function setSMSAttributesWithInvalidSenderIDTest() returns error? {
 }
 
 @test:Config {
-    groups: ["sms-attributes"]
+    groups: ["sms-attributes"],
+    dependsOn: [setSMSAttributesWithInvalidSenderIDTest]
 }
 function setSMSAttributesWithInvalidS3BucketTest() returns error? {
+    runtime:sleep(2);
     Error? e = amazonSNSClient->setSMSAttributes({
         monthlySpendLimit: 1,
         deliveryStatusIAMRole: testIamRole,
@@ -61,9 +69,11 @@ function setSMSAttributesWithInvalidS3BucketTest() returns error? {
 }
 
 @test:Config {
-    groups: ["sms-attributes"]
+    groups: ["sms-attributes"],
+    dependsOn: [setSMSAttributesWithInvalidS3BucketTest]
 }
 function setSMSAttributesWithInvalidSampleRateTest() returns error? {
+    runtime:sleep(2);
     Error? e = amazonSNSClient->setSMSAttributes({
         monthlySpendLimit: 1,
         deliveryStatusIAMRole: testIamRole,
@@ -72,13 +82,15 @@ function setSMSAttributesWithInvalidSampleRateTest() returns error? {
         defaultSMSType: TRANSACTIONAL
     });
     test:assertTrue(e is OperationError, "OperationError expected.");
-    test:assertEquals((<OperationError>e).message(), "Invalid parameter: UsageReportS3Bucket Reason: The bucket you provided does not exist");
+    test:assertEquals((<OperationError>e).message(), "DeliveryStatusSuccessSamplingRate is not an integer between 0-100");
 }
 
 @test:Config {
-    groups: ["sms-attributes"]
+    groups: ["sms-attributes"],
+    dependsOn: [setSMSAttributesWithInvalidSampleRateTest]
 }
 function getSMSAttributesTest() returns error? {
+    runtime:sleep(2);
     check amazonSNSClient->setSMSAttributes({
         monthlySpendLimit: 1,
         deliveryStatusIAMRole: testIamRole,

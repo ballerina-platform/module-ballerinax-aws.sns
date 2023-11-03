@@ -37,6 +37,9 @@ jobs:
           ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
           SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
           REGION: ${{ secrets.REGION }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          ADM_CLIENT_ID: ${{ secrets.ADM_CLIENT_ID }}
+          ADM_CLIENT_SECRET: ${{ secrets.ADM_CLIENT_SECRET }}
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3

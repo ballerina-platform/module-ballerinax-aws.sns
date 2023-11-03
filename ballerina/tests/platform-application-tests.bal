@@ -17,16 +17,13 @@
 import ballerina/test;
 import ballerina/lang.runtime as runtime;
 
-configurable string firebaseServerKey = ?;
-configurable string amazonClientId = ?;
-configurable string amazonClientSecret = ?;
-   
 @test:Config {
-    groups: ["platformApplication"]
+    groups: ["platformApplication"],
+    enable: false
 }
 function createFirebasePlatformApplicationTest() returns error? {
     string arn = check amazonSNSClient->createPlatformApplication(testRunId + "FirebasePlatformApplication", 
-        FIREBASE_CLOUD_MESSAGING, auth = {platformCredential: firebaseServerKey});
+        FIREBASE_CLOUD_MESSAGING, auth = {platformCredential: "<FIREBASE_SERVER_KEY>"});
     test:assertTrue(isArn(arn));
 }
 
@@ -35,7 +32,7 @@ function createFirebasePlatformApplicationTest() returns error? {
 }
 function createAmazonPlatformApplicationTest() returns error? {
     string arn = check amazonSNSClient->createPlatformApplication(testRunId + "AmazonPlatformApplication",
-        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: amazonClientSecret, platformPrincipal: amazonClientId});
+        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: admClientSecret, platformPrincipal: admClientId});
     test:assertTrue(isArn(arn));
 }
 
@@ -54,7 +51,7 @@ function createPlatformApplicationWithInvalidKeyTest1() returns error? {
 }
 function createPlatformApplicationWithInvalidKeyTest2() returns error? {
     string|Error arn = amazonSNSClient->createPlatformApplication(testRunId + "InvalidPlatformApplication",
-        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: amazonClientSecret, platformPrincipal: "invalid"});
+        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: admClientSecret, platformPrincipal: "invalid"});
     test:assertTrue(arn is OperationError);
     test:assertEquals((<OperationError>arn).message(), "Invalid parameter: Attributes Reason: Platform credentials are invalid");
 }
@@ -75,7 +72,7 @@ function createPlatformApplicationWithAttributesTest() returns error? {
     };
 
     string arn = check amazonSNSClient->createPlatformApplication(testRunId + "PlatformApplicationWithAttributes",
-        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: amazonClientSecret, platformPrincipal: amazonClientId},
+        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: admClientSecret, platformPrincipal: admClientId},
         attributes = attributes);
     test:assertTrue(isArn(arn));
 }
@@ -95,12 +92,12 @@ function createPlatformApplicationAlreadyExists() returns error? {
     };
 
     _ = check amazonSNSClient->createPlatformApplication(testRunId + "PlatformApplicationAlreadyExists",
-        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: amazonClientSecret, platformPrincipal: amazonClientId},
+        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: admClientSecret, platformPrincipal: admClientId},
         attributes = attributes);
 
     attributes.eventEndpointCreated = topicArn;
     string|error arn = amazonSNSClient->createPlatformApplication(testRunId + "PlatformApplicationAlreadyExists",
-        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: amazonClientSecret, platformPrincipal: amazonClientId},
+        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: admClientSecret, platformPrincipal: admClientId},
         attributes = attributes);
     test:assertTrue(arn is OperationError);
     test:assertEquals((<OperationError>arn).message(), "Invalid parameter: Name Reason: An application with the same name but different properties already exists");
@@ -121,7 +118,7 @@ function createPlatformWithInvalidAttributes() returns error? {
     };
 
     string|error arn = amazonSNSClient->createPlatformApplication(testRunId + "PlatformApplicationAlreadyExists",
-        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: amazonClientSecret, platformPrincipal: amazonClientId},
+        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: admClientSecret, platformPrincipal: admClientId},
         attributes = attributes);
     test:assertTrue(arn is OperationError);
     test:assertEquals((<OperationError>arn).message(), "Invalid parameter: Attributes Reason: Invalid value for attribute: SuccessFeedbackSampleRate: 101 value provided is not an integer between 0-100");
@@ -143,8 +140,14 @@ function listPlatformApplicationsTest() returns error? {
     };
 
     string arn = check amazonSNSClient->createPlatformApplication(testRunId + "ListPlatformApplications",
-        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: amazonClientSecret, platformPrincipal: amazonClientId},
+        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: admClientSecret, platformPrincipal: admClientId},
         attributes = attributes);
+    
+    foreach int i in 0...100 {
+        _ = check amazonSNSClient->createPlatformApplication(testRunId + "ListPlatformApplications" + i.toString(),
+            AMAZON_DEVICE_MESSAGING, auth = {platformCredential: admClientSecret, platformPrincipal: admClientId},
+            attributes = attributes);
+    }
 
     // Validate newly created platform application
     stream<PlatformApplication, Error?> platformApplications = amazonSNSClient->listPlatformApplications();
@@ -191,7 +194,7 @@ function getPlatformApplicationTest() returns error? {
         successFeedbackSampleRate: 5
     };
     string arn = check amazonSNSClient->createPlatformApplication(testRunId + "GetPlatformApplication",
-        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: amazonClientSecret, platformPrincipal: amazonClientId},
+        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: admClientSecret, platformPrincipal: admClientId},
         attributes = attributes);
 
     RetrievablePlatformApplicationAttributes retrieved = check amazonSNSClient->getPlatformApplicationAttributes(arn);
@@ -210,7 +213,7 @@ function getPlatformApplicationTest() returns error? {
 }
 function getPlatformApplicationDoesNotExistTest() returns error? {
     string arn = check amazonSNSClient->createPlatformApplication(testRunId + "GetPlatformApplicationDNE",
-        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: amazonClientSecret, platformPrincipal: amazonClientId});
+        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: admClientSecret, platformPrincipal: admClientId});
 
     RetrievablePlatformApplicationAttributes|Error retrieved = amazonSNSClient->getPlatformApplicationAttributes(arn + "invalid");
     test:assertTrue(retrieved is OperationError);
@@ -223,7 +226,7 @@ function getPlatformApplicationDoesNotExistTest() returns error? {
 function setPlatformApplicationAttributesTest() returns error? {
     string topicArn = check amazonSNSClient->createTopic(testRunId + "SetPlatformApplicationsAttrTopic");
     string arn = check amazonSNSClient->createPlatformApplication(testRunId + "SetPlatformApplicationAttr",
-        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: amazonClientSecret, platformPrincipal: amazonClientId});
+        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: admClientSecret, platformPrincipal: admClientId});
 
     PlatformApplicationAttributes attributes = {
         eventEndpointCreated: topicArn,
@@ -252,7 +255,7 @@ function setPlatformApplicationAttributesTest() returns error? {
 }
 function setPlatformApplicationAttributesNegativeTest() returns error? {
     string arn = check amazonSNSClient->createPlatformApplication(testRunId + "SetPlatformApplicationNegAttr",
-        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: amazonClientSecret, platformPrincipal: amazonClientId});
+        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: admClientSecret, platformPrincipal: admClientId});
 
     string topicArn = check amazonSNSClient->createTopic(testRunId + "SetPlatformApplicationsAttrNegTopic");
     PlatformApplicationAttributes attributes = {
@@ -285,7 +288,7 @@ function deletePlatformApplicationTest() returns error? {
     };
 
     string arn = check amazonSNSClient->createPlatformApplication(testRunId + "DeletePlatformApplication",
-        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: amazonClientSecret, platformPrincipal: amazonClientId}, 
+        AMAZON_DEVICE_MESSAGING, auth = {platformCredential: admClientSecret, platformPrincipal: admClientId}, 
         attributes = attributes);
 
     _ = check amazonSNSClient->deletePlatformApplication(arn);

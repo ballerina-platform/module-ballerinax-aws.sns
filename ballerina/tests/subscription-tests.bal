@@ -93,7 +93,7 @@ function subscribeSmsTest()returns error? {
 }
 function subscribeApplicationTest() returns error? {
     string subsriptionArn =
-        check amazonSNSClient->subscribe(topic, testApplication, APPLICATION, returnSubscriptionArn = true);
+        check amazonSNSClient->subscribe(topic, testEndpoint, APPLICATION, returnSubscriptionArn = true);
     test:assertTrue(isArn(subsriptionArn), "Returned value is not an ARN.");
 }
 
@@ -102,7 +102,7 @@ function subscribeApplicationTest() returns error? {
 }
 function subscribeToNonExistantTopicTest() returns error? {
     string|Error subsriptionArn = 
-        amazonSNSClient->subscribe(fakeTopic, testApplication, APPLICATION, returnSubscriptionArn = true);
+        amazonSNSClient->subscribe(fakeTopic, testEndpoint, APPLICATION, returnSubscriptionArn = true);
     
     test:assertTrue(subsriptionArn is OperationError, "Expected error.");
     test:assertEquals((<OperationError>subsriptionArn).message(), "Topic does not exist");
@@ -175,8 +175,7 @@ function confirmSubscriptionTest() returns error? {
 }
 
 @test:Config {
-    groups: ["subscribe"],
-    enable: true
+    groups: ["subscribe"]
 }
 function confirmSubscriptionWithInvalidTokenTest() returns error? {
     string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic4");
@@ -194,6 +193,10 @@ function listSubscriptionsTest() returns error? {
     string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic6");
     string subscriptionArn = 
         check amazonSNSClient->subscribe(topic, testPhoneNumber, SMS);
+
+    foreach int i in 0...100 {
+        _ = check amazonSNSClient->subscribe(topic, testEmail + i.toString(), EMAIL);
+    }
 
     stream<Subscription, Error?> subscriptionsStream = amazonSNSClient->listSubscriptions();
     Subscription[] subscriptions = check from Subscription subscription in subscriptionsStream
@@ -344,7 +347,7 @@ function getSubscriptionAttributesTest2() returns error? {
 }
 
 @test:Config {
-    groups: ["subscribex"]
+    groups: ["subscribe"]
 }
 function setSubscriptionAttributesTest() returns error? {
     string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic10");
@@ -372,7 +375,7 @@ function setSubscriptionAttributesTest() returns error? {
 };
 
 @test:Config {
-    groups: ["subscribex"]
+    groups: ["subscribe"]
 }
 function setSubscriptionAttributesWithInvalidTypes() returns error? {
     string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic10");
@@ -392,7 +395,7 @@ function setSubscriptionAttributesWithInvalidTypes() returns error? {
 };
 
 @test:Config {
-    groups: ["subscribex"]
+    groups: ["subscribe"]
 }
 function setSubscriptionAttributesTestNegative() returns error? {
     string topic = check amazonSNSClient->createTopic(testRunId + "SubscribeTopic10");

@@ -20,7 +20,8 @@ import ballerina/http;
 import ballerina/lang.'int as langint;
 import ballerina/lang.'boolean as langboolean;
 
-isolated function sendRequest(http:Client amazonSNSClient, http:Request request) returns json|Error {
+isolated function sendRequest(http:Client amazonSNSClient, http:Request request) 
+    returns json|Error {
     do {
         http:Response httpResponse = check amazonSNSClient->post("/", request);
         return handleResponse(httpResponse);

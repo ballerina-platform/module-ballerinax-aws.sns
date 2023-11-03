@@ -89,28 +89,28 @@ function createTopicWithAttributesTest() returns error? {
         kmsMasterKeyId: "testxyz",
         contentBasedDeduplication: false,
         httpMessageDeliveryLogging: {
-            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
-            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackRoleArn: testIamRole,
+            failureFeedbackRoleArn: testIamRole,
             successFeedbackSampleRate: 5
         },
         lambdaMessageDeliveryLogging: {
-            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
-            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackRoleArn: testIamRole,
+            failureFeedbackRoleArn: testIamRole,
             successFeedbackSampleRate: 5
         },
         firehoseMessageDeliveryLogging: {
-            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
-            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackRoleArn: testIamRole,
+            failureFeedbackRoleArn: testIamRole,
             successFeedbackSampleRate: 5
         },
         applicationMessageDeliveryLogging: {
-            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
-            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackRoleArn: testIamRole,
+            failureFeedbackRoleArn: testIamRole,
             successFeedbackSampleRate: 5
         },
         sqsMessageDeliveryLogging: {
-            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
-            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackRoleArn: testIamRole,
+            failureFeedbackRoleArn: testIamRole,
             successFeedbackSampleRate: 5
         }
     };
@@ -133,28 +133,28 @@ function createTopicWithInvalidAttributesTest() returns error? {
         kmsMasterKeyId: "testxyz",
         contentBasedDeduplication: false,
         httpMessageDeliveryLogging: {
-            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
-            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackRoleArn: testIamRole,
+            failureFeedbackRoleArn: testIamRole,
             successFeedbackSampleRate: 5
         },
         lambdaMessageDeliveryLogging: {
-            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
-            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackRoleArn: testIamRole,
+            failureFeedbackRoleArn: testIamRole,
             successFeedbackSampleRate: 5
         },
         firehoseMessageDeliveryLogging: {
-            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
-            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackRoleArn: testIamRole,
+            failureFeedbackRoleArn: testIamRole,
             successFeedbackSampleRate: 5
         },
         applicationMessageDeliveryLogging: {
-            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
-            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackRoleArn: testIamRole,
+            failureFeedbackRoleArn: testIamRole,
             successFeedbackSampleRate: 5
         },
         sqsMessageDeliveryLogging: {
-            successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback",
-            failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback",
+            successFeedbackRoleArn: testIamRole,
+            failureFeedbackRoleArn: testIamRole,
             successFeedbackSampleRate: 500
         }
     };
@@ -318,6 +318,9 @@ function createTopicWithTagsNegative2() returns error? {
 }
 function listTopicsTest() returns error? {
     string topicArn = check amazonSNSClient->createTopic(testRunId + "ListTopicsTest");
+    foreach int i in 0...100 {
+        _ = check amazonSNSClient->createTopic(testRunId + "ListTopicsTest" + i.toString());
+    }
 
     stream<string, Error?> topicsStream = amazonSNSClient->listTopics();
     string[] topics = check from string topic in topicsStream
@@ -354,8 +357,11 @@ function deleteTopicWithInvalidArnTest() returns error? {
     groups: ["topics"]
 }
 function deleteTopicWithArnThatDoesNotExistTest() returns error? {
+    string topicArn = check amazonSNSClient->createTopic(testRunId + "TopicToDelete");
+    _ = check amazonSNSClient->deleteTopic(topicArn);
+
     // This action is idempotent, so deleting a topic that does not exist does not result in an error.
-    _ = check amazonSNSClient->deleteTopic("arn:aws:sns:us-east-1:482724125666:2023-10-03T102648743022ZArnDoesNotExist");
+    _ = check amazonSNSClient->deleteTopic(topicArn);
 }
 
 @test:Config {
@@ -455,20 +461,20 @@ function setTopicAttributesTest2() returns error? {
     _ = check amazonSNSClient->setTopicAttributes(topicArn, POLICY, validPolicy);
     _ = check amazonSNSClient->setTopicAttributes(topicArn, TRACING_CONFIG, ACTIVE);
     _ = check amazonSNSClient->setTopicAttributes(topicArn, KMS_MASTER_KEY_ID, "testxyz");
-    _ = check amazonSNSClient->setTopicAttributes(topicArn, HTTP_SUCCESS_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSSuccessFeedback");
-    _ = check amazonSNSClient->setTopicAttributes(topicArn, HTTP_FAILURE_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSFailureFeedback");
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, HTTP_SUCCESS_FEEDBACK_ROLE_ARN, testIamRole);
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, HTTP_FAILURE_FEEDBACK_ROLE_ARN, testIamRole);
     _ = check amazonSNSClient->setTopicAttributes(topicArn, HTTP_SUCCESS_FEEDBACK_SAMPLE_RATE, 5);
-    _ = check amazonSNSClient->setTopicAttributes(topicArn, LAMBDA_SUCCESS_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSSuccessFeedback");
-    _ = check amazonSNSClient->setTopicAttributes(topicArn, LAMBDA_FAILURE_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSFailureFeedback");
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, LAMBDA_SUCCESS_FEEDBACK_ROLE_ARN, testIamRole);
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, LAMBDA_FAILURE_FEEDBACK_ROLE_ARN, testIamRole);
     _ = check amazonSNSClient->setTopicAttributes(topicArn, LAMBDA_SUCCESS_FEEDBACK_SAMPLE_RATE, 5);
-    _ = check amazonSNSClient->setTopicAttributes(topicArn, FIREHOSE_SUCCESS_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSSuccessFeedback");
-    _ = check amazonSNSClient->setTopicAttributes(topicArn, FIREHOSE_FAILURE_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSFailureFeedback");
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, FIREHOSE_SUCCESS_FEEDBACK_ROLE_ARN, testIamRole);
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, FIREHOSE_FAILURE_FEEDBACK_ROLE_ARN, testIamRole);
     _ = check amazonSNSClient->setTopicAttributes(topicArn, FIREHOSE_SUCCESS_FEEDBACK_SAMPLE_RATE, 5);
-    _ = check amazonSNSClient->setTopicAttributes(topicArn, APPLICATION_SUCCESS_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSSuccessFeedback");
-    _ = check amazonSNSClient->setTopicAttributes(topicArn, APPLICATION_FAILURE_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSFailureFeedback");
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, APPLICATION_SUCCESS_FEEDBACK_ROLE_ARN, testIamRole);
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, APPLICATION_FAILURE_FEEDBACK_ROLE_ARN, testIamRole);
     _ = check amazonSNSClient->setTopicAttributes(topicArn, APPLICATION_SUCCESS_FEEDBACK_SAMPLE_RATE, 5);
-    _ = check amazonSNSClient->setTopicAttributes(topicArn, SQS_SUCCESS_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSSuccessFeedback");
-    _ = check amazonSNSClient->setTopicAttributes(topicArn, SQS_FAILURE_FEEDBACK_ROLE_ARN, "arn:aws:iam::482724125666:role/SNSFailureFeedback");
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, SQS_SUCCESS_FEEDBACK_ROLE_ARN, testIamRole);
+    _ = check amazonSNSClient->setTopicAttributes(topicArn, SQS_FAILURE_FEEDBACK_ROLE_ARN, testIamRole);
     _ = check amazonSNSClient->setTopicAttributes(topicArn, SQS_SUCCESS_FEEDBACK_SAMPLE_RATE, 5);
 
     GettableTopicAttributes attributes = check amazonSNSClient->getTopicAttributes(topicArn);
@@ -479,11 +485,11 @@ function setTopicAttributesTest2() returns error? {
     test:assertEquals(attributes.policy, validPolicy);
     test:assertEquals(attributes.tracingConfig, ACTIVE);
     test:assertEquals(attributes.kmsMasterKeyId, "testxyz");
-    test:assertEquals(attributes.httpMessageDeliveryLogging, {successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback", failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback", successFeedbackSampleRate: 5});
-    test:assertEquals(attributes.lambdaMessageDeliveryLogging, {successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback", failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback", successFeedbackSampleRate: 5});
-    test:assertEquals(attributes.firehoseMessageDeliveryLogging, {successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback", failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback", successFeedbackSampleRate: 5});
-    test:assertEquals(attributes.applicationMessageDeliveryLogging, {successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback", failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback", successFeedbackSampleRate: 5});
-    test:assertEquals(attributes.sqsMessageDeliveryLogging, {successFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSSuccessFeedback", failureFeedbackRoleArn: "arn:aws:iam::482724125666:role/SNSFailureFeedback", successFeedbackSampleRate: 5});
+    test:assertEquals(attributes.httpMessageDeliveryLogging, {successFeedbackRoleArn: testIamRole, failureFeedbackRoleArn: testIamRole, successFeedbackSampleRate: 5});
+    test:assertEquals(attributes.lambdaMessageDeliveryLogging, {successFeedbackRoleArn: testIamRole, failureFeedbackRoleArn: testIamRole, successFeedbackSampleRate: 5});
+    test:assertEquals(attributes.firehoseMessageDeliveryLogging, {successFeedbackRoleArn: testIamRole, failureFeedbackRoleArn: testIamRole, successFeedbackSampleRate: 5});
+    test:assertEquals(attributes.applicationMessageDeliveryLogging, {successFeedbackRoleArn: testIamRole, failureFeedbackRoleArn: testIamRole, successFeedbackSampleRate: 5});
+    test:assertEquals(attributes.sqsMessageDeliveryLogging, {successFeedbackRoleArn: testIamRole, failureFeedbackRoleArn: testIamRole, successFeedbackSampleRate: 5});
 }
 
 @test:Config {
