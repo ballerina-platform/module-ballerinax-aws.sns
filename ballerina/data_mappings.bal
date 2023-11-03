@@ -1,6 +1,6 @@
-// Copyright (c) 2021 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2023 WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
 //
-// WSO2 Inc. licenses this file to you under the Apache License,
+// WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License.
 // You may obtain a copy of the License at
@@ -14,192 +14,333 @@
 // specific language governing permissions and limitations
 // under the License.
 
-xmlns "http://sns.amazonaws.com/doc/2010-03-31/" as namespace;
+import ballerina/mime;
 
-isolated function xmlToCreatedTopic(xml response) returns CreateTopicResponse|error {
-    xml createdTopicResponse = response/<namespace:CreateTopicResult>;
-    xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (createdTopicResponse.toString() != EMPTY_STRING) {
-        CreateTopicResult createTopic = {
-            topicArn : (createdTopicResponse/<namespace:TopicArn>/*).toString()
-        };
-        ResponseMetadata responseMetadata = {
-            requestId: (responseMeta/<namespace:RequestId>/*).toString()
-        };
-        CreateTopicResponse createTopicResponse = {
-            createTopicResult : createTopic,
-            responseMetadata : responseMetadata 
-        };
-        return createTopicResponse;
-    } else {
-        return error(response.toString());
+isolated function setAttributes(map<string> parameters, map<anydata> attributes, boolean lowercaseA = false) {
+    int attributeNumber = 1;
+    string prefix = "Attributes.entry.";
+    
+    // Lowercase "A" is needed in the case of the "SetSMSAttributes" action
+    if lowercaseA {
+        prefix = "attributes.entry.";
+    }
+
+    foreach [string, anydata] [key, value] in attributes.entries() {
+        parameters[prefix + attributeNumber.toString() + ".key"] = key;
+
+        if value is record {} {
+            parameters[prefix + attributeNumber.toString() + ".value"] = value.toJsonString();
+        } else {
+            parameters[prefix + attributeNumber.toString() + ".value"] = value.toString();
+        }
+
+        attributeNumber = attributeNumber + 1;
     }
 }
 
-isolated function xmlToCreatedSubscription(xml response) returns SubscribeResponse|error {
-    xml createdSubscriptionResponse = response/<namespace:SubscribeResult>;
-    xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (createdSubscriptionResponse.toString() != EMPTY_STRING) {
-        SubscribeResult subscribtionResult = {
-            subscriptionArn : (createdSubscriptionResponse/<namespace:SubscriptionArn>/*).toString()
-        };
-        ResponseMetadata responseMetadata = {
-            requestId: (responseMeta/<namespace:RequestId>/*).toString()
-        };
-        SubscribeResponse subscribeResponse = {
-            subscribeResult : subscribtionResult,
-            responseMetadata : responseMetadata 
-        };
-        return subscribeResponse;
-    } else {
-        return error(response.toString());
+isolated function setTags(map<string> parameters, map<string> tags) {
+    int tagNumber = 1;
+    foreach [string, string] [key, value] in tags.entries() {
+        parameters["Tags.member." + tagNumber.toString() + ".Key"] = key;
+        parameters["Tags.member." + tagNumber.toString() + ".Value"] = value;
+        tagNumber = tagNumber + 1;
     }
 }
 
-isolated function xmlToPublishResponse(xml response) returns PublishResponse|error {
-    xml publishResponse = response/<namespace:PublishResult>;
-    xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (publishResponse.toString() != EMPTY_STRING) {
-        PublishResult publishResult = {
-            messageId : (publishResponse/<namespace:SubscriptionArn>/*).toString()
-        };
-        ResponseMetadata responseMetadata = {
-            requestId: (responseMeta/<namespace:RequestId>/*).toString()
-        };
-        PublishResponse publishedResponse = {
-            publishResult : publishResult,
-            responseMetadata : responseMetadata 
-        };
-        return publishedResponse;
-    } else {
-        return error(response.toString());
+isolated function setMessageAttributes(map<string> parameters, map<MessageAttributeValue> attributes,
+    string prefix = "") returns Error? {
+    int i = 1;
+    foreach [string, MessageAttributeValue] [key, value] in attributes.entries() {
+        parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Name"] = key;
+
+        if value is int|float|decimal {
+            parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Value.DataType"] = "Number";
+            parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Value.StringValue"] = value.toString();
+        } else if value is byte[] {
+            parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Value.DataType"] = "Binary";
+            do {
+                parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Value.BinaryValue"] =
+                    (check mime:base64Encode(value)).toString();
+            } on fail error e {
+                return error GenerateRequestFailed(e.message(), e);
+            }
+        } else if value is StringArrayElement[] {
+            parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Value.DataType"] = "String.Array";
+            parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Value.StringValue"] = value.toString();
+        } else {
+            parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Value.DataType"] = "String";
+            parameters[prefix + "MessageAttributes.entry." + i.toString() + ".Value.StringValue"] = value.toString();
+        }
+
+        i = i + 1;
     }
 }
 
-isolated function xmlToUnsubscribeResponse(xml response) returns UnsubscribeResponse|error {
-    xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (responseMeta.toString() != EMPTY_STRING) {
-        ResponseMetadata responseMetadata = {
-            requestId: (responseMeta/<namespace:RequestId>/*).toString()
-        };
-        UnsubscribeResponse unsubscriptionResponse = {
-            responseMetadata : responseMetadata 
-        };
-        return unsubscriptionResponse;
-    } else {
-        return error(response.toString());
+isolated function setPublishBatchEntries(map<string> parameters, PublishBatchRequestEntry[] entries) returns Error? {
+    int i = 1;
+    foreach PublishBatchRequestEntry entry in entries {
+        if entry.id is string {
+            parameters["PublishBatchRequestEntries.member." + i.toString() + ".Id"] = <string>entry.id;
+        } else {
+            parameters["PublishBatchRequestEntries.member." + i.toString() + ".Id"] = i.toString();
+        }
+
+        if entry.message is MessageRecord {
+            MessageRecord messageRecord = <MessageRecord>entry.message;
+            if messageRecord.hasKey("subject") {
+                parameters["PublishBatchRequestEntries.member." + i.toString() + ".Subject"] =
+                    messageRecord["subject"].toString();
+                _ = messageRecord.remove("subject");
+            }
+            parameters["PublishBatchRequestEntries.member." + i.toString() + ".MessageStructure"] = "json";
+            parameters["PublishBatchRequestEntries.member." + i.toString() + ".Message"] =
+                mapMessageRecordToJson(messageRecord).toJsonString();
+        } else {
+            parameters["PublishBatchRequestEntries.member." + i.toString() + ".Message"] =
+                entry.message.toString();
+        }
+
+        if entry.deduplicationId is string {
+            parameters["PublishBatchRequestEntries.member." + i.toString() + ".MessageDeduplicationId"] =
+                <string>entry.deduplicationId;
+        }
+
+        if entry.groupId is string {
+            parameters["PublishBatchRequestEntries.member." + i.toString() + ".MessageGroupId"] = <string>entry.groupId;
+        }
+
+        if entry.attributes is map<MessageAttributeValue> {
+            check setMessageAttributes(parameters, <map<MessageAttributeValue>>entry.attributes,
+                "PublishBatchRequestEntries.member." + i.toString() + ".");
+        }
+
+        i = i + 1;
     }
 }
 
-isolated function xmlToDeletedTopicResponse(xml response) returns DeleteTopicResponse|error {
-    xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (responseMeta.toString() != EMPTY_STRING) {
-        ResponseMetadata responseMetadata = {
-            requestId: (responseMeta/<namespace:RequestId>/*).toString()
-        };
-        DeleteTopicResponse deletedTopice = {
-            responseMetadata : responseMetadata 
-        };
-        return deletedTopice;
-    } else {
-        return error(response.toString());
+isolated function mapJsonToGettableTopicAttributes(json jsonResponse) returns GettableTopicAttributes|error {
+    string[] intFields = ["SubscriptionsPending", "SubscriptionsConfirmed", "SubscriptionsDeleted"];
+    string[] booleanFields = ["FifoTopic", "ContentBasedDeduplication"];
+    string[] jsonFields = ["EffectiveDeliveryPolicy", "Policy", "DeliveryPolicy"];
+    string[] skipFields = [
+        "HTTPSuccessFeedbackRoleArn",
+        "HTTPFailureFeedbackRoleArn",
+        "HTTPSuccessFeedbackSampleRate",
+        "FirehoseSuccessFeedbackRoleArn",
+        "FirehoseFailureFeedbackRoleArn",
+        "FirehoseSuccessFeedbackSampleRate",
+        "LambdaSuccessFeedbackRoleArn",
+        "LambdaFailureFeedbackRoleArn",
+        "LambdaSuccessFeedbackSampleRate",
+        "SQSSuccessFeedbackRoleArn",
+        "SQSFailureFeedbackRoleArn",
+        "SQSSuccessFeedbackSampleRate",
+        "ApplicationSuccessFeedbackRoleArn",
+        "ApplicationFailureFeedbackRoleArn",
+        "ApplicationSuccessFeedbackSampleRate"
+    ];
+    record {} mapped = check mapJsonToRecord(jsonResponse, intFields = intFields, booleanFields = booleanFields, 
+        jsonFields = jsonFields, skipFields = skipFields);
+    GettableTopicAttributes topicAttributes = check mapped.cloneWithType();
+    check addMessageDeliveryLoggingFieldsToTopicAttributes(topicAttributes, jsonResponse);
+
+    return topicAttributes;
+}
+
+isolated function formatAttributes(record {} r, map<string> formatMap = {}) returns record {}|Error {
+    record {} flattenedRecord = {};
+    string[] elementKeys = formatMap.keys();
+
+    foreach string key in r.keys() {
+        if (elementKeys.indexOf(key) is int) {
+            record {}|error nestedRecord = r[key].ensureType();
+            if (nestedRecord is error) {
+                return error GenerateRequestFailed(nestedRecord.message(), nestedRecord);
+            }
+
+            foreach string nestedKey in nestedRecord.keys() {
+                flattenedRecord[formatMap.get(key) + uppercaseFirstLetter(nestedKey)] = nestedRecord[nestedKey];
+            }
+        } else {
+            flattenedRecord[uppercaseFirstLetter(key)] = r[key];
+        }
+    }
+
+    return flattenedRecord;
+}
+
+isolated function addMessageDeliveryLoggingFieldsToTopicAttributes(GettableTopicAttributes topicAttributes,
+    json jsonResponse) returns error? {
+
+    record {} response = check jsonResponse.cloneWithType();
+
+    if (response.hasKey("HTTPSuccessFeedbackRoleArn") || response.hasKey("HTTPFailureFeedbackRoleArn") ||
+        response.hasKey("HTTPSuccessFeedbackSampleRate")) {
+        MessageDeliveryLoggingConfig httpMessageDeliveryLogging = {};
+        if response.hasKey("HTTPSuccessFeedbackRoleArn") {
+            httpMessageDeliveryLogging.successFeedbackRoleArn = response["HTTPSuccessFeedbackRoleArn"].toString();
+        }
+        if response.hasKey("HTTPFailureFeedbackRoleArn") {
+            httpMessageDeliveryLogging.failureFeedbackRoleArn = response["HTTPFailureFeedbackRoleArn"].toString();
+        }
+        if response.hasKey("HTTPSuccessFeedbackSampleRate") {
+            httpMessageDeliveryLogging.successFeedbackSampleRate =
+                check stringToInt(response["HTTPSuccessFeedbackSampleRate"].toString());
+        }
+        topicAttributes.httpMessageDeliveryLogging = httpMessageDeliveryLogging;
+    }
+
+    if (response.hasKey("FirehoseSuccessFeedbackRoleArn") || response.hasKey("FirehoseFailureFeedbackRoleArn") ||
+        response.hasKey("FirehoseSuccessFeedbackSampleRate")) {
+        MessageDeliveryLoggingConfig firehoseMessageDeliveryLogging = {};
+        if response.hasKey("FirehoseSuccessFeedbackRoleArn") {
+            firehoseMessageDeliveryLogging.successFeedbackRoleArn =
+                response["FirehoseSuccessFeedbackRoleArn"].toString();
+        }
+        if response.hasKey("FirehoseFailureFeedbackRoleArn") {
+            firehoseMessageDeliveryLogging.failureFeedbackRoleArn =
+                response["FirehoseFailureFeedbackRoleArn"].toString();
+        }
+        if response.hasKey("FirehoseSuccessFeedbackSampleRate") {
+            firehoseMessageDeliveryLogging.successFeedbackSampleRate =
+                check stringToInt(response["FirehoseSuccessFeedbackSampleRate"].toString());
+        }
+        topicAttributes.firehoseMessageDeliveryLogging = firehoseMessageDeliveryLogging;
+    }
+
+    if (response.hasKey("LambdaSuccessFeedbackRoleArn") || response.hasKey("LambdaFailureFeedbackRoleArn") ||
+        response.hasKey("LambdaSuccessFeedbackSampleRate")) {
+        MessageDeliveryLoggingConfig lambdaMessageDeliveryLogging = {};
+        if response.hasKey("LambdaSuccessFeedbackRoleArn") {
+            lambdaMessageDeliveryLogging.successFeedbackRoleArn = response["LambdaSuccessFeedbackRoleArn"].toString();
+        }
+        if response.hasKey("LambdaFailureFeedbackRoleArn") {
+            lambdaMessageDeliveryLogging.failureFeedbackRoleArn = response["LambdaFailureFeedbackRoleArn"].toString();
+        }
+        if response.hasKey("LambdaSuccessFeedbackSampleRate") {
+            lambdaMessageDeliveryLogging.successFeedbackSampleRate =
+                check stringToInt(response["LambdaSuccessFeedbackSampleRate"].toString());
+        }
+        topicAttributes.lambdaMessageDeliveryLogging = lambdaMessageDeliveryLogging;
+    }
+
+    if (response.hasKey("SQSSuccessFeedbackRoleArn") || response.hasKey("SQSFailureFeedbackRoleArn") ||
+        response.hasKey("SQSSuccessFeedbackSampleRate")) {
+        MessageDeliveryLoggingConfig sqsMessageDeliveryLogging = {};
+        if response.hasKey("SQSSuccessFeedbackRoleArn") {
+            sqsMessageDeliveryLogging.successFeedbackRoleArn = response["SQSSuccessFeedbackRoleArn"].toString();
+        }
+        if response.hasKey("SQSFailureFeedbackRoleArn") {
+            sqsMessageDeliveryLogging.failureFeedbackRoleArn = response["SQSFailureFeedbackRoleArn"].toString();
+        }
+        if response.hasKey("SQSSuccessFeedbackSampleRate") {
+            sqsMessageDeliveryLogging.successFeedbackSampleRate =
+                check stringToInt(response["SQSSuccessFeedbackSampleRate"].toString());
+        }
+        topicAttributes.sqsMessageDeliveryLogging = sqsMessageDeliveryLogging;
+    }
+
+    if (response.hasKey("ApplicationSuccessFeedbackRoleArn") || response.hasKey("ApplicationFailureFeedbackRoleArn") ||
+        response.hasKey("ApplicationSuccessFeedbackSampleRate")) {
+        MessageDeliveryLoggingConfig applicationMessageDeliveryLogging = {};
+        if response.hasKey("ApplicationSuccessFeedbackRoleArn") {
+            applicationMessageDeliveryLogging.successFeedbackRoleArn =
+                response["ApplicationSuccessFeedbackRoleArn"].toString();
+        }
+        if response.hasKey("ApplicationFailureFeedbackRoleArn") {
+            applicationMessageDeliveryLogging.failureFeedbackRoleArn =
+                response["ApplicationFailureFeedbackRoleArn"].toString();
+        }
+        if response.hasKey("ApplicationSuccessFeedbackSampleRate") {
+            applicationMessageDeliveryLogging.successFeedbackSampleRate =
+                check stringToInt(response["ApplicationSuccessFeedbackSampleRate"].toString());
+        }
+        topicAttributes.applicationMessageDeliveryLogging = applicationMessageDeliveryLogging;
     }
 }
 
-isolated function xmlToGetTopicAttributes(xml response) returns GetTopicAttributesResponse|error {
-    xml getTopicAttributesResponses = response/<namespace:GetTopicAttributesResult>;
-    xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (getTopicAttributesResponses.toString() != EMPTY_STRING) {
-        GetTopicAttributesResult getTopicAttributesResult = {
-            attributes: (getTopicAttributesResponses/<namespace:Attributes>/*).toString()
-        };
-        ResponseMetadata responseMetadata = {
-            requestId: (responseMeta/<namespace:RequestId>/*).toString()
-        };
-        GetTopicAttributesResponse getTopicAttributesResponse = {
-            getTopicAttributesResult : getTopicAttributesResult,
-            responseMetadata : responseMetadata 
-        };
-        return getTopicAttributesResponse;
-    } else {
-        return error(response.toString());
+isolated function mapMessageRecordToJson(MessageRecord message) returns json {
+    record {} mappedMessage = {};
+    foreach string key in message.keys() {
+        if MESSAGE_RECORD_MAP.hasKey(key) {
+            mappedMessage[MESSAGE_RECORD_MAP.get(key)] = message[key].toString();
+        } else {
+            mappedMessage[key] = message[key].toString();
+        }
     }
+    return mappedMessage.toJson();
 }
 
-isolated function xmlToGetSmsAttributes(xml response) returns GetSMSAttributesResponse|error {
-    xml getSMSAttributesResponses = response/<namespace:GetSMSAttributesResult>;
-    xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (getSMSAttributesResponses.toString() != EMPTY_STRING) {
-        GetSMSAttributesResult getSMSAttributesResult = {
-            attributes: (getSMSAttributesResponses/<namespace:attributes>/*).toString()
-        };
-        ResponseMetadata responseMetadata = {
-            requestId: (responseMeta/<namespace:RequestId>/*).toString()
-        };
-        GetSMSAttributesResponse getSMSAttributesResponse = {
-            getSMSAttributesResult : getSMSAttributesResult,
-            responseMetadata : responseMetadata 
-        };
-        return getSMSAttributesResponse;
-    } else {
-        return error(response.toString());
-    }
+isolated function mapJsonToSubscriptionAttributes(json jsonResponse) returns GettableSubscriptionAttributes|error {
+    string[] booleanFields = ["ConfirmationWasAuthenticated", "PendingConfirmation", "RawMessageDelivery"];
+    string[] jsonFields = ["DeliveryPolicy", "EffectiveDeliveryPolicy", "FilterPolicy", "RedrivePolicy"];
+
+    record {} mapped = check mapJsonToRecord(jsonResponse, booleanFields = booleanFields, jsonFields = jsonFields);
+    return mapped.cloneWithType();
 }
 
-isolated function xmlToGetSubscriprionAttributes(xml response) returns GetSubscriptionAttributesResponse|error {
-    xml getSubscriptionAttributesResponses = response/<namespace:GetSubscriptionAttributesResult>;
-    xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (getSubscriptionAttributesResponses.toString() != EMPTY_STRING) {
-        GetSubscriptionAttributesResult getSubscriptionAttributesResult = {
-            attributes: (getSubscriptionAttributesResponses/<namespace:Attributes>/*).toString()
-        };
-        ResponseMetadata responseMetadata = {
-            requestId: (responseMeta/<namespace:RequestId>/*).toString()
-        };
-        GetSubscriptionAttributesResponse getSubscriptionAttributesResponse = {
-            getSubscriptionAttributesResult : getSubscriptionAttributesResult,
-            responseMetadata : responseMetadata 
-        };
-        return getSubscriptionAttributesResponse;
-    } else {
-        return error(response.toString());
-    }
+isolated function mapJsonToPlatformApplicationAttributes(json jsonResponse) 
+    returns RetrievablePlatformApplicationAttributes|error {
+    string[] booleanFields = ["Enabled"];
+    string[] intFields = ["SuccessFeedbackSampleRate"];
+
+    record {} mapped = check mapJsonToRecord(jsonResponse, booleanFields = booleanFields, intFields = intFields);
+    return mapped.cloneWithType();
 }
 
-isolated function xmlToConfirmedSubscriptionResponse(xml response) returns ConfirmedSubscriptionResponse|error {
-    xml confirmSubscriptionResponse = response/<namespace:ConfirmSubscriptionResult>;
-    xml responseMeta = response/<namespace:ResponseMetadata>;
-    if (confirmSubscriptionResponse.toString() != EMPTY_STRING) {
-        ConfirmedSubscriptionResult confirmSubscriptionResult = {
-            subscriptionArn : (confirmSubscriptionResponse/<namespace:SubscriptionArn>/*).toString()
-        };
-        ResponseMetadata responseMetadata = {
-            requestId: (responseMeta/<namespace:RequestId>/*).toString()
-        };
-        ConfirmedSubscriptionResponse confirmedSubscriptionResponse = {
-            confirmedSubscriptionResult : confirmSubscriptionResult,
-            responseMetadata : responseMetadata 
-        };
-        return confirmedSubscriptionResponse;
-    } else {
-        return error(response.toString());
-    }
+isolated function mapJsonToEndpointAttributes(json jsonResponse) returns EndpointAttributes|error {
+    string[] booleanFields = ["Enabled"];
+
+    record {} mapped = check mapJsonToRecord(jsonResponse, booleanFields = booleanFields);
+    return mapped.cloneWithType();
 }
 
-isolated function xmlToConfirmedSubscription(xml response) returns string|error {
-    string|error subscriptionName = (response/<namespace:ConfirmSubscriptionResult>/<namespace:SubscriptionArn>/*).toString();
-    if (subscriptionName is string) {
-        return subscriptionName != EMPTY_STRING ? subscriptionName.toString() : EMPTY_STRING;
-    } else {
-        return subscriptionName;
-    }
+isolated function mapJsonToSMSAttributes(json jsonResponse) returns SMSAttributes|error {
+    string[] intFields = ["MonthlySpendLimit", "DeliveryStatusSuccessSamplingRate"];
+
+    record {} mapped = check mapJsonToRecord(jsonResponse, intFields = intFields);
+    return mapped.cloneWithType();
 }
 
-isolated function xmlToHttpResponse(xml response) returns error? {
-    string|error httpResponse = (response/<namespace:ResponseMetadata>/<namespace:RequestId>/*).toString();
-    if (httpResponse is string) {
-        return null;
-    } else {
-        return error(OPERATION_ERROR);
+isolated function mapJsonToOriginationNumber(json jsonResponse) returns OriginationPhoneNumber|error {
+    string[] timestampFields = ["CreatedAt"];
+
+    record {} mapped = check mapJsonToRecord(jsonResponse, timestampFields = timestampFields);
+    return mapped.cloneWithType();
+}
+
+isolated function mapJsonToTags(json[] jsonResponse) returns Tags|error {
+    Tags tags = {};
+    foreach json tag in jsonResponse {
+        tags[check tag.Key] = check tag.Value;
     }
+    return tags;
+}
+
+
+isolated function mapJsonToRecord(json jsonResponse, string[] intFields = [], string[] booleanFields = [], 
+    string[] jsonFields = [], string[] timestampFields = [], string[] skipFields = []) returns record {}|error {
+    record {} response = check jsonResponse.cloneWithType();
+    record {} r = {};
+
+    foreach [string, anydata] [key, value] in response.entries() {
+        if (skipFields.indexOf(key) is int) {
+            continue;
+        }
+
+        anydata val = value;
+        if intFields.indexOf(key) is int {
+            val = check stringToInt(value.toString());
+        } else if booleanFields.indexOf(key) is int {
+            val = check stringToBoolean(value.toString());
+        } else if jsonFields.indexOf(key) is int {
+            val = check value.toString().fromJsonString();
+        } else if timestampFields.indexOf(key) is int {
+            val = check stringToTimestamp(value.toString());
+        }
+        
+        r[lowercaseFirstLetter(key)] = val;
+    }
+
+    return r;
 }
