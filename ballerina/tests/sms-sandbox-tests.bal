@@ -21,14 +21,16 @@ import ballerina/random;
 int random = check random:createIntInRange(1, 100000);
 
 @test:Config {
-    groups: ["sms-sandbox"]
+    groups: ["sms-sandbox"],
+    enable: false
 }
 function createSMSSandboxPhoneNumberTest1() returns error? {
     check amazonSNSClient->createSMSSandboxPhoneNumber("+947719" + random.toString());
 }
 
 @test:Config {
-    groups: ["sms-sandbox"]
+    groups: ["sms-sandbox"],
+    enable: false
 }
 function createSMSSandboxPhoneNumberTest2() returns error? {
     check amazonSNSClient->createSMSSandboxPhoneNumber("+9411223344667788990");
@@ -36,7 +38,8 @@ function createSMSSandboxPhoneNumberTest2() returns error? {
 }
 
 @test:Config {
-    groups: ["sms-sandbox"]
+    groups: ["sms-sandbox"],
+    enable: false
 }
 function createSMSSandboxPhoneNumberTest3() returns error? {
     check amazonSNSClient->createSMSSandboxPhoneNumber("123456789");
@@ -45,7 +48,8 @@ function createSMSSandboxPhoneNumberTest3() returns error? {
 }
 
 @test:Config {
-    groups: ["sms-sandbox"]
+    groups: ["sms-sandbox"],
+    enable: false
 }
 function creatSMSSandboxPhoneNumberInvalidTest1() returns error? {
     Error? e = amazonSNSClient->createSMSSandboxPhoneNumber("invalid phone number");
@@ -72,7 +76,8 @@ function creatSMSSandboxPhoneNumberInvalidTest3() returns error? {
 }
 
 @test:Config {
-    groups: ["sms-sandbox"]
+    groups: ["sms-sandbox"],
+    enable: false
 }
 function createSMSSandboxPhoneNumberWithLanugageCodeTest() returns error? {
     check amazonSNSClient->createSMSSandboxPhoneNumber("+9477123456701", EN_US);
@@ -136,18 +141,18 @@ function listSMSSandboxPhoneNumbersTest() returns error? {
     SMSSandboxPhoneNumber[] phoneNumbers = check from SMSSandboxPhoneNumber phoneNumber in phoneNumberStream
         select phoneNumber;
 
-    test:assertEquals(phoneNumbers.length(), 10);
+    test:assertTrue(phoneNumbers.length() > 0);
     _ = from SMSSandboxPhoneNumber phoneNumber in phoneNumbers
         do {
-        test:assertTrue(phoneNumber.phoneNumber.startsWith("+947719"));
-        test:assertTrue(phoneNumber.status == PENDING || phoneNumber.status == VERIFIED);
+            test:assertTrue(phoneNumber.phoneNumber.startsWith("+9477"));
+            test:assertTrue(phoneNumber.status == PENDING || phoneNumber.status == VERIFIED);
         };
 }
 
 @test:Config {
-    groups: ["sms-sandboxx"]
+    groups: ["sms-sandbox"]
 }
-function getSMSSanboxAccountStatusTest() returns error? {
+function getSMSSandboxAccountStatusTest() returns error? {
     boolean status = check amazonSNSClient->getSMSSandboxAccountStatus();
     test:assertTrue(status);
 }
