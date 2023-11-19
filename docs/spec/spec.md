@@ -44,7 +44,7 @@ It offers intuitive resource methods to interact with the [AWS SNS API](https://
 
 This section outlines the client of the Ballerina `aws.sns` package. To utilize the Ballerina `aws.sns` package, a user must first import it.
 
-#### Example: Importing the Gmail package
+#### Example: Importing the AWS SNS package
 
 ```ballerina
 import ballerinax/aws.sns;
