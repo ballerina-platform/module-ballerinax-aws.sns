@@ -2,7 +2,7 @@
 
 _Owners_: @kaneeldias \
 _Reviewers_: @daneshk \
-_Created_: 2022/11/15 \
+_Created_: 2023/11/15 \
 _Updated_: 2023/11/15 \
 _Edition_: Swan Lake
 
@@ -245,7 +245,6 @@ You can create, list, retrieve, update and delete SNS subscriptions using the re
 | `setSubscriptionAttributes()` | Updates the attributes of a subscription.                              |
 | `unsubscribe()`               | Deletes a subscription.                                                |
 
-
 ## 6. Platform applications
 
 A platform application is an app that you register with a notification service, such as Apple Push Notification Service (APNS) and Google Cloud Messaging (GCM).
@@ -331,7 +330,6 @@ You can create, list, retrieve, update and delete endpoints using the relevant m
 | `setEndpointAttributes()` | Updates the attributes of an endpoint.   |
 | `deleteEndpoint()`        | Deletes an endpoint.                     |
 
-
 ## 8. SMS sandbox phone numbers
 
 An SMS sandbox phone number is a phone number that's verified with Amazon SNS and that you can use to send SMS messages to test your app.
@@ -361,7 +359,6 @@ A phone number is a number to which messages can be sent to and subscriptions cr
 | `checkIfPhoneNumberIsOptedOut()` | Check whether a phone number is opted out of receiving messages. |
 | `optInPhoneNumber()`             | Opts in a phone number that is already opted out.                |  
 
-
 ## 11. Tags
 
 Tags are key-value pairs that you can add to an Amazon SNS topic to categorize and manage topics.
@@ -371,7 +368,6 @@ Tags are key-value pairs that you can add to an Amazon SNS topic to categorize a
 | `tagResource()`   | Adds tags to an SNS topic.       |
 | `listTags()`      | Lists all tags for an SNS topic. |
 | `untagResource()` | Removed tags from an SNS topic.  |  
-
 
 ## 12. Permissions
 
