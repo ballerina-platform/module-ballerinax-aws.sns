@@ -142,7 +142,7 @@ function listSMSSandboxPhoneNumbersTest() returns error? {
         select phoneNumber;
 
     test:assertTrue(phoneNumbers.length() > 0);
-    _ = check from SMSSandboxPhoneNumber phoneNumber in phoneNumbers
+    _ = from SMSSandboxPhoneNumber phoneNumber in phoneNumbers
         do {
             test:assertTrue(phoneNumber.phoneNumber.startsWith("+9477"));
             test:assertTrue(phoneNumber.status == PENDING || phoneNumber.status == VERIFIED);
