@@ -22,8 +22,8 @@ configurable string accessKeyId = os:getEnv("ACCESS_KEY_ID");
 configurable string secretAccessKey = os:getEnv("SECRET_ACCESS_KEY");
 configurable string region = os:getEnv("REGION");
 
-final string yourEmail = "kaneel@wso2.com";
-final string yourPhone = "+94702097238";
+final string yourEmail = "<YOUR_EMAIL>";
+final string yourPhone = "<YOUR_PHONE_NUMBER>";
 
 sns:ConnectionConfig config = {
     accessKeyId: accessKeyId,
@@ -39,7 +39,6 @@ public function main() returns error? {
     string colombo = check amazonSNSClient->createTopic("Colombo");
     string london = check amazonSNSClient->createTopic("London");
     string washington = check amazonSNSClient->createTopic("Washington");
-
 
     // If you create a subscription for an email address, you need to confirm the subscription by clicking on the
     // link sent to your email
@@ -58,7 +57,7 @@ public function main() returns error? {
     _ = check amazonSNSClient->subscribe(london, yourPhone, sns:SMS);
     _ = check amazonSNSClient->subscribe(washington, yourPhone, sns:SMS);
 
-    // You can publish the a message to a topic. The same message will be sent to all the subscribers of the topic
+    // You can publish the a message to a topic. The same message will be sent to all the subscribers of the topic.
     // You should see the message in your email and SMS inbox
     _ = check amazonSNSClient->publish(colombo, "The temperature in Colombo is 24 degrees Celsius");
     _ = check amazonSNSClient->publish(london, "The temperature in London is 18 degrees Celsius");

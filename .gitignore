@@ -41,3 +41,4 @@ build
 
 # Ballerina configuartion file
 Config.toml
+/ballerina/docker.env
