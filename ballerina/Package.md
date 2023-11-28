@@ -40,6 +40,8 @@ For comprehensive information about the connector's functionality, configuration
 
 2. [Obtain access keys](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html)
 
+3. For detailed steps, including necessary links, refer to the [setup guide](https://github.com/ballerina-platform/module-ballerinax-aws.sns/tree/master/docs/setup/setup.md).
+
 ## Report Issues
 To report bugs, request new features, start new discussions, view project boards, etc., go to the [Ballerina library parent repository](https://github.com/ballerina-platform/ballerina-library).
 
