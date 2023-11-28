@@ -1,6 +1,6 @@
 # Examples
 
-The `aws.sns` connector provides practical examples illustrating usage in various scenarios. Explore these [examples](https://github.com/ballerina-platform/module-ballerinax-aws.sns/tree/master/examples), covering use cases like creating a weather alert service.
+The `aws.sns` connector provides practical examples illustrating usage in various scenarios. Explore these [examples](https://github.com/ballerina-platform/module-ballerinax-aws.sns/tree/master/examples), covering use cases like creating an alert service.
 
 1. [Weather alert service](https://github.com/ballerina-platform/module-ballerinax-aws.sns/tree/master/examples/weather-alert/main.bal)
     Send weather alerts for multiple cities. Users can subscribe to different cities to receive alerts for their city only.
