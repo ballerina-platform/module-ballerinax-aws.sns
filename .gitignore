@@ -12,7 +12,7 @@
 
 # Package Files #
 *.jar
-*.jar
+!gradle-wrapper/*.jar
 *.war
 *.nar
 *.ear
@@ -42,3 +42,6 @@ build
 # Ballerina configuartion file
 Config.toml
 /ballerina/docker.env
+
+# Environment files
+*.env
