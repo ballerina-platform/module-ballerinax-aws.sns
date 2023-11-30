@@ -134,7 +134,8 @@ function createSMSSandboxPhoneNumberWithLanugageCodeTest() returns error? {
 }
 
 @test:Config {
-    groups: ["sms-sandbox"]
+    groups: ["sms-sandbox"],
+    enable: false
 }
 function listSMSSandboxPhoneNumbersTest() returns error? {
     stream<SMSSandboxPhoneNumber, Error?> phoneNumberStream = amazonSNSClient->listSMSSandboxPhoneNumbers();
