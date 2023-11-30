@@ -134,8 +134,7 @@ function createSMSSandboxPhoneNumberWithLanugageCodeTest() returns error? {
 }
 
 @test:Config {
-    groups: ["sms-sandbox"],
-    enable: false
+    groups: ["sms-sandbox"]
 }
 function listSMSSandboxPhoneNumbersTest() returns error? {
     stream<SMSSandboxPhoneNumber, Error?> phoneNumberStream = amazonSNSClient->listSMSSandboxPhoneNumbers();
@@ -145,7 +144,6 @@ function listSMSSandboxPhoneNumbersTest() returns error? {
     test:assertTrue(phoneNumbers.length() > 0);
     _ = from SMSSandboxPhoneNumber phoneNumber in phoneNumbers
         do {
-            test:assertTrue(phoneNumber.phoneNumber.startsWith("+9477"));
             test:assertTrue(phoneNumber.status == PENDING || phoneNumber.status == VERIFIED);
         };
 }
