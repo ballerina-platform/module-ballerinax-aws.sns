@@ -34,11 +34,11 @@ string messiFanEmail = "<MESSI_FAN_EMAIL>";
 string ronaldoFanEmail = "<RONALDO_FAN_EMAIL>";
 
 public function main() returns error? {
-    string footballScores = check amazonSNSClient->createTopic("FootballScores", attributes = {fifoTopic: true});
+    string footballScores = check amazonSNSClient->createTopic("FootballScores");
 
     _ = check amazonSNSClient->subscribe(footballScores, messiFanEmail, sns:EMAIL, 
         attributes = {
-            filterPolicy: {messiPlaying: "true"}, 
+            filterPolicy: {messiPlaying: ["true"]},
             filterPolicyScope: sns:MESSAGE_ATTRIBUTES
         }
     );
@@ -46,7 +46,7 @@ public function main() returns error? {
 
     _ = check amazonSNSClient->subscribe(footballScores, messiFanEmail, sns:EMAIL, 
         attributes = {
-            filterPolicy: {ronaldoPlaying: "true"}, 
+            filterPolicy: {ronaldoPlaying: ["true"]},
             filterPolicyScope: sns:MESSAGE_ATTRIBUTES
         }
     );
