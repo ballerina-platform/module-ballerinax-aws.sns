@@ -22,9 +22,6 @@ configurable string accessKeyId = os:getEnv("ACCESS_KEY_ID");
 configurable string secretAccessKey = os:getEnv("SECRET_ACCESS_KEY");
 configurable string region = os:getEnv("REGION");
 
-final string yourEmail = "<YOUR_EMAIL>";
-final string yourPhone = "<YOUR_PHONE_NUMBER>";
-
 sns:ConnectionConfig config = {
     accessKeyId: accessKeyId,
     secretAccessKey: secretAccessKey,
