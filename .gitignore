@@ -39,5 +39,9 @@ hs_err_pid*
 # Ignore Gradle build output directory
 build
 
+# Ballerina configuartion file
+Config.toml
+/ballerina/docker.env
+
 # Environment files
 *.env

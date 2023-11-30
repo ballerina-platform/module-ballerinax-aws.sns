@@ -1,0 +1,11 @@
+[package]
+org = "wso2"
+name = "weather_alert"
+version = "0.1.0"
+distribution = "2201.8.2"
+
+[[dependency]]
+org = "ballerinax"
+name = "aws.sns"
+version = "3.0.0"
+repository = "local"
