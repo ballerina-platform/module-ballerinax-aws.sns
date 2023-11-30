@@ -22,7 +22,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "cache"
-version = "3.7.1"
+version = "3.7.0"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -323,7 +323,7 @@ dependencies = [
 
 [[package]]
 org = "wso2"
-name = "weather_alert"
+name = "football_scores"
 version = "0.1.0"
 dependencies = [
 	{org = "ballerina", name = "io"},
@@ -331,6 +331,6 @@ dependencies = [
 	{org = "ballerinax", name = "aws.sns"}
 ]
 modules = [
-	{org = "wso2", packageName = "weather_alert", moduleName = "weather_alert"}
+	{org = "wso2", packageName = "football_scores", moduleName = "football_scores"}
 ]
 
