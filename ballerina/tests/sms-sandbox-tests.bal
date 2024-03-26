@@ -63,7 +63,7 @@ function creatSMSSandboxPhoneNumberInvalidTest1() returns error? {
 function creatSMSSandboxPhoneNumberInvalidTest2() returns error? {
     Error? e = amazonSNSClient->createSMSSandboxPhoneNumber("1234567890");
     test:assertTrue(e is OperationError);
-    test:assertEquals((<OperationError>e).message(), "1 validation error detected: Value '1234567890' at 'phoneNumber' failed to satisfy constraint: Member must satisfy regular expression pattern: ^(\\+[0-9]{8,}|[0-9]{0,9})$");
+    test:assertEquals((<OperationError>e).message(), "1 validation error detected: Value at 'phoneNumber' failed to satisfy constraint: Member must satisfy regular expression pattern: ^(\\+[0-9]{8,}|[0-9]{0,9})$");
 }
 
 @test:Config {
@@ -72,7 +72,7 @@ function creatSMSSandboxPhoneNumberInvalidTest2() returns error? {
 function creatSMSSandboxPhoneNumberInvalidTest3() returns error? {
     Error? e = amazonSNSClient->createSMSSandboxPhoneNumber("+94489347594376598435346594365943695348562987");
     test:assertTrue(e is OperationError);
-    test:assertEquals((<OperationError>e).message(), "1 validation error detected: Value '+94489347594376598435346594365943695348562987' at 'phoneNumber' failed to satisfy constraint: Member must have length less than or equal to 20");
+    test:assertEquals((<OperationError>e).message(), "1 validation error detected: Value at 'phoneNumber' failed to satisfy constraint: Member must have length less than or equal to 20");
 }
 
 @test:Config {
