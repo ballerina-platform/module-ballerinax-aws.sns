@@ -1,51 +1,104 @@
-# Ballerina Amazon SNS Connector
-
-[![Build](https://github.com/ballerina-platform/module-ballerinax-aws.sns/workflows/CI/badge.svg)](https://github.com/ballerina-platform/module-ballerinax-aws.sns/actions?query=workflow%3ACI)
-[![codecov](https://codecov.io/gh/ballerina-platform/module-ballerinax-aws.sns/branch/main/graph/badge.svg)](https://codecov.io/gh/ballerina-platform/module-ballerinax-aws.sns)
-[![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerinax-aws.sns.svg)](https://github.com/ballerina-platform/module-ballerinax-aws.sns/commits/master)
-[![GraalVM Check](https://github.com/ballerina-platform/module-ballerinax-aws.sns/actions/workflows/build-with-bal-test-native.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerinax-aws.sns/actions/workflows/build-with-bal-test-native.yml)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
-[Amazon SNS](https://aws.amazon.com/sns/) is a message notification service provided by Amazon.com Inc., enabling users to publish messages to topics, which are then delivered to subscribing endpoints or clients.
+## Overview
 
 The `ballerinax/aws.sns` package offers APIs to connect and interact with [AWS SNS API](https://docs.aws.amazon.com/sns/latest/api/welcome.html) endpoints.
 
+## Setup guide
+
+### Step 1: Create an AWS account
+
+* If you don't already have an AWS account, you need to create one. Go to the [AWS Management Console](https://console.aws.amazon.com/console/home), click on "Create a new AWS Account," and follow the instructions.
+
+### Step 2: Get the access key ID and the secret access key
+
+Once you log in to your AWS account, you need to create a user group and a user with the necessary permissions to access SNS. To do this, follow the steps below:
+
+1. Create an AWS user group
+
+* Navigate to the Identity and Access Management (IAM) service. Click on "Groups" and then "Create New Group."
+
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/create-group.png alt="Create user group" width="50%">
+
+* Enter a group name and attach the necessary policies to the group. For example, you can attach the "AmazonSNSFullAccess" policy to provide full access to SNS.
+
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/create-group-policies.png alt="Attach policy" width="50%">
+
+2. Create an IAM user
+
+* In the IAM console, navigate to "Users" and click on "Add user."
+
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/create-user.png alt="Add user" width="50%">
+
+* Enter a username, tick the "Provide user access to the AWS Management Console - optional" checkbox, and click "I want to create an IAM user". This will enable programmatic access through access keys.
+
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/create-user-iam-user.png alt="Create IAM user" width="50%">
+
+* Click through the permission setup, and add the user to the user group we previously created.
+
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/create-user-set-permission.png alt="Attach user group" width="50%">
+
+* Review the details and click "Create user."
+
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/create-user-review.png alt="Review user" width="50%">
+
+3. Generate access key ID and secret access key
+
+* Once the user is created, you will see a success message. Navigate to the "Users" tab, and select the user you created.
+
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/view-user.png alt="View User" width="50%">
+
+* Click on the "Create access key" button to generate the access key ID and secret access key.
+
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/create-access-key.png alt="Create access key" width="50%">
+
+* Follow the steps and download the CSV file containing the credentials.
+
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/download-access-key.png alt="Download credentials" width="50%">
+
 ## Quickstart
 
-**Note**: Ensure you follow the [prerequisites](https://github.com/ballerina-platform/module-ballerinax-aws.sns#set-up-aws-sns-api) to set up the AWS SNS API.
-
-To use the `aws.sns` connector in your Ballerina application, modify the `.bal` file as follows:
+To use the `aws.sns` connector in your Ballerina project, modify the `.bal` file as follows:
 
 ### Step 1: Import the connector
+
 Import the `ballerinax/aws.sns` package into your Ballerina project.
 ```ballerina
 import ballerinax/aws.sns;
 ```
 
 ### Step 2: Instantiate a new connector
-Create a `sns:ConnectionConfig` record with the obtained `accessKeyId` and `secretAccessKey` and initialize the connector with it.
-```ballerina
-sns:ConnectionConfig config = {
-    accessKeyId: accessKeyId,
-    secretAccessKey: secretAccessKey,
-    region: region
-};
 
-sns:Client amazonSNSClient = check new(config);
+Instantiate a new `sns` client using the access key ID, secret access key, and region.
+```ballerina
+sns:Client sns = check new({
+    credentials: {
+        accessKeyId: "ACCESS_KEY_ID",
+        secretAccessKey: "SECRET_ACCESS_KEY"
+    },
+    region: "REGION"
+});
 ```
 
 ### Step 3: Invoke the connector operation
+
 Now, utilize the available connector operations.
 ```ballerina
-string topicArn = check amazonSNSClient->createTopic("FirstTopic");
+string topicArn = check sns->createTopic("FirstTopic");
 ```
 
-For comprehensive information about the connector's functionality, configuration, and usage in Ballerina programs, refer to the `aws.sns` connector's reference guide in [Ballerina Central](https://central.ballerina.io/ballerinax/aws.sns/latest).
+### Step 4: Run the Ballerina application
 
-## Set up AWS SNS API
+Use the following command to compile and run the Ballerina program.
 
-1. Create an [AWS account](https://portal.aws.amazon.com/billing/signup)
+```bash
+bal run
+```
 
-2. [Obtain access keys](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html)
+## Examples
 
-3. For detailed steps, including necessary links, refer to the [setup guide](https://github.com/ballerina-platform/module-ballerinax-aws.sns/tree/master/docs/setup/setup.md).
+The `sns` connector provides practical examples illustrating usage in various scenarios. Explore these [examples](https://github.com/ballerina-platform/module-ballerinax-aws.sns/tree/master/examples).
+
+1. [Football scores](https://github.com/ballerina-platform/module-ballerinax-aws.sns/tree/master/examples/football-scores)
+   This example shows how to use SNS to implement an application to subscribe to receive football game scores.
+
+2. [Weather alert service](https://github.com/ballerina-platform/module-ballerinax-aws.sns/tree/master/examples/weather-alert)
+   This example shows how to use SNS to send weather alerts for multiple cities. Users can subscribe to different cities to receive alerts for their city only.
