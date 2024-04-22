@@ -33,10 +33,10 @@ plugins {
 rootProject.name = 'module-ballerinax-aws.sns'
 
 include ':aws.sns-ballerina'
-// include ':aws.sns-examples' enable once examples are added
+include ':aws.sns-examples'
 
 project(':aws.sns-ballerina').projectDir = file("ballerina")
-// project(':aws.sns-examples').projectDir = file("examples") enable once examples are added
+project(':aws.sns-examples').projectDir = file("examples")
 
 gradleEnterprise {
     buildScan {
