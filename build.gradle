@@ -62,7 +62,7 @@ def moduleVersion = project.version.replace("-SNAPSHOT", "")
 
 task build {
     dependsOn(':aws.sns-ballerina:build')
-    // dependsOn(':aws.sns-examples:build') enable once examples are added
+    dependsOn(':aws.sns-examples:build')
 }
 
 release {
