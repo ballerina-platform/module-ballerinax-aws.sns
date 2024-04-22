@@ -16,4 +16,5 @@ jobs:
     uses: ballerina-platform/ballerina-standard-library/.github/workflows/build-with-bal-test-graalvm-connector-template.yml@main
     secrets: inherit
     with:
-      # additional-build-flags: "-x :aws.sns-examples:build" enable once examples are added
+      additional-build-flags: "-x :aws.sns-examples:build"
+      additional-test-flags: "-x :aws.sns-examples:test"
