@@ -26,43 +26,43 @@ Once you log in to your AWS account, you need to create a user group and a user 
 
 * Navigate to the Identity and Access Management (IAM) service. Click on "Groups" and then "Create New Group."
 
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/create-group.png alt="Create user group" width="50%">
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-group.png alt="Create user group" width="50%">
 
 * Enter a group name and attach the necessary policies to the group. For example, you can attach the "AmazonSNSFullAccess" policy to provide full access to SNS.
 
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/create-group-policies.png alt="Attach policy" width="50%">
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-group-policies.png alt="Attach policy" width="50%">
 
 2. Create an IAM user
 
 * In the IAM console, navigate to "Users" and click on "Add user."
 
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/create-user.png alt="Add user" width="50%">
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-user.png alt="Add user" width="50%">
 
 * Enter a username, tick the "Provide user access to the AWS Management Console - optional" checkbox, and click "I want to create an IAM user". This will enable programmatic access through access keys.
 
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/create-user-iam-user.png alt="Create IAM user" width="50%">
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-user-iam-user.png alt="Create IAM user" width="50%">
 
 * Click through the permission setup, and add the user to the user group we previously created.
 
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/create-user-set-permission.png alt="Attach user group" width="50%">
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-user-set-permission.png alt="Attach user group" width="50%">
 
 * Review the details and click "Create user."
 
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/create-user-review.png alt="Review user" width="50%">
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-user-review.png alt="Review user" width="50%">
 
 3. Generate access key ID and secret access key
 
 * Once the user is created, you will see a success message. Navigate to the "Users" tab, and select the user you created.
 
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/view-user.png alt="View User" width="50%">
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/view-user.png alt="View User" width="50%">
 
 * Click on the "Create access key" button to generate the access key ID and secret access key.
 
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/create-access-key.png alt="Create access key" width="50%">
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-access-key.png alt="Create access key" width="50%">
 
 * Follow the steps and download the CSV file containing the credentials.
 
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/resources/download-access-key.png alt="Download credentials" width="50%">
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/download-access-key.png alt="Download credentials" width="50%">
 
 ## Quickstart
 
@@ -81,10 +81,10 @@ Instantiate a new `sns` client using the access key ID, secret access key, and r
 ```ballerina
 sns:Client sns = check new({
     credentials: {
-        accessKeyId: "ACCESS_KEY_ID",
-        secretAccessKey: "SECRET_ACCESS_KEY"
+        accessKeyId,
+        secretAccessKey
     },
-    region: "REGION"
+    region
 });
 ```
 
@@ -112,8 +112,6 @@ The `sns` connector provides practical examples illustrating usage in various sc
 
 2. [Weather alert service](https://github.com/ballerina-platform/module-ballerinax-aws.sns/tree/master/examples/weather-alert)
    This example shows how to use SNS to send weather alerts for multiple cities. Users can subscribe to different cities to receive alerts for their city only.
-
-For comprehensive information about the connector's functionality, configuration, and usage in Ballerina programs, refer to the `sns` connector's reference guide in [Ballerina Central](https://central.ballerina.io/ballerinax/aws.sns/latest).
 
 ## Issues and projects
 
@@ -203,6 +201,7 @@ All contributors are encouraged to read the [Ballerina Code of Conduct](https://
 
 ## Useful links
 
-- Discuss code changes of the Ballerina project in [ballerina-dev@googlegroups.com](mailto:ballerina-dev@googlegroups.com).
-- Chat live with us via our [Discord server](https://discord.gg/ballerinalang).
-- Post all technical questions on Stack Overflow with the [#ballerina](https://stackoverflow.com/questions/tagged/ballerina) tag.
+* For more information go to the [`aws.sns` package](https://lib.ballerina.io/ballerinax/aws.sns/latest).
+* For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/learn/by-example/).
+* Chat live with us via our [Discord server](https://discord.gg/ballerinalang).
+* Post all technical questions on Stack Overflow with the [#ballerina](https://stackoverflow.com/questions/tagged/ballerina) tag.
