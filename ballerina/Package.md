@@ -1,4 +1,4 @@
-## Overview
+## Package Overview
 
 The `ballerinax/aws.sns` package offers APIs to connect and interact with [AWS SNS API](https://docs.aws.amazon.com/sns/latest/api/welcome.html) endpoints.
 
