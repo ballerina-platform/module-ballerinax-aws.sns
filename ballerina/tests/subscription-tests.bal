@@ -220,7 +220,7 @@ function listSubscriptionsTest() returns error? {
 
     // Ensure there are no duplicates
     foreach string subscriptionArn1 in subscriptionArns {
-        if (subscriptionArn1 == "PendingConfirmation") {
+        if subscriptionArn1 == "PendingConfirmation" {
             continue;
         }
 
