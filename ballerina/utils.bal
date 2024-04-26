@@ -60,15 +60,15 @@ isolated function initiateRequest(string actionName) returns map<string> {
 }
 
 isolated function validateCredentails(string accessKeyId, string secretAccessKey) returns error? {    
-    if ((accessKeyId == EMPTY_STRING) && (secretAccessKey == EMPTY_STRING)) {
+    if (accessKeyId == EMPTY_STRING) && (secretAccessKey == EMPTY_STRING) {
         return error("Access Key Id and Secret Access Key credential is empty");
     }
 
-    if (accessKeyId == EMPTY_STRING) {
+    if accessKeyId == EMPTY_STRING {
         return error("Access Key Id credential is empty");
     }
 
-    if (secretAccessKey == EMPTY_STRING) {
+    if secretAccessKey == EMPTY_STRING {
         return error("Secret Access Key credential is empty");
     }
 }
