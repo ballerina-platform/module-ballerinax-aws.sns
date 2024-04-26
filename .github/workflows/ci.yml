@@ -16,3 +16,5 @@ jobs:
     secrets: inherit
     with:
       repo-name: module-ballerinax-aws.sns
+      additional-build-flags: "-x :aws.sns-examples:build"
+      additional-test-flags: "-x :aws.sns-examples:test"
