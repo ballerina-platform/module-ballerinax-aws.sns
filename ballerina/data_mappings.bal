@@ -152,9 +152,9 @@ isolated function formatAttributes(record {} r, map<string> formatMap = {}) retu
     string[] elementKeys = formatMap.keys();
 
     foreach string key in r.keys() {
-        if (elementKeys.indexOf(key) is int) {
+        if elementKeys.indexOf(key) is int {
             record {}|error nestedRecord = r[key].ensureType();
-            if (nestedRecord is error) {
+            if nestedRecord is error {
                 return error GenerateRequestFailed(nestedRecord.message(), nestedRecord);
             }
 
@@ -174,8 +174,8 @@ isolated function addMessageDeliveryLoggingFieldsToTopicAttributes(GettableTopic
 
     record {} response = check jsonResponse.cloneWithType();
 
-    if (response.hasKey("HTTPSuccessFeedbackRoleArn") || response.hasKey("HTTPFailureFeedbackRoleArn") ||
-        response.hasKey("HTTPSuccessFeedbackSampleRate")) {
+    if response.hasKey("HTTPSuccessFeedbackRoleArn") || response.hasKey("HTTPFailureFeedbackRoleArn") ||
+        response.hasKey("HTTPSuccessFeedbackSampleRate") {
         MessageDeliveryLoggingConfig httpMessageDeliveryLogging = {};
         if response.hasKey("HTTPSuccessFeedbackRoleArn") {
             httpMessageDeliveryLogging.successFeedbackRoleArn = response["HTTPSuccessFeedbackRoleArn"].toString();
@@ -190,8 +190,8 @@ isolated function addMessageDeliveryLoggingFieldsToTopicAttributes(GettableTopic
         topicAttributes.httpMessageDeliveryLogging = httpMessageDeliveryLogging;
     }
 
-    if (response.hasKey("FirehoseSuccessFeedbackRoleArn") || response.hasKey("FirehoseFailureFeedbackRoleArn") ||
-        response.hasKey("FirehoseSuccessFeedbackSampleRate")) {
+    if response.hasKey("FirehoseSuccessFeedbackRoleArn") || response.hasKey("FirehoseFailureFeedbackRoleArn") ||
+        response.hasKey("FirehoseSuccessFeedbackSampleRate") {
         MessageDeliveryLoggingConfig firehoseMessageDeliveryLogging = {};
         if response.hasKey("FirehoseSuccessFeedbackRoleArn") {
             firehoseMessageDeliveryLogging.successFeedbackRoleArn =
@@ -208,8 +208,8 @@ isolated function addMessageDeliveryLoggingFieldsToTopicAttributes(GettableTopic
         topicAttributes.firehoseMessageDeliveryLogging = firehoseMessageDeliveryLogging;
     }
 
-    if (response.hasKey("LambdaSuccessFeedbackRoleArn") || response.hasKey("LambdaFailureFeedbackRoleArn") ||
-        response.hasKey("LambdaSuccessFeedbackSampleRate")) {
+    if response.hasKey("LambdaSuccessFeedbackRoleArn") || response.hasKey("LambdaFailureFeedbackRoleArn") ||
+        response.hasKey("LambdaSuccessFeedbackSampleRate") {
         MessageDeliveryLoggingConfig lambdaMessageDeliveryLogging = {};
         if response.hasKey("LambdaSuccessFeedbackRoleArn") {
             lambdaMessageDeliveryLogging.successFeedbackRoleArn = response["LambdaSuccessFeedbackRoleArn"].toString();
@@ -224,8 +224,8 @@ isolated function addMessageDeliveryLoggingFieldsToTopicAttributes(GettableTopic
         topicAttributes.lambdaMessageDeliveryLogging = lambdaMessageDeliveryLogging;
     }
 
-    if (response.hasKey("SQSSuccessFeedbackRoleArn") || response.hasKey("SQSFailureFeedbackRoleArn") ||
-        response.hasKey("SQSSuccessFeedbackSampleRate")) {
+    if response.hasKey("SQSSuccessFeedbackRoleArn") || response.hasKey("SQSFailureFeedbackRoleArn") ||
+        response.hasKey("SQSSuccessFeedbackSampleRate") {
         MessageDeliveryLoggingConfig sqsMessageDeliveryLogging = {};
         if response.hasKey("SQSSuccessFeedbackRoleArn") {
             sqsMessageDeliveryLogging.successFeedbackRoleArn = response["SQSSuccessFeedbackRoleArn"].toString();
@@ -240,8 +240,8 @@ isolated function addMessageDeliveryLoggingFieldsToTopicAttributes(GettableTopic
         topicAttributes.sqsMessageDeliveryLogging = sqsMessageDeliveryLogging;
     }
 
-    if (response.hasKey("ApplicationSuccessFeedbackRoleArn") || response.hasKey("ApplicationFailureFeedbackRoleArn") ||
-        response.hasKey("ApplicationSuccessFeedbackSampleRate")) {
+    if response.hasKey("ApplicationSuccessFeedbackRoleArn") || response.hasKey("ApplicationFailureFeedbackRoleArn") ||
+        response.hasKey("ApplicationSuccessFeedbackSampleRate") {
         MessageDeliveryLoggingConfig applicationMessageDeliveryLogging = {};
         if response.hasKey("ApplicationSuccessFeedbackRoleArn") {
             applicationMessageDeliveryLogging.successFeedbackRoleArn =
@@ -324,7 +324,7 @@ isolated function mapJsonToRecord(json jsonResponse, string[] intFields = [], st
     record {} r = {};
 
     foreach [string, anydata] [key, value] in response.entries() {
-        if (skipFields.indexOf(key) is int) {
+        if skipFields.indexOf(key) is int {
             continue;
         }
 

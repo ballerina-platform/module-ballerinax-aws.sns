@@ -71,7 +71,7 @@ public isolated client class Client {
         map<string> parameters = initiateRequest("CreateTopic");
         parameters["Name"] = name;
 
-        if (attributes is InitializableTopicAttributes) {
+        if attributes is InitializableTopicAttributes {
             _ = check validateInitializableTopicAttributes(attributes);
 
             // The suffix ".fifo" must be added to all topic names that are FIFO
@@ -87,7 +87,7 @@ public isolated client class Client {
             parameters["DataProtectionPolicy"] = dataProtectionPolicy.toString();
         }
 
-        if (tags is map<string>) {
+        if tags is map<string> {
             setTags(parameters, tags);
         }
 
@@ -186,9 +186,9 @@ public isolated client class Client {
         _ = check validatePublishParameters(target, targetType, groupId);
         map<string> parameters = initiateRequest("Publish");
 
-        if (targetType == TOPIC) {
+        if targetType == TOPIC {
             parameters["TopicArn"] = target;
-        } else if (targetType == ARN) {
+        } else if targetType == ARN {
             parameters["TargetArn"] = target;
         } else {
             parameters["PhoneNumber"] = target;
@@ -207,15 +207,15 @@ public isolated client class Client {
             parameters["Message"] = mapMessageRecordToJson(message).toJsonString();
         }
 
-        if (deduplicationId is string) {
+        if deduplicationId is string {
             parameters["MessageDeduplicationId"] = deduplicationId;
         }
 
-        if (groupId is string) {
+        if groupId is string {
             parameters["MessageGroupId"] = groupId;
         }
 
-        if (attributes is map<MessageAttributeValue>) {
+        if attributes is map<MessageAttributeValue> {
             check setMessageAttributes(parameters, attributes);
         }
 
@@ -551,7 +551,7 @@ public isolated client class Client {
             parameters["CustomUserData"] = customUserData;
         }
 
-        if (attributes is EndpointAttributes) {
+        if attributes is EndpointAttributes {
             record {} formattedTopicAttributes = check formatAttributes(attributes);
             setAttributes(parameters, formattedTopicAttributes);
         }
@@ -927,7 +927,7 @@ public isolated client class Client {
         string|error xamzDate = utcToString(currentTime, "yyyyMMdd'T'HHmmss'Z'");
         string|error dateStamp = utcToString(currentTime, "yyyyMMdd");
 
-        if (xamzDate is string && dateStamp is string) {
+        if xamzDate is string && dateStamp is string {
             string contentType = "application/x-www-form-urlencoded";
             string|url:Error requestParameters = self.createPayload(parameters);
             if requestParameters is url:Error {
@@ -940,7 +940,7 @@ public isolated client class Client {
             string signedHeaders = EMPTY_STRING;
 
             //Create a canonical request for Signature Version 4
-            if (availableSecurityToken is string) {
+            if availableSecurityToken is string {
                 canonicalHeaders = "content-type:" + contentType + "\n" + "host:" + self.amazonHost + "\n"
                 + "x-amz-date:" + xamzDate + "\n" + "x-amz-security-token" + availableSecurityToken + "\n";
                 signedHeaders = "content-type;host;x-amz-date;x-amz-security-token";
@@ -1006,7 +1006,7 @@ public isolated client class Client {
         string payload = EMPTY_STRING;
         int parameterNumber = 1;
         foreach var [key, value] in parameters.entries() {
-            if (parameterNumber > 1) {
+            if parameterNumber > 1 {
                 payload = payload + "&";
             }
             payload = payload + key + "=" + check url:encode(value, "UTF-8");
