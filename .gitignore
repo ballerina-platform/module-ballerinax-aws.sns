@@ -36,8 +36,9 @@ hs_err_pid*
 # Ignore Gradle project-specific cache directory
 .gradle
 
-# Ignore Gradle build output directory
+# Ignore Gradle build output directories
 build
+target
 
 # Ballerina configuartion file
 Config.toml
