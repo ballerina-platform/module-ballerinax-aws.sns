@@ -45,3 +45,6 @@ Config.toml
 
 # Environment files
 *.env
+
+# Ignore installers and archives
+*.deb
