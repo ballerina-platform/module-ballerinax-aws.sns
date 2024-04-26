@@ -19,5 +19,4 @@ jobs:
     secrets: inherit
     with:
       environment: ${{ github.event.inputs.environment }}
-      additional-build-flags: "-x :aws.sns-examples:build"
       additional-publish-flags: "-x :aws.sns-examples:build"
