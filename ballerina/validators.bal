@@ -16,8 +16,8 @@
 
 isolated function validateInitializableTopicAttributes(InitializableTopicAttributes attributes) returns Error? {
     // If content-based deduplication is enabled, then it must also be a FIFO topic
-    if attributes.contentBasedDeduplication is boolean && <boolean>attributes.contentBasedDeduplication) &&
-                    (!(attributes.fifoTopic is boolean) || !<boolean>attributes.fifoTopic {
+    if (attributes.contentBasedDeduplication is boolean && <boolean>attributes.contentBasedDeduplication) &&
+                    (!(attributes.fifoTopic is boolean) || !<boolean>attributes.fifoTopic) {
         return error Error("If content-based deduplication is enabled, it must also be a FIFO topic.");
     }
 }
