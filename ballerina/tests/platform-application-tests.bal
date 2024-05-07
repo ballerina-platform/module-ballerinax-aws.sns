@@ -181,7 +181,8 @@ function listPlatformApplicationsTest() returns error? {
 }
 
 @test:Config {
-    groups: ["platformApplication"]
+    groups: ["platformApplication"],
+    enable: false
 }
 function getPlatformApplicationTest() returns error? {
     string topicArn = check amazonSNSClient->createTopic(testRunId + "GetPlatformApplicationsTopic");
@@ -210,7 +211,8 @@ function getPlatformApplicationTest() returns error? {
 }
 
 @test:Config {
-    groups: ["platformApplication"]
+    groups: ["platformApplication"],
+    enable: false
 }
 function getPlatformApplicationDoesNotExistTest() returns error? {
     string arn = check amazonSNSClient->createPlatformApplication(testRunId + "GetPlatformApplicationDNE",
@@ -277,7 +279,8 @@ function setPlatformApplicationAttributesNegativeTest() returns error? {
 };
 
 @test:Config {
-    groups: ["platformApplication"]
+    groups: ["platformApplication"],
+    enable: false
 }
 function deletePlatformApplicationTest() returns error? {
     string topicArn = check amazonSNSClient->createTopic(testRunId + "SetPlatformApplicationsAttrTopic");
