@@ -524,7 +524,9 @@ public isolated client class Client {
 
         http:Request request = check self.generateRequest(parameters);
         json msg = check sendRequest(self.amazonSNSClient, request);
+        io:println("+++++++++++++message+++++++++");
         io:println(msg);
+        io:println("+++++++++++++message+++++++++");
     };
 
     # Deletes a platform application object for one of the supported push notification services.
