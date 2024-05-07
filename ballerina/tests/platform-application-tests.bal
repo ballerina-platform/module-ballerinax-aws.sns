@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/test;
+import ballerina/io;
 import ballerina/lang.runtime as runtime;
 
 @test:Config {
@@ -240,6 +241,7 @@ function setPlatformApplicationAttributesTest() returns error? {
     _ = check amazonSNSClient->setPlatformApplicationAttributes(arn, attributes);
 
     RetrievablePlatformApplicationAttributes retrieved = check amazonSNSClient->getPlatformApplicationAttributes(arn);
+    io:println("Retrieved: -----------------------------------------" + retrieved);
     test:assertEquals(retrieved.eventEndpointCreated, topicArn);
     test:assertEquals(retrieved.eventDeliveryFailure, topicArn);
     test:assertEquals(retrieved.eventEndpointDeleted, topicArn);
