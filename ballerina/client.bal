@@ -20,6 +20,7 @@ import ballerina/lang.array;
 import ballerina/time;
 import ballerinax/'client.config;
 import ballerina/url;
+import ballerina/io;
 
 # Ballerina Amazon SNS API connector provides the capability to access Amazon's Simple Notification Service.
 # This connector allows you to create and manage SNS topics and subscriptions.
@@ -491,6 +492,9 @@ public isolated client class Client {
 
         http:Request request = check self.generateRequest(parameters);
         json response = check sendRequest(self.amazonSNSClient, request);
+        io:println("-------------------------- original response ---------------------------------");
+        io:println(response);
+        io:println("-------------------------- original response ---------------------------------");
 
         do {
             json attributes =
