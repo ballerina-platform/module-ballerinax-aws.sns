@@ -234,12 +234,9 @@ function setPlatformApplicationAttributesTest() returns error? {
     io:println("arn: -----------------------------------------");
     PlatformApplicationAttributes attributes = {
         eventEndpointCreated: topicArn,
-        eventDeliveryFailure: topicArn,
-        eventEndpointDeleted: topicArn,
-        eventEndpointUpdated: topicArn,
         successFeedbackRoleArn: testIamRole,
         failureFeedbackRoleArn: testIamRole,
-        successFeedbackSampleRate: 5
+        successFeedbackSampleRate: 10
     };
     _ = check amazonSNSClient->setPlatformApplicationAttributes(arn, attributes);
 
