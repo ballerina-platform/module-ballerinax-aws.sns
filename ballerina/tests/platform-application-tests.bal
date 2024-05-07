@@ -229,7 +229,9 @@ function setPlatformApplicationAttributesTest() returns error? {
     string topicArn = check amazonSNSClient->createTopic(testRunId + "SetPlatformApplicationsAttrTopic");
     string arn = check amazonSNSClient->createPlatformApplication(testRunId + "SetPlatformApplicationAttr",
         AMAZON_DEVICE_MESSAGING, auth = {platformCredential: admClientSecret, platformPrincipal: admClientId});
-
+    io:println("arn: -----------------------------------------");
+    io:println(arn);
+    io:println("arn: -----------------------------------------");
     PlatformApplicationAttributes attributes = {
         eventEndpointCreated: topicArn,
         eventDeliveryFailure: topicArn,
