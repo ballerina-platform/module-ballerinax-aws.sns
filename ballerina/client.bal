@@ -518,9 +518,9 @@ public isolated client class Client {
 
         record {} formattedPlatformApplicationAttributes = check formatAttributes(attributes);
         setAttributes(parameters, formattedPlatformApplicationAttributes);
-        io:prinltn("-----------------parameters----------------");
-        io:prinltn(parameters);
-        io:prinltn("--------------parameters--------------");
+        io:println("-----------------parameters----------------");
+        io:println(parameters);
+        io:println("--------------parameters--------------");
 
         http:Request request = check self.generateRequest(parameters);
         _ = check sendRequest(self.amazonSNSClient, request);
