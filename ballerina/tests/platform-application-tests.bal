@@ -181,8 +181,7 @@ function listPlatformApplicationsTest() returns error? {
 }
 
 @test:Config {
-    groups: ["platformApplication"],
-    enable: false
+    groups: ["platformApplication"]
 }
 function getPlatformApplicationTest() returns error? {
     string topicArn = check amazonSNSClient->createTopic(testRunId + "GetPlatformApplicationsTopic");
