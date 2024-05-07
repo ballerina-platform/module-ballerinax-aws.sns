@@ -241,7 +241,9 @@ function setPlatformApplicationAttributesTest() returns error? {
     _ = check amazonSNSClient->setPlatformApplicationAttributes(arn, attributes);
 
     RetrievablePlatformApplicationAttributes retrieved = check amazonSNSClient->getPlatformApplicationAttributes(arn);
-    io:println("Retrieved: -----------------------------------------" + retrieved);
+    io:println("Retrieved: -----------------------------------------");
+    io:println(retrieved);
+    io:println("Retrieved: -----------------------------------------");
     test:assertEquals(retrieved.eventEndpointCreated, topicArn);
     test:assertEquals(retrieved.eventDeliveryFailure, topicArn);
     test:assertEquals(retrieved.eventEndpointDeleted, topicArn);
