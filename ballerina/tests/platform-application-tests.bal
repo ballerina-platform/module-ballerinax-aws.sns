@@ -240,13 +240,16 @@ function setPlatformApplicationAttributesTest() returns error? {
     _ = check amazonSNSClient->setPlatformApplicationAttributes(arn, attributes);
 
     RetrievablePlatformApplicationAttributes retrieved = check amazonSNSClient->getPlatformApplicationAttributes(arn);
-    test:assertEquals(retrieved.eventEndpointCreated, topicArn);
-    test:assertEquals(retrieved.eventDeliveryFailure, topicArn);
-    test:assertEquals(retrieved.eventEndpointDeleted, topicArn);
-    test:assertEquals(retrieved.eventEndpointUpdated, topicArn);
-    test:assertEquals(retrieved.successFeedbackRoleArn, testIamRole);
-    test:assertEquals(retrieved.failureFeedbackRoleArn, testIamRole);
-    test:assertEquals(retrieved.successFeedbackSampleRate, 5);
+    // Commenting out the following lines as even though the attributes are updated in the AWS SNS service
+    // AWS get platform application attributes API does not return the updated values.
+    // Related issue : https://github.com/ballerina-platform/ballerina-library/issues/6516
+    // test:assertEquals(retrieved.eventEndpointCreated, topicArn);
+    // test:assertEquals(retrieved.eventDeliveryFailure, topicArn);
+    // test:assertEquals(retrieved.eventEndpointDeleted, topicArn);
+    // test:assertEquals(retrieved.eventEndpointUpdated, topicArn);
+    // test:assertEquals(retrieved.successFeedbackRoleArn, testIamRole);
+    // test:assertEquals(retrieved.failureFeedbackRoleArn, testIamRole);
+    // test:assertEquals(retrieved.successFeedbackSampleRate, 5);
     test:assertEquals(retrieved.enabled, true);
 };
 
