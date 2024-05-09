@@ -463,6 +463,9 @@ public isolated client class Client {
 
         http:Request request = check self.generateRequest(parameters);
         json response = check sendRequest(self.amazonSNSClient, request);
+        io:println("+++++++++++++++++++++++++++++++++ create application +++++++++++++++++++++++++++++++");
+        io:println(response);
+        io:println("+++++++++++++++++++++++++++++++++ create application +++++++++++++++++++++++++++++++");
 
         do {
             return (check response.CreatePlatformApplicationResponse.CreatePlatformApplicationResult
