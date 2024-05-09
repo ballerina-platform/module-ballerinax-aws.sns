@@ -226,8 +226,8 @@ function getPlatformApplicationDoesNotExistTest() returns error? {
     groups: ["platformApplication"]
 }
 function setPlatformApplicationAttributesTest() returns error? {
-    string topicArn = check amazonSNSClient->createTopic(testRunId + "SetPlatformApplicationsAttrTopic");
-    string arn = check amazonSNSClient->createPlatformApplication(testRunId + "SetPlatformApplicationAttr",
+    string topicArn = check amazonSNSClient->createTopic(testRunId + "SetPlatformApplicationsAttrTopicTest");
+    string arn = check amazonSNSClient->createPlatformApplication(testRunId + "SetPlatformApplicationAttrTest",
         AMAZON_DEVICE_MESSAGING, auth = {platformCredential: admClientSecret, platformPrincipal: admClientId});
     io:println("arn: -----------------------------------------");
     io:println(arn);
