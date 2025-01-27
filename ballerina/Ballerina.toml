@@ -2,7 +2,7 @@
 distribution = "2201.11.0-20241117-133400-a3054b77"
 org = "ballerinax"
 name = "aws.sns"
-version = "3.0.0"
+version = "3.1.0"
 license= ["Apache-2.0"]
 authors = ["Ballerina"]
 keywords = ["Communication/Notifications", "Cost/Freemium", "Vendor/Amazon"]
