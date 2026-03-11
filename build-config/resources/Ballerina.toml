@@ -1,11 +1,11 @@
 [package]
-distribution = "2201.11.0-20241117-133400-a3054b77"
+distribution = "2201.11.0"
 org = "ballerinax"
 name = "aws.sns"
 version = "@toml.version@"
 license= ["Apache-2.0"]
 authors = ["Ballerina"]
-keywords = ["Communication/Notifications", "Cost/Freemium", "Vendor/Amazon"]
+keywords = ["Communication/Notifications", "Cost/Freemium", "Vendor/AWS", "Area/Communication", "Type/Connector"]
 icon = "icon.png"
 repository = "https://github.com/ballerina-platform/module-ballerinax-aws.sns"
 
