@@ -1,6 +1,16 @@
 ## Overview
 
-The `ballerinax/aws.sns` package offers APIs to connect and interact with [AWS SNS API](https://docs.aws.amazon.com/sns/latest/api/welcome.html) endpoints.
+[Amazon SNS](https://aws.amazon.com/sns/) (Simple Notification Service) is a fully managed messaging service for both application-to-application (A2A) and application-to-person (A2P) communication. It enables developers to send notifications from their applications to various endpoints, including email, SMS, and mobile push, as well as to other AWS services like SQS, Lambda, and HTTP/S webhooks.
+
+The Amazon SNS connector offers APIs to connect and interact with [Amazon SNS REST API](https://docs.aws.amazon.com/sns/latest/api/welcome.html) endpoints.
+
+### Key Features
+
+- Create, list, and delete topics
+- Manage subscriptions and permissions
+- Publish messages to topics or directly to endpoints
+- Support for SMS and mobile push notifications
+- GraalVM compatible for native image builds
 
 ## Setup guide
 
@@ -44,11 +54,11 @@ Once you log in to your AWS account, you need to create a user group and a user 
 
 * Once the user is created, you will see a success message. Navigate to the "Users" tab, and select the user you created.
 
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/view-user.png alt="View User" width="50%">
+   <img src=https://raw.githubusercontent.com/ballerinax-platform/module-ballerinax-aws.sns/main/docs/setup/resources/view-user.png alt="View User" width="50%">
 
 * Click on the "Create access key" button to generate the access key ID and secret access key.
 
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-access-key.png alt="Create access key" width="50%">
+   <img src=https://raw.githubusercontent.com/ballerinax-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-access-key.png alt="Create access key" width="50%">
 
 * Follow the steps and download the CSV file containing the credentials.
 
