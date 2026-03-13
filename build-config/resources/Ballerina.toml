@@ -5,7 +5,7 @@ name = "aws.sns"
 version = "@toml.version@"
 license= ["Apache-2.0"]
 authors = ["Ballerina"]
-keywords = ["Communication/Notifications", "Cost/Freemium", "Vendor/AWS", "Area/Communication", "Type/Connector"]
+keywords = ["Communication/Push Notifications", "Cost/Paid", "Vendor/Amazon", "Area/Communication", "Type/Connector"]
 icon = "icon.png"
 repository = "https://github.com/ballerina-platform/module-ballerinax-aws.sns"
 
