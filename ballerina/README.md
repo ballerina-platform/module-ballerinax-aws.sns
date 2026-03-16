@@ -54,7 +54,7 @@ Once you log in to your AWS account, you need to create a user group and a user 
 
 * Once the user is created, you will see a success message. Navigate to the "Users" tab, and select the user you created.
 
-   <img src=https://raw.githubusercontent.com/ballerinax-platform/module-ballerinax-aws.sns/main/docs/setup/resources/view-user.png alt="View User" width="50%">
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/view-user.png alt="View User" width="50%">
 
 * Click on the "Create access key" button to generate the access key ID and secret access key.
 
