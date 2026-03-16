@@ -58,7 +58,7 @@ Once you log in to your AWS account, you need to create a user group and a user 
 
 * Click on the "Create access key" button to generate the access key ID and secret access key.
 
-   <img src=https://raw.githubusercontent.com/ballerinax-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-access-key.png alt="Create access key" width="50%">
+   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-access-key.png alt="Create access key" width="50%">
 
 * Follow the steps and download the CSV file containing the credentials.
 
