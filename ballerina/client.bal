@@ -942,7 +942,7 @@ public isolated client class Client {
             //Create a canonical request for Signature Version 4
             if availableSecurityToken is string {
                 canonicalHeaders = "content-type:" + contentType + "\n" + "host:" + self.amazonHost + "\n"
-                + "x-amz-date:" + xamzDate + "\n" + "x-amz-security-token" + availableSecurityToken + "\n";
+                + "x-amz-date:" + xamzDate + "\n" + "x-amz-security-token:" + availableSecurityToken + "\n";
                 signedHeaders = "content-type;host;x-amz-date;x-amz-security-token";
             } else {
                 canonicalHeaders = "content-type:" + contentType + "\n" + "host:" + self.amazonHost + "\n"
@@ -977,6 +977,9 @@ public isolated client class Client {
             headers["X-Amz-Date"] = xamzDate;
             headers["Authorization"] = authorizationHeader;
             headers["Accept"] = "application/json";
+            if availableSecurityToken is string {
+                headers["X-Amz-Security-Token"] = availableSecurityToken;
+            }
 
             http:Request request = new;
             request.setTextPayload(requestParameters);
