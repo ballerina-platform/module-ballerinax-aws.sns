@@ -1,6 +1,16 @@
 ## Overview
 
-The `ballerinax/aws.sns` package offers APIs to connect and interact with [AWS SNS API](https://docs.aws.amazon.com/sns/latest/api/welcome.html) endpoints.
+[Amazon SNS](https://aws.amazon.com/sns/) (Simple Notification Service) is a fully managed messaging service for both application-to-application (A2A) and application-to-person (A2P) communication. It enables developers to send notifications from their applications to various endpoints, including email, SMS, and mobile push, as well as to other AWS services like SQS, Lambda, and HTTP/S webhooks.
+
+The Amazon SNS connector offers APIs to connect and interact with [Amazon SNS REST API](https://docs.aws.amazon.com/sns/latest/api/welcome.html) endpoints.
+
+### Key Features
+
+- Create, list, and delete topics
+- Manage subscriptions and permissions
+- Publish messages to topics or directly to endpoints
+- Support for SMS and mobile push notifications
+- GraalVM compatible for native image builds
 
 ## Setup guide
 
