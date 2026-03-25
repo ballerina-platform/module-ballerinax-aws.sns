@@ -78,5 +78,9 @@ clean {
     delete 'build'
 }
 
+test {
+    jvmArgs '-Dio.netty.handler.ssl.noOpenSsl=true'
+}
+
 publishToMavenLocal.dependsOn build
 publish.dependsOn build
