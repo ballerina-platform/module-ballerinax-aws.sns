@@ -15,3 +15,4 @@ jobs:
     with:
       additional-build-flags: "-x :aws.sns-examples:build"
       additional-test-flags: "-x :aws.sns-examples:test"
+      
