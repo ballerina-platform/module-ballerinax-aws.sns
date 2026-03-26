@@ -9,7 +9,7 @@ on: pull_request
 jobs:
     ubuntu-build:
         name: Build
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-latest
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v3
