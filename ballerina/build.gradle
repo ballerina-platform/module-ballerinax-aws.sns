@@ -78,5 +78,9 @@ clean {
     delete 'build'
 }
 
+tasks.named('test') {
+    environment 'JAVA_TOOL_OPTIONS', '-Dio.netty.handler.ssl.noOpenSsl=true'
+}
+
 publishToMavenLocal.dependsOn build
 publish.dependsOn build
