@@ -47,7 +47,8 @@ public isolated client class Client {
     public isolated function init(ConnectionConfig config) returns error? {
         self.accessKeyId = config.accessKeyId;
         self.secretAccessKey = config.secretAccessKey;
-        self.securityToken = (config?.securityToken is string) ? <string>(config?.securityToken) : ();
+        string? token = config?.securityToken;
+        self.securityToken = (token is string && token != "") ? token : ();
         self.region = config.region;
         self.amazonHost = "sns." + self.region + ".amazonaws.com";
         string baseURL = "https://" + self.amazonHost;
@@ -936,19 +937,13 @@ public isolated client class Client {
 
             string canonicalQuerystring = EMPTY_STRING;
             string? availableSecurityToken = self.securityToken;
-            string canonicalHeaders = EMPTY_STRING;
-            string signedHeaders = EMPTY_STRING;
 
             //Create a canonical request for Signature Version 4
-            if availableSecurityToken is string {
-                canonicalHeaders = "content-type:" + contentType + "\n" + "host:" + self.amazonHost + "\n"
-                + "x-amz-date:" + xamzDate + "\n" + "x-amz-security-token:" + availableSecurityToken + "\n";
-                signedHeaders = "content-type;host;x-amz-date;x-amz-security-token";
-            } else {
-                canonicalHeaders = "content-type:" + contentType + "\n" + "host:" + self.amazonHost + "\n"
-                    + "x-amz-date:" + xamzDate + "\n";
-                signedHeaders = "content-type;host;x-amz-date";
-            }
+            // Note: X-Amz-Security-Token is NOT included in canonical headers or signed headers.
+            // It is added as a regular HTTP header after signature computation per AWS SigV4 spec.
+            string canonicalHeaders = "content-type:" + contentType + "\n" + "host:" + self.amazonHost + "\n"
+                + "x-amz-date:" + xamzDate + "\n";
+            string signedHeaders = "content-type;host;x-amz-date";
             string payloadHash = array:toBase16(crypto:hashSha256(requestParameters.toBytes())).toLowerAscii();
             string canonicalRequest = "POST" + "\n" + "/" + "\n" + canonicalQuerystring + "\n"
                 + canonicalHeaders + "\n" + signedHeaders + "\n" + payloadHash;
