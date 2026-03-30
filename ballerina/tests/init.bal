@@ -22,21 +22,37 @@ import ballerina/os;
 
 string testRunId = regexp:replaceAll(re `[:.]`, time:utcToString(time:utcNow()), "");
 
-configurable string accessKeyId = os:getEnv("ACCESS_KEY_ID");
-configurable string secretAccessKey = os:getEnv("SECRET_ACCESS_KEY");
-configurable string region = os:getEnv("REGION");
+final string authType = os:getEnv("BALLERINA_AWS_TEST_AUTH_TYPE");
+final string accessKeyId = os:getEnv("ACCESS_KEY_ID");
+final string secretAccessKey = os:getEnv("SECRET_ACCESS_KEY");
+final string region = os:getEnv("REGION");
+final string profileName = os:getEnv("BALLERINA_AWS_TEST_PROFILE_NAME");
+final string credentialsFilePath = os:getEnv("BALLERINA_AWS_TEST_CREDENTIALS_FILE");
 
-ConnectionConfig config = {
-    accessKeyId: accessKeyId,
-    secretAccessKey: secretAccessKey,
-    region: region,
-    retryConfig: {
-        count: 3,
-        interval: 10
-    } 
-};
+isolated function initClient() returns Client|error {
+    if authType == "default" {
+        return new ({
+            credentials: DEFAULT_CREDENTIALS,
+            region,
+            retryConfig: {count: 3, interval: 10}
+        });
+    } else if authType == "profile" {
+        return new ({
+            credentials: {profileName, credentialsFilePath},
+            region,
+            retryConfig: {count: 3, interval: 10}
+        });
+    } else if accessKeyId != "" && secretAccessKey != "" {
+        return new ({
+            credentials: {accessKeyId, secretAccessKey},
+            region,
+            retryConfig: {count: 3, interval: 10}
+        });
+    }
+    return test:mock(Client);
+}
 
-Client amazonSNSClient = check new(config);
+Client amazonSNSClient = check initClient();
 
 string testHttp = "http://www.wso2.com";
 string testHttps = "https://www.wso2.com";

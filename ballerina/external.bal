@@ -16,6 +16,13 @@
 
 import ballerina/jballerina.java;
 
+# Resolves AWS credentials from the given credential configuration using the AWS SDK.
+# Returns a map containing `accessKeyId`, `secretAccessKey`, and optionally `sessionToken`.
+isolated function resolveCredentials(StaticAuthConfig|ProfileAuthConfig|DEFAULT_CREDENTIALS credentials)
+        returns map<anydata>|error = @java:Method {
+    'class: "io.ballerina.lib.aws.sns.auth.CredentialProvider"
+} external;
+
 isolated function ofEpochSecond(int epochSeconds, int nanoAdjustments) returns handle = @java:Method {
     'class: "java.time.Instant",
     name: "ofEpochSecond"
