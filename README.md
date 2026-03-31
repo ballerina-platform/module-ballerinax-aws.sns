@@ -131,11 +131,7 @@ sns:Client snsClient = check new ({
 });
 ```
 
-The credential resolution order is:
-1. Environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`)
-2. Container credentials endpoint — EKS Pod Identity (`AWS_CONTAINER_CREDENTIALS_FULL_URI` + `AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE`) and ECS task roles
-3. EC2 instance metadata service (IMDS / instance profiles)
-4. AWS credentials file default profile (`~/.aws/credentials`)
+Credentials are resolved using the AWS SDK for Java 2.x `DefaultCredentialsProvider.create()` chain. Refer to the [AWS SDK documentation](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials-chain.html) for the current resolution order.
 
 ### Step 3: Invoke the connector operation
 
