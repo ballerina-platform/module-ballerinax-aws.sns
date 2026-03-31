@@ -46,7 +46,19 @@ public isolated client class Client {
     # + config - Configuration for the connector
     # + return - `error` in case of failure to initialize or `null` if successfully initialized
     public isolated function init(ConnectionConfig config) returns error? {
-        map<anydata> resolved = check resolveCredentials(config.credentials);
+        StaticAuthConfig|ProfileAuthConfig|DEFAULT_CREDENTIALS credentialsConfig;
+        if config.credentials is StaticAuthConfig|ProfileAuthConfig|DEFAULT_CREDENTIALS {
+            credentialsConfig = <StaticAuthConfig|ProfileAuthConfig|DEFAULT_CREDENTIALS>config.credentials;
+        } else if config.accessKeyId is string && config.secretAccessKey is string {
+            credentialsConfig = {
+                accessKeyId: <string>config.accessKeyId,
+                secretAccessKey: <string>config.secretAccessKey,
+                sessionToken: config.securityToken
+            };
+        } else {
+            return error("AWS credentials not configured. Provide 'credentials' (StaticAuthConfig, ProfileAuthConfig, or DEFAULT_CREDENTIALS) or the deprecated 'accessKeyId' and 'secretAccessKey' fields.");
+        }
+        map<anydata> resolved = check resolveCredentials(credentialsConfig);
         anydata ak = resolved["accessKeyId"];
         anydata sk = resolved["secretAccessKey"];
         anydata st = resolved["sessionToken"];
@@ -1022,6 +1034,9 @@ public isolated client class Client {
 # Represents the AWS SNS client connection configuration.
 #
 # + auth - Do not provide authentication credentials here
+# + accessKeyId - Deprecated: Use `credentials` instead
+# + secretAccessKey - Deprecated: Use `credentials` instead
+# + securityToken - Deprecated: Use `credentials` instead
 # + credentials - AWS credential configuration. Use `StaticAuthConfig` for explicit credentials,
 #                 `ProfileAuthConfig` for a local credentials file profile, or `DEFAULT_CREDENTIALS`
 #                 to resolve credentials automatically via the AWS default credential provider chain
@@ -1030,6 +1045,12 @@ public isolated client class Client {
 public type ConnectionConfig record {|
     *config:ConnectionConfig;
     never auth?;
-    StaticAuthConfig|ProfileAuthConfig|DEFAULT_CREDENTIALS credentials;
+    @deprecated
+    string accessKeyId?;
+    @deprecated
+    string secretAccessKey?;
+    @deprecated
+    string securityToken?;
+    StaticAuthConfig|ProfileAuthConfig|DEFAULT_CREDENTIALS credentials?;
     string region = DEFAULT_REGION;
 |};
