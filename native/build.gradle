@@ -20,12 +20,6 @@ plugins {
 
 description = 'AWS SNS API connector for Ballerina - native module.'
 
-configurations {
-    dist {
-        transitive true
-    }
-}
-
 dependencies {
     implementation group: 'org.ballerinalang', name: 'ballerina-runtime', version: "${ballerinaLangVersion}"
     implementation group: 'software.amazon.awssdk', name: 'auth', version: "${awsJavaSdkVersion}"
@@ -40,14 +34,6 @@ dependencies {
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
-}
-
-jar {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    dependsOn configurations.dist
-    from { configurations.dist.collect { it.isDirectory() ? it : zipTree(it) } } {
-        exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
-    }
 }
 
 compileJava {

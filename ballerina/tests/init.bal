@@ -37,8 +37,15 @@ isolated function initClient() returns Client|error {
             retryConfig: {count: 3, interval: 10}
         });
     } else if authType == "profile" {
+        ProfileAuthConfig profileCreds = {};
+        if profileName != "" {
+            profileCreds.profileName = profileName;
+        }
+        if credentialsFilePath != "" {
+            profileCreds.credentialsFilePath = credentialsFilePath;
+        }
         return new ({
-            credentials: {profileName, credentialsFilePath},
+            credentials: profileCreds,
             region,
             retryConfig: {count: 3, interval: 10}
         });

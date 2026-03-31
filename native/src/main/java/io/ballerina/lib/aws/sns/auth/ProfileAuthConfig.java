@@ -42,7 +42,9 @@ public class ProfileAuthConfig {
      * @return an {@link AwsCredentialsProvider} for the specified profile
      */
     public static AwsCredentialsProvider fromConfig(String profileName, String credentialsFilePath) {
-        String resolvedPath = credentialsFilePath.replaceFirst("^~", System.getProperty("user.home"));
+        String resolvedPath = credentialsFilePath.startsWith("~")
+                ? System.getProperty("user.home") + credentialsFilePath.substring(1)
+                : credentialsFilePath;
         return ProfileCredentialsProvider.builder()
                 .profileName(profileName)
                 .profileFile(ProfileFile.builder()

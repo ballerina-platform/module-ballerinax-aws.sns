@@ -37,11 +37,9 @@ public type ProfileAuthConfig record {|
 |};
 
 # Instructs the connector to resolve credentials via the AWS default credential provider chain.
-# Credentials are resolved in this order:
-# 1. Environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`)
-# 2. Container credentials (`AWS_CONTAINER_CREDENTIALS_FULL_URI` / Pod Identity)
-# 3. EC2 instance profile / ECS task role
-# 4. AWS credentials file (`~/.aws/credentials`)
+# Uses the AWS SDK for Java 2.x `DefaultCredentialsProvider` chain.
+# See the AWS SDK documentation for the current resolution order and supported
+# sources.
 public const DEFAULT_CREDENTIALS = "DEFAULT_CREDENTIALS";
 
 # The hashing algorithm used while creating the signature of the notifications, subscription confirmations, or
