@@ -23,6 +23,8 @@ import ballerina/url;
 
 # Ballerina Amazon SNS API connector provides the capability to access Amazon's Simple Notification Service.
 # This connector allows you to create and manage SNS topics and subscriptions.
+# Supports static credentials, profile-based credentials, and the default AWS credential
+# provider chain (environment variables, ECS/EKS container credentials, EC2 instance profiles, etc.).
 #
 # + amazonSNSClient - Connector HTTP endpoint
 # + accessKeyId - Amazon API access key
@@ -41,14 +43,28 @@ public isolated client class Client {
 
     # Initializes the connector.
     #
-    # + configuration - Configuration for the connector
-    # + httpClientConfig - HTTP Configuration
-    # + return - `http:Error` in case of failure to initialize or `null` if successfully initialized
+    # + config - Configuration for the connector
+    # + return - `error` in case of failure to initialize or `null` if successfully initialized
     public isolated function init(ConnectionConfig config) returns error? {
-        self.accessKeyId = config.accessKeyId;
-        self.secretAccessKey = config.secretAccessKey;
-        string? token = config?.securityToken;
-        self.securityToken = (token is string && token != "") ? token : ();
+        StaticAuthConfig|ProfileAuthConfig|DEFAULT_CREDENTIALS credentialsConfig;
+        if config.credentials is StaticAuthConfig|ProfileAuthConfig|DEFAULT_CREDENTIALS {
+            credentialsConfig = <StaticAuthConfig|ProfileAuthConfig|DEFAULT_CREDENTIALS>config.credentials;
+        } else if config.accessKeyId is string && config.secretAccessKey is string {
+            credentialsConfig = {
+                accessKeyId: <string>config.accessKeyId,
+                secretAccessKey: <string>config.secretAccessKey,
+                sessionToken: config.securityToken
+            };
+        } else {
+            return error("AWS credentials not configured. Provide 'credentials' (StaticAuthConfig, ProfileAuthConfig, or DEFAULT_CREDENTIALS) or the deprecated 'accessKeyId' and 'secretAccessKey' fields.");
+        }
+        map<anydata> resolved = check resolveCredentials(credentialsConfig);
+        anydata ak = resolved["accessKeyId"];
+        anydata sk = resolved["secretAccessKey"];
+        anydata st = resolved["sessionToken"];
+        self.accessKeyId = ak is string ? ak : "";
+        self.secretAccessKey = sk is string ? sk : "";
+        self.securityToken = st is string && st != "" ? st : ();
         self.region = config.region;
         self.amazonHost = "sns." + self.region + ".amazonaws.com";
         string baseURL = "https://" + self.amazonHost;
@@ -1018,15 +1034,23 @@ public isolated client class Client {
 # Represents the AWS SNS client connection configuration.
 #
 # + auth - Do not provide authentication credentials here
-# + accessKeyId - AWS access key ID
-# + secretAccessKey - AWS secret access key
-# + securityToken - AWS security token
+# + accessKeyId - Deprecated: Use `credentials` instead
+# + secretAccessKey - Deprecated: Use `credentials` instead
+# + securityToken - Deprecated: Use `credentials` instead
+# + credentials - AWS credential configuration. Use `StaticAuthConfig` for explicit credentials,
+#                 `ProfileAuthConfig` for a local credentials file profile, or `DEFAULT_CREDENTIALS`
+#                 to resolve credentials automatically via the AWS default credential provider chain
+#                 (environment variables, ECS/EKS container credentials, EC2 instance profile, etc.)
 # + region - AWS SNS region. Default value is "us-east-1"
 public type ConnectionConfig record {|
     *config:ConnectionConfig;
     never auth?;
-    string accessKeyId;
-    string secretAccessKey;
+    @deprecated
+    string accessKeyId?;
+    @deprecated
+    string secretAccessKey?;
+    @deprecated
     string securityToken?;
+    StaticAuthConfig|ProfileAuthConfig|DEFAULT_CREDENTIALS credentials?;
     string region = DEFAULT_REGION;
 |};

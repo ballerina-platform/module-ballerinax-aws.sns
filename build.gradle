@@ -63,6 +63,7 @@ allprojects {
 def moduleVersion = project.version.replace("-SNAPSHOT", "")
 
 task build {
+    dependsOn(':aws.sns-native:build')
     dependsOn(':aws.sns-ballerina:build')
     dependsOn(':aws.sns-examples:build')
 }

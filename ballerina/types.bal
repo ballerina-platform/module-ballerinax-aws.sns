@@ -16,7 +16,33 @@
 
 import ballerina/time;
 
-# The hashing algorithm used while creating the signature of the notifications, subscription confirmations, or 
+# Represents static AWS credentials.
+#
+# + accessKeyId - AWS access key ID
+# + secretAccessKey - AWS secret access key
+# + sessionToken - AWS session token for temporary credentials
+public type StaticAuthConfig record {|
+    string accessKeyId;
+    string secretAccessKey;
+    string sessionToken?;
+|};
+
+# Represents AWS credentials loaded from a local credentials file profile.
+#
+# + profileName - The named profile to use (defaults to `"default"`)
+# + credentialsFilePath - Path to the AWS credentials file (defaults to `"~/.aws/credentials"`)
+public type ProfileAuthConfig record {|
+    string profileName = "default";
+    string credentialsFilePath = "~/.aws/credentials";
+|};
+
+# Instructs the connector to resolve credentials via the AWS default credential provider chain.
+# Uses the AWS SDK for Java 2.x `DefaultCredentialsProvider` chain.
+# See the AWS SDK documentation for the current resolution order and supported
+# sources.
+public const DEFAULT_CREDENTIALS = "DEFAULT_CREDENTIALS";
+
+# The hashing algorithm used while creating the signature of the notifications, subscription confirmations, or
 # unsubscribe confirmation messages sent by Amazon SNS.
 # 
 # + SignatureVersion1 - Amazon SNS creates the signature based on the SHA1 hash of the message

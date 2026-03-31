@@ -10,6 +10,7 @@ The Amazon SNS connector offers APIs to connect and interact with [Amazon SNS RE
 - Manage subscriptions and permissions
 - Publish messages to topics or directly to endpoints
 - Support for SMS and mobile push notifications
+- Flexible credential configuration: static keys, AWS credentials file profiles, or the default AWS credential provider chain (EKS Pod Identity, ECS task roles, EC2 instance profiles, environment variables)
 - GraalVM compatible for native image builds
 
 ## Setup guide
@@ -77,22 +78,71 @@ import ballerinax/aws.sns;
 
 ### Step 2: Instantiate a new connector
 
-Instantiate a new `sns` client using the access key ID, secret access key, and region.
+The `sns:Client` accepts a `ConnectionConfig` with a `credentials` field that supports three authentication modes.
+
+#### Option 1: Static credentials
+
+Use explicit AWS credentials. Suitable for local development and environments where credentials are managed directly.
+
 ```ballerina
-sns:Client sns = check new({
+sns:Client snsClient = check new ({
     credentials: {
-        accessKeyId,
-        secretAccessKey
+        accessKeyId: "<AWS_ACCESS_KEY_ID>",
+        secretAccessKey: "<AWS_SECRET_ACCESS_KEY>"
     },
-    region
+    region: "<AWS_REGION>"
 });
 ```
+
+For temporary credentials (e.g., from `aws sts get-session-token`), include the session token:
+
+```ballerina
+sns:Client snsClient = check new ({
+    credentials: {
+        accessKeyId: "<AWS_ACCESS_KEY_ID>",
+        secretAccessKey: "<AWS_SECRET_ACCESS_KEY>",
+        sessionToken: "<AWS_SESSION_TOKEN>"
+    },
+    region: "<AWS_REGION>"
+});
+```
+
+#### Option 2: AWS credentials file profile
+
+Use a named profile from your `~/.aws/credentials` file. Suitable for developer workstations with multiple AWS accounts.
+
+```ballerina
+sns:Client snsClient = check new ({
+    credentials: {
+        profileName: "<PROFILE_NAME>",
+        credentialsFilePath: "~/.aws/credentials"
+    },
+    region: "<AWS_REGION>"
+});
+```
+
+#### Option 3: Default credential provider chain
+
+Use `sns:DEFAULT_CREDENTIALS` to let the connector automatically resolve credentials from the environment. This is the recommended approach for AWS-managed environments.
+
+```ballerina
+sns:Client snsClient = check new ({
+    credentials: sns:DEFAULT_CREDENTIALS,
+    region: "<AWS_REGION>"
+});
+```
+
+The credential resolution order is:
+1. Environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`)
+2. Container credentials endpoint — EKS Pod Identity (`AWS_CONTAINER_CREDENTIALS_FULL_URI` + `AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE`) and ECS task roles
+3. EC2 instance metadata service (IMDS / instance profiles)
+4. AWS credentials file default profile (`~/.aws/credentials`)
 
 ### Step 3: Invoke the connector operation
 
 Now, utilize the available connector operations.
 ```ballerina
-string topicArn = check sns->createTopic("FirstTopic");
+string topicArn = check snsClient->createTopic("FirstTopic");
 ```
 
 ### Step 4: Run the Ballerina application

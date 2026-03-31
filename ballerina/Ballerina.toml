@@ -2,7 +2,7 @@
 distribution = "2201.11.0"
 org = "ballerinax"
 name = "aws.sns"
-version = "3.1.0"
+version = "3.2.0"
 license= ["Apache-2.0"]
 authors = ["Ballerina"]
 keywords = ["Communication/Push Notifications", "Cost/Paid", "Vendor/Amazon", "Area/Communication", "Type/Connector"]
@@ -14,3 +14,141 @@ observabilityIncluded = true
 
 [platform.java21]
 graalvmCompatible = true
+
+[[platform.java21.dependency]]
+groupId = "io.ballerina.stdlib"
+artifactId = "aws.sns-native"
+version = "3.2.0-SNAPSHOT"
+path = "../native/build/libs/aws.sns-native-3.2.0-SNAPSHOT.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "auth"
+version = "2.41.30"
+path = "./lib/auth-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "aws-core"
+version = "2.41.30"
+path = "./lib/aws-core-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "checksums"
+version = "2.41.30"
+path = "./lib/checksums-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "checksums-spi"
+version = "2.41.30"
+path = "./lib/checksums-spi-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "endpoints-spi"
+version = "2.41.30"
+path = "./lib/endpoints-spi-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "http-auth"
+version = "2.41.30"
+path = "./lib/http-auth-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "http-auth-aws"
+version = "2.41.30"
+path = "./lib/http-auth-aws-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "http-auth-spi"
+version = "2.41.30"
+path = "./lib/http-auth-spi-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "http-client-spi"
+version = "2.41.30"
+path = "./lib/http-client-spi-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "identity-spi"
+version = "2.41.30"
+path = "./lib/identity-spi-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "json-utils"
+version = "2.41.30"
+path = "./lib/json-utils-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "metrics-spi"
+version = "2.41.30"
+path = "./lib/metrics-spi-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "profiles"
+version = "2.41.30"
+path = "./lib/profiles-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "regions"
+version = "2.41.30"
+path = "./lib/regions-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "retries"
+version = "2.41.30"
+path = "./lib/retries-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "retries-spi"
+version = "2.41.30"
+path = "./lib/retries-spi-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "sdk-core"
+version = "2.41.30"
+path = "./lib/sdk-core-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "third-party-jackson-core"
+version = "2.41.30"
+path = "./lib/third-party-jackson-core-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "software.amazon.awssdk"
+artifactId = "utils"
+version = "2.41.30"
+path = "./lib/utils-2.41.30.jar"
+
+[[platform.java21.dependency]]
+groupId = "org.apache.httpcomponents"
+artifactId = "httpcore"
+version = "4.4.16"
+path = "./lib/httpcore-4.4.16.jar"
+
+[[platform.java21.dependency]]
+groupId = "org.apache.httpcomponents"
+artifactId = "httpclient"
+version = "4.5.14"
+path = "./lib/httpclient-4.5.14.jar"
+
+[[platform.java21.dependency]]
+groupId = "org.reactivestreams"
+artifactId = "reactive-streams"
+version = "1.0.4"
+path = "./lib/reactive-streams-1.0.4.jar"

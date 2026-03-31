@@ -1,3 +1,4 @@
+
 // Copyright (c) 2023 WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 LLC. licenses this file to you under the Apache License,
@@ -27,8 +28,10 @@ configurable string secretAccessKey = os:getEnv("SECRET_ACCESS_KEY");
 configurable string region = os:getEnv("REGION");
 
 ConnectionConfig config = {
-    accessKeyId: accessKeyId,
-    secretAccessKey: secretAccessKey,
+    credentials: {
+        accessKeyId: accessKeyId,
+        secretAccessKey: secretAccessKey
+    },
     region: region,
     retryConfig: {
         count: 3,

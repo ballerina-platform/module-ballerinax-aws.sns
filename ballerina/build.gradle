@@ -53,10 +53,87 @@ ballerina {
     platform = "java21"
 }
 
+configurations {
+    externalJars
+}
+
+dependencies {
+    externalJars(group: 'software.amazon.awssdk', name: 'auth', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'aws-core', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'checksums', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'checksums-spi', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'endpoints-spi', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'http-auth', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'http-auth-aws', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'http-auth-spi', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'http-client-spi', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'identity-spi', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'json-utils', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'metrics-spi', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'profiles', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'regions', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'retries', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'retries-spi', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'sdk-core', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'third-party-jackson-core', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'software.amazon.awssdk', name: 'utils', version: "${awsJavaSdkVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'org.apache.httpcomponents', name: 'httpcore', version: "${apacheHttpCoreVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'org.apache.httpcomponents', name: 'httpclient', version: "${apacheHttpClientVersion}") {
+        transitive = false
+    }
+    externalJars(group: 'org.reactivestreams', name: 'reactive-streams', version: "${reactiveStreamsVersion}") {
+        transitive = false
+    }
+}
+
 task updateTomlFiles {
     doLast {
         def newBallerinaToml = ballerinaTomlFilePlaceHolder.text.replace("@project.version@", project.version)
         newBallerinaToml = newBallerinaToml.replace("@toml.version@", tomlVersion)
+        newBallerinaToml = newBallerinaToml.replace("@aws.sdk.version@", project.awsJavaSdkVersion)
+        newBallerinaToml = newBallerinaToml.replace("@apache.httpcore.version@", project.apacheHttpCoreVersion)
+        newBallerinaToml = newBallerinaToml.replace("@apache.httpclient.version@", project.apacheHttpClientVersion)
+        newBallerinaToml = newBallerinaToml.replace("@reactivestreams.version@", project.reactiveStreamsVersion)
         ballerinaTomlFile.text = newBallerinaToml
     }
 }
@@ -78,5 +155,8 @@ clean {
     delete 'build'
 }
 
+build.dependsOn ":aws.sns-native:build"
+test.dependsOn ":aws.sns-native:build"
+build.dependsOn copyToLib
 publishToMavenLocal.dependsOn build
 publish.dependsOn build

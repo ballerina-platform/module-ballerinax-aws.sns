@@ -32,9 +32,11 @@ plugins {
 
 rootProject.name = 'module-ballerinax-aws.sns'
 
+include ':aws.sns-native'
 include ':aws.sns-ballerina'
 include ':aws.sns-examples'
 
+project(':aws.sns-native').projectDir = file("native")
 project(':aws.sns-ballerina').projectDir = file("ballerina")
 project(':aws.sns-examples').projectDir = file("examples")
 
