@@ -1,3 +1,4 @@
+
 // Copyright (c) 2023 WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 LLC. licenses this file to you under the Apache License,
@@ -22,44 +23,23 @@ import ballerina/os;
 
 string testRunId = regexp:replaceAll(re `[:.]`, time:utcToString(time:utcNow()), "");
 
-final string authType = os:getEnv("BALLERINA_AWS_TEST_AUTH_TYPE");
-final string accessKeyId = os:getEnv("ACCESS_KEY_ID");
-final string secretAccessKey = os:getEnv("SECRET_ACCESS_KEY");
-final string region = os:getEnv("REGION");
-final string profileName = os:getEnv("BALLERINA_AWS_TEST_PROFILE_NAME");
-final string credentialsFilePath = os:getEnv("BALLERINA_AWS_TEST_CREDENTIALS_FILE");
+configurable string accessKeyId = os:getEnv("ACCESS_KEY_ID");
+configurable string secretAccessKey = os:getEnv("SECRET_ACCESS_KEY");
+configurable string region = os:getEnv("REGION");
 
-isolated function initClient() returns Client|error {
-    if authType == "default" {
-        return new ({
-            credentials: DEFAULT_CREDENTIALS,
-            region,
-            retryConfig: {count: 3, interval: 10}
-        });
-    } else if authType == "profile" {
-        ProfileAuthConfig profileCreds = {};
-        if profileName != "" {
-            profileCreds.profileName = profileName;
-        }
-        if credentialsFilePath != "" {
-            profileCreds.credentialsFilePath = credentialsFilePath;
-        }
-        return new ({
-            credentials: profileCreds,
-            region,
-            retryConfig: {count: 3, interval: 10}
-        });
-    } else if accessKeyId != "" && secretAccessKey != "" {
-        return new ({
-            credentials: {accessKeyId, secretAccessKey},
-            region,
-            retryConfig: {count: 3, interval: 10}
-        });
-    }
-    return test:mock(Client);
-}
+ConnectionConfig config = {
+    credentials: {
+        accessKeyId: accessKeyId,
+        secretAccessKey: secretAccessKey
+    },
+    region: region,
+    retryConfig: {
+        count: 3,
+        interval: 10
+    } 
+};
 
-Client amazonSNSClient = check initClient();
+Client amazonSNSClient = check new(config);
 
 string testHttp = "http://www.wso2.com";
 string testHttps = "https://www.wso2.com";
