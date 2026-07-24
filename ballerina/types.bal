@@ -15,32 +15,10 @@
 // under the License.
 
 import ballerina/time;
+import ballerina/http;
+import ballerinax/aws;
+import ballerinax/aws.auth;
 
-# Represents static AWS credentials.
-#
-# + accessKeyId - AWS access key ID
-# + secretAccessKey - AWS secret access key
-# + sessionToken - AWS session token for temporary credentials
-public type StaticAuthConfig record {|
-    string accessKeyId;
-    string secretAccessKey;
-    string sessionToken?;
-|};
-
-# Represents AWS credentials loaded from a local credentials file profile.
-#
-# + profileName - The named profile to use (defaults to `"default"`)
-# + credentialsFilePath - Path to the AWS credentials file (defaults to `"~/.aws/credentials"`)
-public type ProfileAuthConfig record {|
-    string profileName = "default";
-    string credentialsFilePath = "~/.aws/credentials";
-|};
-
-# Instructs the connector to resolve credentials via the AWS default credential provider chain.
-# Uses the AWS SDK for Java 2.x `DefaultCredentialsProvider` chain.
-# See the AWS SDK documentation for the current resolution order and supported
-# sources.
-public const DEFAULT_CREDENTIALS = "DEFAULT_CREDENTIALS";
 
 # The hashing algorithm used while creating the signature of the notifications, subscription confirmations, or
 # unsubscribe confirmation messages sent by Amazon SNS.
@@ -586,4 +564,57 @@ public type SMSAttributes record {|
 public type Tags record {|
     never topicArn?;
     string...;
+|};
+
+# Provides a set of configurations for controlling the behaviours when communicating with a remote HTTP endpoint
+@display {label: "Connection Config"}
+public type ConnectionConfig record {|
+    # Authentication configuration: any standard credential source supported by
+    # AWS — static credentials, an AWS profile, STS assume-role,
+    # web identity (OIDC), IAM Identity Center (SSO), an external credential
+    # process, or the default credential provider chain
+    auth:AuthConfig auth;
+    # AWS region: an `aws:Region` enum member or a plain region
+    # string (e.g., `"us-east-1"`) for regions not yet in the enum
+    aws:Region|string region = aws:US_EAST_1;
+    # Optional endpoint options: FIPS/dualstack variants, or a custom
+    # endpoint override (e.g. LocalStack, VPC interface endpoints)
+    aws:EndpointConfig endpoint?;
+    # The HTTP version understood by the client
+    http:HttpVersion httpVersion = http:HTTP_2_0;
+    # Configurations related to HTTP/1.x protocol
+    http:ClientHttp1Settings http1Settings = {};
+    # Configurations related to HTTP/2 protocol
+    http:ClientHttp2Settings http2Settings = {};
+    # The maximum time to wait (in seconds) for a response before closing the connection
+    decimal timeout = 30;
+    # The choice of setting `forwarded`/`x-forwarded` header
+    string forwarded = "disable";
+    # Configurations associated with Redirection
+    http:FollowRedirects followRedirects?;
+    # Configurations associated with request pooling
+    http:PoolConfiguration poolConfig?;
+    # HTTP caching related configurations
+    http:CacheConfig cache = {};
+    # Specifies the way of handling compression (`accept-encoding`) header
+    http:Compression compression = http:COMPRESSION_AUTO;
+    # Configurations associated with the behaviour of the Circuit Breaker
+    http:CircuitBreakerConfig circuitBreaker?;
+    # Configurations associated with retrying
+    http:RetryConfig retryConfig?;
+    # Configurations associated with cookies
+    http:CookieConfig cookieConfig?;
+    # Configurations associated with inbound response size limits
+    http:ResponseLimitConfigs responseLimits = {};
+    # SSL/TLS-related options
+    http:ClientSecureSocket secureSocket?;
+    # Proxy server related options
+    http:ProxyConfig proxy?;
+    # Provides settings related to client socket configuration
+    http:ClientSocketConfig socketConfig = {};
+    # Enables the inbound payload validation functionality which provided by the constraint package. Enabled by default
+    boolean validation = true;
+    # Enables relaxed data binding on the client side. When enabled, `nil` values are treated as optional, 
+    # and absent fields are handled as `nilable` types. Enabled by default
+    boolean laxDataBinding = true;
 |};

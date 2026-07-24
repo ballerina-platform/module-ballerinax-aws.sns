@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/time;
-import ballerina/jballerina.java;
 import ballerina/http;
 import ballerina/lang.'int as langint;
 import ballerina/lang.'boolean as langboolean;
@@ -57,31 +56,6 @@ isolated function initiateRequest(string actionName) returns map<string> {
     parameterMap[ACTION] = actionName;
     parameterMap[VERSION] = VERSION_NUMBER;
     return parameterMap;
-}
-
-isolated function validateCredentails(string accessKeyId, string secretAccessKey) returns error? {    
-    if (accessKeyId == EMPTY_STRING) && (secretAccessKey == EMPTY_STRING) {
-        return error("Access Key Id and Secret Access Key credential is empty");
-    }
-
-    if accessKeyId == EMPTY_STRING {
-        return error("Access Key Id credential is empty");
-    }
-
-    if secretAccessKey == EMPTY_STRING {
-        return error("Secret Access Key credential is empty");
-    }
-}
-
-isolated function utcToString(time:Utc utc, string pattern) returns string|error {
-    [int, decimal] [epochSeconds, lastSecondFraction] = utc;
-    int nanoAdjustments = (<int>lastSecondFraction * 1000000000);
-    var instant = ofEpochSecond(epochSeconds, nanoAdjustments);
-    var zoneId = getZoneId(java:fromString("Z"));
-    var zonedDateTime = atZone(instant, zoneId);
-    var dateTimeFormatter = ofPattern(java:fromString(pattern));
-    handle formatString = format(zonedDateTime, dateTimeFormatter);
-    return formatString.toBalString();
 }
 
 isolated function uppercaseFirstLetter(string str) returns string {

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- [Revamp Connector Authentication Flow](https://github.com/wso2-enterprise/integration-engineering/issues/2105)
+
+## [2.2.0] - 2023-09-26
+
+### Added
 
 ### Changed
 - [Revamp of the connector](https://github.com/ballerina-platform/ballerina-standard-library/issues/4846)

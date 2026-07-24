@@ -14,64 +14,45 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/crypto;
 import ballerina/http;
-import ballerina/lang.array;
-import ballerina/time;
-import ballerinax/'client.config;
+import ballerina/mime;
 import ballerina/url;
+import ballerinax/aws;
+import ballerinax/aws.auth;
 
 # Ballerina Amazon SNS API connector provides the capability to access Amazon's Simple Notification Service.
 # This connector allows you to create and manage SNS topics and subscriptions.
-# Supports static credentials, profile-based credentials, and the default AWS credential
-# provider chain (environment variables, ECS/EKS container credentials, EC2 instance profiles, etc.).
 #
 # + amazonSNSClient - Connector HTTP endpoint
-# + accessKeyId - Amazon API access key
-# + secretAccessKey - Amazon API secret key
-# + securityToken - Security token
-# + region - Amazon API Region
-# + amazonHost - Amazon host name
+# + credentialProvider - AWS credential provider that resolves and refreshes signing credentials
+# + region - Amazon API region
+# + amazonHost - Amazon SNS host name
 @display {label: "Amazon SNS Client", iconPath: "icon.png"}
 public isolated client class Client {
-    final string accessKeyId;
-    final string secretAccessKey;
-    final string? securityToken;
-    final string region;
-    final string amazonHost;
     final http:Client amazonSNSClient;
+    final auth:CredentialProvider credentialProvider;
+    final aws:Region|string region;
+    final string amazonHost;
 
     # Initializes the connector.
     #
     # + config - Configuration for the connector
     # + return - `error` in case of failure to initialize or `null` if successfully initialized
     public isolated function init(ConnectionConfig config) returns error? {
-        StaticAuthConfig|ProfileAuthConfig|DEFAULT_CREDENTIALS credentialsConfig;
-        if config.credentials is StaticAuthConfig|ProfileAuthConfig|DEFAULT_CREDENTIALS {
-            credentialsConfig = <StaticAuthConfig|ProfileAuthConfig|DEFAULT_CREDENTIALS>config.credentials;
-        } else if config.accessKeyId is string && config.secretAccessKey is string {
-            credentialsConfig = {
-                accessKeyId: <string>config.accessKeyId,
-                secretAccessKey: <string>config.secretAccessKey,
-                sessionToken: config.securityToken
-            };
-        } else {
-            return error("AWS credentials not configured. Provide 'credentials' (StaticAuthConfig, ProfileAuthConfig, or DEFAULT_CREDENTIALS) or the deprecated 'accessKeyId' and 'secretAccessKey' fields.");
-        }
-        map<anydata> resolved = check resolveCredentials(credentialsConfig);
-        anydata ak = resolved["accessKeyId"];
-        anydata sk = resolved["secretAccessKey"];
-        anydata st = resolved["sessionToken"];
-        self.accessKeyId = ak is string ? ak : "";
-        self.secretAccessKey = sk is string ? sk : "";
-        self.securityToken = st is string && st != "" ? st : ();
+        http:ClientConfiguration httpClientConfig = {httpVersion: config.httpVersion, http1Settings: config.http1Settings, http2Settings: config.http2Settings, timeout: config.timeout, forwarded: config.forwarded, followRedirects: config.followRedirects, poolConfig: config.poolConfig, cache: config.cache, compression: config.compression, circuitBreaker: config.circuitBreaker, retryConfig: config.retryConfig, cookieConfig: config.cookieConfig, responseLimits: config.responseLimits, secureSocket: config.secureSocket, proxy: config.proxy, socketConfig: config.socketConfig, validation: config.validation, laxDataBinding: config.laxDataBinding};
         self.region = config.region;
-        self.amazonHost = "sns." + self.region + ".amazonaws.com";
-        string baseURL = "https://" + self.amazonHost;
-        check validateCredentails(self.accessKeyId, self.secretAccessKey);
+        aws:EndpointConfig? endpointConfig = config.endpoint;
+        string baseURL;
+        if endpointConfig is aws:EndpointConfig {
+            self.amazonHost = aws:resolveEndpointHost(SERVICE_NAME, config.region, endpointConfig);
+            baseURL = aws:resolveEndpoint(SERVICE_NAME, config.region, endpointConfig);
+        } else {
+            self.amazonHost = aws:resolveEndpointHost(SERVICE_NAME, config.region);
+            baseURL = aws:resolveEndpoint(SERVICE_NAME, config.region);
+        }
 
-        http:ClientConfiguration httpClientConfig = check config:constructHTTPClientConfig(config);
         self.amazonSNSClient = check new (baseURL, httpClientConfig);
+        self.credentialProvider = check new (config.auth);
     }
 
     # Creates a topic to which notifications can be published. This action is idempotent, so if the requester already 
@@ -940,80 +921,41 @@ public isolated client class Client {
 
     private isolated function generateRequest(map<string> parameters)
     returns http:Request|Error {
-        [int, decimal] & readonly currentTime = time:utcNow();
-        string|error xamzDate = utcToString(currentTime, "yyyyMMdd'T'HHmmss'Z'");
-        string|error dateStamp = utcToString(currentTime, "yyyyMMdd");
-
-        if xamzDate is string && dateStamp is string {
-            string contentType = "application/x-www-form-urlencoded";
-            string|url:Error requestParameters = self.createPayload(parameters);
-            if requestParameters is url:Error {
-                return error GenerateRequestFailed(requestParameters.message(), requestParameters);
-            }
-
-            string canonicalQuerystring = EMPTY_STRING;
-            string? availableSecurityToken = self.securityToken;
-
-            //Create a canonical request for Signature Version 4
-            // Note: X-Amz-Security-Token is NOT included in canonical headers or signed headers.
-            // It is added as a regular HTTP header after signature computation per AWS SigV4 spec.
-            string canonicalHeaders = "content-type:" + contentType + "\n" + "host:" + self.amazonHost + "\n"
-                + "x-amz-date:" + xamzDate + "\n";
-            string signedHeaders = "content-type;host;x-amz-date";
-            string payloadHash = array:toBase16(crypto:hashSha256(requestParameters.toBytes())).toLowerAscii();
-            string canonicalRequest = "POST" + "\n" + "/" + "\n" + canonicalQuerystring + "\n"
-                + canonicalHeaders + "\n" + signedHeaders + "\n" + payloadHash;
-            string algorithm = "AWS4-HMAC-SHA256";
-            string credentialScope = dateStamp + "/" + self.region + "/" + "sns"
-                + "/" + "aws4_request";
-
-            //Create a string to sign for Signature Version 4
-            string stringToSign = algorithm + "\n" + xamzDate + "\n" + credentialScope + "\n"
-                + array:toBase16(crypto:hashSha256(canonicalRequest.toBytes())).toLowerAscii();
-
-            //Calculate the signature for AWS Signature Version 4
-            string signature;
-            do {
-                byte[] signingKey = check self.calculateSignature(self.secretAccessKey, dateStamp, self.region, "sns");
-                signature = array:toBase16(check crypto:hmacSha256(stringToSign.toBytes(), signingKey)).toLowerAscii();
-            } on fail error e {
-                return error CalculateSignatureFailedError(e.message(), e);
-            }
-
-            //Add the signature to the HTTP request
-            string authorizationHeader = algorithm + " " + "Credential=" + self.accessKeyId + "/"
-                + credentialScope + ", " + "SignedHeaders=" + signedHeaders + ", " + "Signature=" + signature;
-            map<string> headers = {};
-            headers["Content-Type"] = contentType;
-            headers["X-Amz-Date"] = xamzDate;
-            headers["Authorization"] = authorizationHeader;
-            headers["Accept"] = "application/json";
-            if availableSecurityToken is string {
-                headers["X-Amz-Security-Token"] = availableSecurityToken;
-            }
-
-            http:Request request = new;
-            request.setTextPayload(requestParameters);
-
-            foreach var [key, value] in headers.entries() {
-                request.setHeader(key, value);
-            }
-            
-            return request;
-        } else {
-            return error GenerateRequestFailed(GENERATE_REQUEST_FAILED_MSG);
+        string contentType = mime:APPLICATION_FORM_URLENCODED;
+        string|url:Error requestParameters = self.createPayload(parameters);
+        if requestParameters is url:Error {
+            return error GenerateRequestFailed(requestParameters.message(), requestParameters);
         }
-    }
 
-    //Calculate the signature for AWS Signature Version 4.
-    private isolated function calculateSignature(string secretAccessKey, string datestamp, string region, string serviceName)
-                                            returns byte[]|error {
-        string kSecret = secretAccessKey;
-        byte[] kDate = check crypto:hmacSha256(datestamp.toBytes(), ("AWS4" + kSecret).toBytes());
-        byte[] kRegion = check crypto:hmacSha256(region.toBytes(), kDate);
-        byte[] kService = check crypto:hmacSha256(serviceName.toBytes(), kRegion);
-        byte[] kSigning = check crypto:hmacSha256("aws4_request".toBytes(), kService);
-        return kSigning;
+        // Resolve currently-valid credentials; temporary credentials (STS, SSO,
+        // instance profile) are refreshed transparently by the provider.
+        auth:Credentials|auth:CredentialResolutionError credentials = self.credentialProvider.getCredentials();
+        if credentials is auth:CredentialResolutionError {
+            return error GenerateRequestFailed(credentials.message(), credentials);
+        }
+
+        // Sign the request with AWS Signature Version 4 via the shared aws.auth
+        // signer. The returned headers include `authorization`, `x-amz-date`,
+        // `x-amz-content-sha256`, the signed `content-type`, and — for temporary
+        // credentials — `x-amz-security-token`.
+        map<string>|auth:SigningError signedHeaders = auth:getSignedHeaders({
+            method: "POST",
+            host: self.amazonHost,
+            path: "/",
+            headers: {"content-type": contentType},
+            payload: requestParameters.toBytes()
+        }, credentials, self.region, SERVICE_NAME);
+        if signedHeaders is auth:SigningError {
+            return error CalculateSignatureFailedError(signedHeaders.message(), signedHeaders);
+        }
+
+        http:Request request = new;
+        request.setTextPayload(requestParameters);
+        foreach var [key, value] in signedHeaders.entries() {
+            request.setHeader(key, value);
+        }
+        request.setHeader("Accept", mime:APPLICATION_JSON);
+        return request;
     }
 
     private isolated function createPayload(map<string> parameters) returns string|url:Error {
@@ -1029,28 +971,16 @@ public isolated client class Client {
         return payload;
     }
 
-}
+    # Releases the resources held by the underlying credential provider (background
+    # refresh threads and any HTTP connections opened for STS/SSO). Call when the
+    # client is no longer needed.
+    #
+    # + return - `()` or `sns:Error` in case of failure
+    isolated remote function close() returns Error? {
+        auth:Error? result = self.credentialProvider.close();
+        if result is auth:Error {
+            return error Error(result.message(), result);
+        }
+    }
 
-# Represents the AWS SNS client connection configuration.
-#
-# + auth - Do not provide authentication credentials here
-# + accessKeyId - Deprecated: Use `credentials` instead
-# + secretAccessKey - Deprecated: Use `credentials` instead
-# + securityToken - Deprecated: Use `credentials` instead
-# + credentials - AWS credential configuration. Use `StaticAuthConfig` for explicit credentials,
-#                 `ProfileAuthConfig` for a local credentials file profile, or `DEFAULT_CREDENTIALS`
-#                 to resolve credentials automatically via the AWS default credential provider chain
-#                 (environment variables, ECS/EKS container credentials, EC2 instance profile, etc.)
-# + region - AWS SNS region. Default value is "us-east-1"
-public type ConnectionConfig record {|
-    *config:ConnectionConfig;
-    never auth?;
-    @deprecated
-    string accessKeyId?;
-    @deprecated
-    string secretAccessKey?;
-    @deprecated
-    string securityToken?;
-    StaticAuthConfig|ProfileAuthConfig|DEFAULT_CREDENTIALS credentials?;
-    string region = DEFAULT_REGION;
-|};
+}

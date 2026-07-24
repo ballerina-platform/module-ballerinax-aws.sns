@@ -14,18 +14,20 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerinax/aws.sns;
 import ballerina/os;
 import ballerina/io;
+import ballerinax/aws.sns;
 
 configurable string accessKeyId = os:getEnv("ACCESS_KEY_ID");
 configurable string secretAccessKey = os:getEnv("SECRET_ACCESS_KEY");
 configurable string region = os:getEnv("REGION");
 
 sns:ConnectionConfig config = {
-    accessKeyId: accessKeyId,
-    secretAccessKey: secretAccessKey,
-    region: region
+    auth: {
+        accessKeyId,
+        secretAccessKey
+    },
+    region
 };
 
 sns:Client amazonSNSClient = check new(config);

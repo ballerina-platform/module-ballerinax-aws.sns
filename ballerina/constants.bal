@@ -14,11 +14,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-const string DEFAULT_REGION = "us-east-1";
-const string EMPTY_STRING = "";
-const string ACTION = "Action";
-const string VERSION = "Version";
-const string VERSION_NUMBER = "2010-03-31";
+const EMPTY_STRING = "";
+const ACTION = "Action";
+const VERSION = "Version";
+const VERSION_NUMBER = "2010-03-31";
+const SERVICE_NAME = "sns";
 
 const map<string> SPECIAL_TOPIC_ATTRIBUTES_MAP = {
     "httpMessageDeliveryLogging": "HTTP",
@@ -42,3 +42,4 @@ const map<string> MESSAGE_RECORD_MAP = {
     "mpns": "MPNS",
     "wns": "WNS"
 };
+

@@ -183,7 +183,7 @@ class SubscriptionStream {
 
 # Used to fetch and return a stream of SNS platform applications. The logic of fetching the platform applications is
 # abstracted away from the user.
- class PlatformApplicationStream {
+class PlatformApplicationStream {
 
     private final http:Client amazonSNSClient;
     private final (isolated function (map<string>) returns http:Request|Error) & readonly generateRequest;
