@@ -15,55 +15,11 @@ The Amazon SNS connector offers APIs to connect and interact with [Amazon SNS RE
 
 ## Setup guide
 
-### Step 1: Create an AWS account
+### Obtain IAM user credentials
 
-* If you don't already have an AWS account, you need to create one. Go to the [AWS Management Console](https://console.aws.amazon.com/console/home), click on "Create a new AWS Account," and follow the instructions.
+To create an IAM user and generate an access key, follow the [obtaining IAM user credentials](https://central.ballerina.io/ballerinax/aws/latest#obtaining-iam-user-credentials) guide.
 
-### Step 2: Get the access key ID and the secret access key
-
-Once you log in to your AWS account, you need to create a user group and a user with the necessary permissions to access SNS. To do this, follow the steps below:
-
-1. Create an AWS user group
-
-* Navigate to the Identity and Access Management (IAM) service. Click on "Groups" and then "Create New Group."
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-group.png alt="Create user group" width="50%">
-
-* Enter a group name and attach the necessary policies to the group. For example, you can attach the "AmazonSNSFullAccess" policy to provide full access to SNS.
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-group-policies.png alt="Attach policy" width="50%">
-
-2. Create an IAM user
-
-* In the IAM console, navigate to "Users" and click on "Add user."
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-user.png alt="Add user" width="50%">
-
-* Enter a username, tick the "Provide user access to the AWS Management Console - optional" checkbox, and click "I want to create an IAM user". This will enable programmatic access through access keys.
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-user-iam-user.png alt="Create IAM user" width="50%">
-
-* Click through the permission setup, and add the user to the user group we previously created.
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-user-set-permission.png alt="Attach user group" width="50%">
-
-* Review the details and click "Create user."
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-user-review.png alt="Review user" width="50%">
-
-3. Generate access key ID and secret access key
-
-* Once the user is created, you will see a success message. Navigate to the "Users" tab, and select the user you created.
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/view-user.png alt="View User" width="50%">
-
-* Click on the "Create access key" button to generate the access key ID and secret access key.
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-access-key.png alt="Create access key" width="50%">
-
-* Follow the steps and download the CSV file containing the credentials.
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/download-access-key.png alt="Download credentials" width="50%">
+Attach the SNS permissions your application needs to the user — the AWS managed `AmazonSNSFullAccess` policy grants full access, or scope a custom policy to only the SNS actions you call (for example, `sns:CreateTopic`, `sns:Publish`, and `sns:Subscribe`).
 
 ## Quickstart
 
@@ -140,7 +96,7 @@ The standard default credential provider chain tries each of the following in or
 3. Container credentials (ECS/EKS)
 4. EC2 instance profile (IMDS)
 
-> **Note:** Beyond the three options above, the `credentials` field also accepts `auth:AssumeRoleConfig` (STS assume-role), `auth:WebIdentityConfig` (web identity / OIDC), `auth:SsoAuthConfig` (IAM Identity Center), and `auth:ProcessAuthConfig` (external credential process). See the `ballerinax/aws.auth` documentation for details.
+> **Note:** Beyond the three options above, the `credentials` field also accepts `auth:AssumeRoleConfig` (STS assume-role), `auth:WebIdentityConfig` (web identity / OIDC), `auth:SsoAuthConfig` (IAM Identity Center), and `auth:ProcessAuthConfig` (external credential process). See the [`Ballerina AWS`](https://central.ballerina.io/ballerinax/aws/latest) documentation for details.
 
 ### Step 3: Invoke the connector operation
 
