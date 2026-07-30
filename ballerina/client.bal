@@ -976,7 +976,7 @@ public isolated client class Client {
     # client is no longer needed.
     #
     # + return - `()` or `sns:Error` in case of failure
-    isolated remote function close() returns Error? {
+    public isolated function close() returns Error? {
         auth:Error? result = self.credentialProvider.close();
         if result is auth:Error {
             return error Error(result.message(), result);

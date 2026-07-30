@@ -45,6 +45,9 @@ It contains breaking changes. See the "Migrating from 3.x" section below.
 - A new optional `ConnectionConfig.endpoint` field of type `aws:EndpointConfig`, for selecting FIPS or
   dualstack endpoint variants and for overriding the endpoint entirely (for example, LocalStack or VPC
   interface endpoints).
+- A `Client.close()` method that releases the resources held by the credential provider (background
+  refresh threads and any HTTP connections opened for STS/SSO). It is a normal method rather than a
+  remote method, since closing the client does not send a request to SNS.
 
 ### Migrating from 3.x
 
@@ -98,6 +101,7 @@ use the default credential provider chain:
 
 ```ballerina
 // 4.0.0
+import ballerinax/aws;
 import ballerinax/aws.auth;
 
 sns:ConnectionConfig config = {

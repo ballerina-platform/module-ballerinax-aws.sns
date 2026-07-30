@@ -21,6 +21,7 @@ The conforming implementation of the specification is released and included in t
 1.  [Overview](#1-overview)
 2.  [Client](#2-client)
      * 2.1 [Initializing the client](#21-initializing-the-client)
+     * 2.2 [Closing the client](#22-closing-the-client)
 3.  [Topics](#3-topics)
 4.  [Publishing messages](#4-publishing-messages)
 5.  [Subscriptions](#5-subscriptions)
@@ -88,6 +89,14 @@ sns:ConnectionConfig config = {
 An optional `endpoint` field (`aws:EndpointConfig`) selects FIPS/dualstack variants or overrides the endpoint entirely (e.g., LocalStack or a VPC interface endpoint).
 
 The `sns:Client` uses an `http:Client` as its underlying implementation. You can configure this `http:Client` by providing the additional HTTP fields of `sns:ConnectionConfig` during the `sns:Client` initialization.
+
+#### 2.2 Closing the client
+
+The `close()` method releases the resources held by the underlying credential provider, such as background credential-refresh threads and any HTTP connections opened for STS or SSO. Call it when the client is no longer needed.
+
+```ballerina
+check amazonSNSClient.close();
+```
 
 ## 3. Topics
 
