@@ -1,6 +1,6 @@
 # Ballerina Amazon SNS Connector
 
-[![Build](https://github.com/ballerina-platform/module-ballerinax-aws.sqs/actions/workflows/ci.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerinax-aws.sqs/actions/workflows/ci.yml)
+[![Build](https://github.com/ballerina-platform/module-ballerinax-aws.sns/actions/workflows/ci.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerinax-aws.sns/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/ballerina-platform/module-ballerinax-aws.sns/branch/main/graph/badge.svg)](https://codecov.io/gh/ballerina-platform/module-ballerinax-aws.sns)
 [![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerinax-aws.sns.svg)](https://github.com/ballerina-platform/module-ballerinax-aws.sns/commits/master)
 [![GraalVM Check](https://github.com/ballerina-platform/module-ballerinax-aws.sns/actions/workflows/build-with-bal-test-graalvm.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerinax-aws.sns/actions/workflows/build-with-bal-test-graalvm.yml)
@@ -42,7 +42,7 @@ Use explicit AWS credentials. Suitable for local development and environments wh
 
 ```ballerina
 sns:Client snsClient = check new ({
-   credentials: {
+   auth: {
       accessKeyId: "<AWS_ACCESS_KEY_ID>",
       secretAccessKey: "<AWS_SECRET_ACCESS_KEY>"
    },
@@ -54,7 +54,7 @@ For temporary credentials (e.g., from `aws sts get-session-token`), include the 
 
 ```ballerina
 sns:Client snsClient = check new ({
-   credentials: {
+   auth: {
       accessKeyId: "<AWS_ACCESS_KEY_ID>",
       secretAccessKey: "<AWS_SECRET_ACCESS_KEY>",
       sessionToken: "<AWS_SESSION_TOKEN>"
@@ -69,7 +69,7 @@ Use a named profile from your `~/.aws/credentials` file. Suitable for developer 
 
 ```ballerina
 sns:Client snsClient = check new ({
-   credentials: {
+   auth: {
       profileName: "<PROFILE_NAME>",
       credentialsFilePath: "~/.aws/credentials"
    },
@@ -83,7 +83,7 @@ Use `auth:DEFAULT_CREDENTIALS` to let the connector automatically resolve creden
 
 ```ballerina
 sns:Client snsClient = check new ({
-   credentials: auth:DEFAULT_CREDENTIALS,
+   auth: auth:DEFAULT_CREDENTIALS,
    region: aws:US_EAST_1
 });
 ```
