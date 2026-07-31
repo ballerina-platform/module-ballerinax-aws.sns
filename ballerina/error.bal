@@ -32,6 +32,5 @@ public type CalculateSignatureFailedError distinct Error;
 # Represents an error that occurs when the API action cannot be completed due to an unknown server error.
 public type InternalError distinct Error;
 
-const string GENERATE_REQUEST_FAILED_MSG = "Error occurred while generating POST request.";
 const string NO_CONTENT_SET_WITH_RESPONSE_MSG = "No Content was sent with the response.";
 const string ERROR_OCCURRED_WHILE_INVOKING_REST_API_MSG = "Error occurred while invoking the REST API.";

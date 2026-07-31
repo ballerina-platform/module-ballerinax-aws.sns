@@ -14,55 +14,11 @@ The `ballerinax/aws.sns` package offers APIs to connect and interact with [AWS S
 
 ## Setup guide
 
-### Step 1: Create an AWS account
+### Obtain IAM user credentials
 
-* If you don't already have an AWS account, you need to create one. Go to the [AWS Management Console](https://console.aws.amazon.com/console/home), click on "Create a new AWS Account," and follow the instructions.
+To create an IAM user and generate an access key, follow the [obtaining IAM user credentials](https://central.ballerina.io/ballerinax/aws/latest#obtaining-iam-user-credentials) guide.
 
-### Step 2: Get the access key ID and the secret access key
-
-Once you log in to your AWS account, you need to create a user group and a user with the necessary permissions to access SNS. To do this, follow the steps below:
-
-1. Create an AWS user group
-
-* Navigate to the Identity and Access Management (IAM) service. Click on "Groups" and then "Create New Group."
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-group.png alt="Create user group" width="50%">
-
-* Enter a group name and attach the necessary policies to the group. For example, you can attach the "AmazonSNSFullAccess" policy to provide full access to SNS.
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-group-policies.png alt="Attach policy" width="50%">
-
-2. Create an IAM user
-
-* In the IAM console, navigate to "Users" and click on "Add user."
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-user.png alt="Add user" width="50%">
-
-* Enter a username, tick the "Provide user access to the AWS Management Console - optional" checkbox, and click "I want to create an IAM user". This will enable programmatic access through access keys.
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-user-iam-user.png alt="Create IAM user" width="50%">
-
-* Click through the permission setup, and add the user to the user group we previously created.
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-user-set-permission.png alt="Attach user group" width="50%">
-
-* Review the details and click "Create user."
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-user-review.png alt="Review user" width="50%">
-
-3. Generate access key ID and secret access key
-
-* Once the user is created, you will see a success message. Navigate to the "Users" tab, and select the user you created.
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/view-user.png alt="View User" width="50%">
-
-* Click on the "Create access key" button to generate the access key ID and secret access key.
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/create-access-key.png alt="Create access key" width="50%">
-
-* Follow the steps and download the CSV file containing the credentials.
-
-   <img src=https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aws.sns/main/docs/setup/resources/download-access-key.png alt="Download credentials" width="50%">
+Attach the SNS permissions your application needs to the user — the AWS managed `AmazonSNSFullAccess` policy grants full access, or scope a custom policy to only the SNS actions you call (for example, `sns:CreateTopic`, `sns:Publish`, and `sns:Subscribe`).
 
 ## Quickstart
 
@@ -72,12 +28,13 @@ To use the `aws.sns` connector in your Ballerina project, modify the `.bal` file
 
 Import the `ballerinax/aws.sns` package into your Ballerina project.
 ```ballerina
+import ballerinax/aws;
 import ballerinax/aws.sns;
 ```
 
 ### Step 2: Instantiate a new connector
 
-The `sns:Client` accepts a `ConnectionConfig` with a `credentials` field that supports three authentication modes.
+The `sns:Client` accepts a `ConnectionConfig` with a `credentials` field that supports standard authentication modes.
 
 #### Option 1: Static credentials
 
@@ -85,11 +42,11 @@ Use explicit AWS credentials. Suitable for local development and environments wh
 
 ```ballerina
 sns:Client snsClient = check new ({
-    credentials: {
-        accessKeyId: "<AWS_ACCESS_KEY_ID>",
-        secretAccessKey: "<AWS_SECRET_ACCESS_KEY>"
-    },
-    region: "<AWS_REGION>"
+   credentials: {
+      accessKeyId: "<AWS_ACCESS_KEY_ID>",
+      secretAccessKey: "<AWS_SECRET_ACCESS_KEY>"
+   },
+   region: aws:US_EAST_1
 });
 ```
 
@@ -97,12 +54,12 @@ For temporary credentials (e.g., from `aws sts get-session-token`), include the 
 
 ```ballerina
 sns:Client snsClient = check new ({
-    credentials: {
-        accessKeyId: "<AWS_ACCESS_KEY_ID>",
-        secretAccessKey: "<AWS_SECRET_ACCESS_KEY>",
-        sessionToken: "<AWS_SESSION_TOKEN>"
-    },
-    region: "<AWS_REGION>"
+   credentials: {
+      accessKeyId: "<AWS_ACCESS_KEY_ID>",
+      secretAccessKey: "<AWS_SECRET_ACCESS_KEY>",
+      sessionToken: "<AWS_SESSION_TOKEN>"
+   },
+   region: aws:US_EAST_1
 });
 ```
 
@@ -112,26 +69,33 @@ Use a named profile from your `~/.aws/credentials` file. Suitable for developer 
 
 ```ballerina
 sns:Client snsClient = check new ({
-    credentials: {
-        profileName: "my-profile",
-        credentialsFilePath: "~/.aws/credentials"
-    },
-    region: "<AWS_REGION>"
+   credentials: {
+      profileName: "<PROFILE_NAME>",
+      credentialsFilePath: "~/.aws/credentials"
+   },
+   region: aws:US_EAST_1
 });
 ```
 
 #### Option 3: Default credential provider chain
 
-Use `sns:DEFAULT_CREDENTIALS` to let the connector automatically resolve credentials from the environment. This is the recommended approach for AWS-managed environments.
+Use `auth:DEFAULT_CREDENTIALS` to let the connector automatically resolve credentials from the environment. This is the recommended approach for AWS-managed environments.
 
 ```ballerina
 sns:Client snsClient = check new ({
-    credentials: sns:DEFAULT_CREDENTIALS,
-    region: "<AWS_REGION>"
+   credentials: auth:DEFAULT_CREDENTIALS,
+   region: aws:US_EAST_1
 });
 ```
 
-Credentials are resolved using the AWS SDK for Java 2.x `DefaultCredentialsProvider.create()` chain. Refer to the [AWS SDK documentation](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials-chain.html) for the current resolution order.
+The standard default credential provider chain tries each of the following in order and takes the first source that yields credentials:
+
+1. Environment variables (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`, and `AWS_WEB_IDENTITY_TOKEN_FILE` if set)
+2. The shared config/credentials file's active profile (`AWS_PROFILE`, or `default` if unset) — which may itself resolve via SSO, an external process, or a chained `AssumeRole` call, depending on that profile's configuration
+3. Container credentials (ECS/EKS)
+4. EC2 instance profile (IMDS)
+
+> **Note:** Beyond the three options above, the `credentials` field also accepts `auth:AssumeRoleConfig` (STS assume-role), `auth:WebIdentityConfig` (web identity / OIDC), `auth:SsoAuthConfig` (IAM Identity Center), and `auth:ProcessAuthConfig` (external credential process). See the [`Ballerina AWS`](https://central.ballerina.io/ballerinax/aws/latest) documentation for details.
 
 ### Step 3: Invoke the connector operation
 

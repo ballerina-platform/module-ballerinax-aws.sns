@@ -28,7 +28,7 @@ configurable string secretAccessKey = os:getEnv("SECRET_ACCESS_KEY");
 configurable string region = os:getEnv("REGION");
 
 ConnectionConfig config = {
-    credentials: {
+    auth: {
         accessKeyId: accessKeyId,
         secretAccessKey: secretAccessKey
     },
@@ -36,7 +36,7 @@ ConnectionConfig config = {
     retryConfig: {
         count: 3,
         interval: 10
-    } 
+    }
 };
 
 Client amazonSNSClient = check new(config);

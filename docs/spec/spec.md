@@ -3,7 +3,7 @@
 _Owners_: @kaneeldias \
 _Reviewers_: @daneshk \
 _Created_: 2023/11/15 \
-_Updated_: 2023/11/15 \
+_Updated_: 2026/07/24 \
 _Edition_: Swan Lake
 
 ## Introduction
@@ -21,6 +21,7 @@ The conforming implementation of the specification is released and included in t
 1.  [Overview](#1-overview)
 2.  [Client](#2-client)
      * 2.1 [Initializing the client](#21-initializing-the-client)
+     * 2.2 [Closing the client](#22-closing-the-client)
 3.  [Topics](#3-topics)
 4.  [Publishing messages](#4-publishing-messages)
 5.  [Subscriptions](#5-subscriptions)
@@ -57,19 +58,45 @@ The client employs HTTP as the underlying protocol for communication with the AP
 
 #### 2.1 Initializing the client
 
-The `sns:Client` initialization method requires valid authentication credentials.
+The `sns:Client` initialization method requires valid authentication credentials. It accepts any standardized AWS credential source: static credentials, an AWS profile, STS assume-role, web identity (OIDC), IAM Identity Center (SSO), an external credential process, or the default credential provider chain. Temporary credentials (STS, SSO, instance profile) are refreshed transparently by the provider on each request.
+
+```ballerina
+import ballerinax/aws;
+import ballerinax/aws.sns;
+
+sns:ConnectionConfig config = {
+    auth: {
+        accessKeyId: accessKeyId,
+        secretAccessKey: secretAccessKey
+    },
+    region: aws:US_EAST_1
+};
+
+sns:Client amazonSNSClient = check new (config);
+```
+
+The `region` field accepts either an `aws:Region` enum member (e.g., `aws:US_EAST_1`) or a plain region string (e.g., `"us-east-1"`) for regions not yet in the enum.
+
+To use the default credential provider chain (environment variables, shared config/credentials files, or the container/instance profile) instead of static keys:
 
 ```ballerina
 sns:ConnectionConfig config = {
-    accessKeyId: accessKeyId,
-    secretAccessKey: secretAccessKey,
-    region: region
+    auth: auth:DEFAULT_CREDENTIALS,
+    region: aws:US_EAST_1
 };
-
-sns:Client amazonSNSClient = check new(config);
 ```
 
-The `sns:Client` uses an `http:Client` as its underlying implementation. You can configure this `http:Client` by providing the `sns:ConnectionConfig` as a parameter during the `sns:Client` initialization.
+An optional `endpoint` field (`aws:EndpointConfig`) selects FIPS/dualstack variants or overrides the endpoint entirely (e.g., LocalStack or a VPC interface endpoint).
+
+The `sns:Client` uses an `http:Client` as its underlying implementation. You can configure this `http:Client` by providing the additional HTTP fields of `sns:ConnectionConfig` during the `sns:Client` initialization.
+
+#### 2.2 Closing the client
+
+The `close()` method releases the resources held by the underlying credential provider, such as background credential-refresh threads and any HTTP connections opened for STS or SSO. Call it when the client is no longer needed.
+
+```ballerina
+check amazonSNSClient.close();
+```
 
 ## 3. Topics
 
