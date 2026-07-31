@@ -2,9 +2,3 @@
 org = "wso2"
 name = "weather_alert"
 version = "0.1.0"
-
-[[dependency]]
-org = "ballerinax"
-name = "aws.sns"
-version = "4.0.0"
-repository = "local"
