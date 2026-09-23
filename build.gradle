@@ -18,7 +18,7 @@
 
 plugins {
     id 'com.github.spotbugs-base'
-    id 'com.github.johnrengelman.shadow'
+    id 'com.gradleup.shadow'
     id 'de.undercouch.download'
     id 'net.researchgate.release'
 }
@@ -62,9 +62,16 @@ allprojects {
 
 def moduleVersion = project.version.replace("-SNAPSHOT", "")
 
-task build {
-    dependsOn(':aws.sns-ballerina:build')
-    dependsOn(':aws.sns-examples:build')
+if (tasks.names.contains('build')) {
+    tasks.named('build') {
+        dependsOn(':aws.sns-ballerina:build')
+        dependsOn(':aws.sns-examples:build')
+    }
+} else {
+    tasks.register('build') {
+        dependsOn(':aws.sns-ballerina:build')
+        dependsOn(':aws.sns-examples:build')
+    }
 }
 
 release {
