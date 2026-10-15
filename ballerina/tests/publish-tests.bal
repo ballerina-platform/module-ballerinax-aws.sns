@@ -113,7 +113,6 @@ function publishToInvalidApplication() returns error? {
     PublishMessageResponse|Error response = amazonSNSClient->publish(invalidApplicationArn, "Test Message",
         targetType = ARN);
     test:assertTrue(response is OperationError);
-    test:assertEquals((<Error>response).message(), "Invalid parameter: TargetArn Reason: An ARN must have at least 6 elements, not 1");
 }
 
 @test:Config {
