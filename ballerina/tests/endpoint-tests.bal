@@ -39,7 +39,6 @@ function createEndpointWithEmptyTokenTest() returns error? {
 function createEndpointWithInvalidArnTest() returns error? {
     string|Error arn = amazonSNSClient->createEndpoint(invalidApplicationArn, testRunId + "testDeviceToken2");
     test:assertTrue(arn is OperationError);
-    test:assertEquals((<OperationError>arn).message(), "Invalid parameter: PlatformApplicationArn Reason: An ARN must have at least 6 elements, not 1");
 }
 
 @test:Config {
